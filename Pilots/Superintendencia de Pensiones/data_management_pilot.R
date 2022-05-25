@@ -37,11 +37,74 @@ df5<-df5[,!(names(df5) %in% drop)]
 
 
 
+### Correct responses 
+
+#Public Pensions
+#library(tidyverse)
+
+comp<- df2 %>% select(contains("Comp"))
+
+comp$ncomp1<-ifelse(df2$Comp1.PP=="A partir de los 65 años", 1, 0)
+comp$ncomp2<-ifelse(df2$Comp2.PP=="Tener ClaveÚnica", 1, 0)
+comp$ncomp3<-ifelse(df2$Comp3.PP=="Sí", 1, 0)
+comp$ncomp4<-ifelse(df2$Comp4.PP=="A través del Estado con los impuestos", 1, 0)
+comp$ncomp5<-ifelse(df2$Comp5.PP=="Por encontrarse dentro del 9% de mayores ingresos", 1, 0)
+comp$ncomp6<-ifelse(df2$Comp6.PP=="No", 1, 0)
+comp$ncomp7<-ifelse(df2$Comp7.PP=="$1.000.000", 1, 0)
+
+ncomp<- comp %>% select(contains("ncomp"))
+comp$correct_response <-rowSums(ncomp, na.rm = T)
+df2$correct_response<-comp$correct_response
+rm(comp, ncomp)
+
+
+### Pensiones privadas
+
+comp<- df3 %>% select(contains("Comp"))
+
+comp$ncomp1<-ifelse(df3$Comp1.RP=="No", 1, 0)
+comp$ncomp2<-ifelse(df3$Comp2.RP=="Solicitar el Certificado de Saldo en la AFP", 1, 0)
+comp$ncomp3<-ifelse(df3$Comp3.RP=="No", 1, 0)
+comp$ncomp4<-ifelse(df3$Comp4.RP=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, 0)
+comp$ncomp5<-ifelse(df3$Comp5.RP=="Sí", 1, 0)
+comp$ncomp6<-ifelse(df3$Comp6.RP=="Es voluntario", 1, 0)
+comp$ncomp7<-ifelse(df3$Comp7.RP=="El/la afiliado/a", 1, 0)
+
+
+comp$ncomp8<-ifelse(df3$Comp1.RV=="No", 1, 0)
+comp$ncomp9<-ifelse(df3$Comp2.RV=="Solicitar el Certificado de Saldo en la AFP", 1, 0)
+comp$ncomp10<-ifelse(df3$Comp3.RV=="No", 1, 0)
+comp$ncomp11<-ifelse(df3$Comp4.RV=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, 0)
+comp$ncomp12<-ifelse(df3$Comp5.RV=="Sí", 1, 0)
+comp$ncomp13<-ifelse(df3$Comp6.RV=="Es voluntario", 1, 0)
+comp$ncomp14<-ifelse(df3$Comp7.RV=="La Compañía de Seguros", 1, 0) 
+
+
+comp$ncomp15<-ifelse(df3$Comp1.MM=="No", 1, 0)
+comp$ncomp16<-ifelse(df3$Comp2.MM=="Solicitar el Certificado de Saldo en la AFP", 1, 0)
+comp$ncomp17<-ifelse(df3$Comp3.MM=="No", 1, 0)
+comp$ncomp18<-ifelse(df3$Comp4.MM=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, 0)
+comp$ncomp19<-ifelse(df3$Comp5.MM=="Sí", 1, 0)
+comp$ncomp20<-ifelse(df3$Comp6.MM=="Es voluntario", 1, 0)
+comp$ncomp21<-ifelse(df3$Comp7.MM=="Ambos: la Compañía de Seguros y el/la afiliado/a", 1, 0) 
+
+
+ncomp<- comp %>% select(contains("ncomp"))
+comp$correct_response <-rowSums(ncomp,na.rm = T)
+df3$correct_response<-comp$correct_response
+rm(comp, ncomp)
+
+
+
+
+
+
+
 ######## Merge datasets
 
 #DV
 
-dvars<-c("uemail", "UID" ,"InfoUtil_1", "InfoAbruma2_1", "Curiosity_1", "Confidence_1" , "total_reward" )
+dvars<-c("uemail", "UID" ,"InfoUtil_1", "InfoAbruma2_1", "Curiosity_1", "Confidence_1" , "total_reward", "correct_response" )
 
 dv2<-df2[,(names(df2) %in% dvars)]
 dv3<-df3[,(names(df3) %in% dvars)]
@@ -63,9 +126,9 @@ df<-df[df$QRead!="No", ] # Does not give Consent
 df<-df[df$Tram_jubilacion=="No", ] # indicates he/she is retired
 df<-df[df$Tram_jubilacion=="No", ]
 
-View(subset(df, website="7", select = c("EPension_PuvsPri", "total_reward" )))
+View(subset(df, select = c("EPension_PuvsPri", "total_reward", "correct_response" )))
 
-View(df[df$website==7,])
+
 
 ### Recode
 
