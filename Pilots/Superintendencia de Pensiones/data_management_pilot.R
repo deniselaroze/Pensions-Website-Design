@@ -96,10 +96,6 @@ rm(comp, ncomp)
 
 
 
-
-
-
-
 ######## Merge datasets
 
 #DV
@@ -132,9 +128,7 @@ View(subset(df, select = c("EPension_PuvsPri", "total_reward", "correct_response
 
 ### Recode
 
-
 web<-df$website
-
 df$treat<-recode(web, 
             "1" = "Perfil",
             "2" = "Video",
@@ -147,13 +141,19 @@ df$treat<-recode(web,
 )
 
 
-
 ## Define as numeric
 df$total_reward<-as.numeric(df$total_reward)
 df$InfoAbruma2_1<-as.numeric(df$InfoAbruma2_1)
 df$InfoUtil_1<-as.numeric(df$InfoUtil_1)
 df$Curiosity_1<-as.numeric(df$Curiosity_1)
 df$Confidence_1<-as.numeric(df$Confidence_1)
+
+
+## If they reached the second survey
+
+df$second_survey<-ifelse(is.na(df$InfoUtil_1), 1, 0)
+df$second_survey_end<-ifelse(is.na(df$InfoUtil_1), 1, 0)
+
 
 
 ###########################################
