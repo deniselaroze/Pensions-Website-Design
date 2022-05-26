@@ -1,0 +1,31 @@
+---
+title: "data_management"
+author: "J Davyt-Colo"
+date: "26/5/2022"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+
+```{r}
+library(tidyverse)
+```
+
+
+## Encuestas
+
+
+```{r}
+tbl <-
+  list.files(path = "Pilots/Superintendencia_de_Pensiones/data",
+             pattern = "Clicks", 
+             full.names = T) %>% 
+  map_df(~read_csv(., col_types = cols(.default = "c")))
+```
+
+
+## Sitios
+
