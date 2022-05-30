@@ -112,25 +112,161 @@ dv<-rbind(dv2, dv3)
 df<-merge(df1, dv, by.x = "useridn", by.y = "uemail", all = T)
 ```
 
+```{r}
+library(lubridate)
+encuestaA_May_30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaA_May 30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+  filter(is.na(useridn)==FALSE) %>%
+  select(-StartDate,
+         -EndDate,
+         -Status,
+         -IPAddress,
+         -Progress,
+         -`Duration (in seconds)`,
+         -Finished,
+         -RecordedDate,
+         -ResponseId,
+         -RecipientLastName,
+         -RecipientFirstName,
+         -RecipientEmail,
+         -ExternalReference,
+         -LocationLatitude,
+         -LocationLongitude,
+         -DistributionChannel,
+         -UserLanguage)
+encuestaA_May_30 <- encuestaA_May_30[,colSums(is.na(encuestaA_May_30))<nrow(encuestaA_May_30)]
+
+
+encuestaB_Privada_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaB_Privada_May30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+  filter(is.na(uemail)==FALSE) %>%
+  select(-StartDate,
+         -EndDate,
+         -Status,
+         -IPAddress,
+         -Progress,
+         -`Duration (in seconds)`,
+         -Finished,
+         -RecordedDate,
+         -ResponseId,
+         -RecipientLastName,
+         -RecipientFirstName,
+         -RecipientEmail,
+         -ExternalReference,
+         -LocationLatitude,
+         -LocationLongitude,
+         -DistributionChannel,
+         -UserLanguage)
+encuestaB_Privada_May30 <- encuestaB_Privada_May30[,colSums(is.na(encuestaB_Privada_May30))<nrow(encuestaB_Privada_May30)]
+
+encuestaB_Publica_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaB_Publica_May30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  filter(is.na(uemail)==FALSE) %>%
+  select(-StartDate,
+         -EndDate,
+         -Status,
+         -IPAddress,
+         -Progress,
+         -`Duration (in seconds)`,
+         -Finished,
+         -RecordedDate,
+         -ResponseId,
+         -RecipientLastName,
+         -RecipientFirstName,
+         -RecipientEmail,
+         -ExternalReference,
+         -LocationLatitude,
+         -LocationLongitude,
+         -DistributionChannel,
+         -UserLanguage)
+encuestaB_Publica_May30 <- encuestaB_Publica_May30[,colSums(is.na(encuestaB_Publica_May30))<nrow(encuestaB_Publica_May30)]
+
+encuestaC_Privada_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaC_Privada_May30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+  filter(is.na(uemail)==FALSE) %>%
+  select(-StartDate,
+         -EndDate,
+         -Status,
+         -IPAddress,
+         -Progress,
+         -`Duration (in seconds)`,
+         -Finished,
+         -RecordedDate,
+         -ResponseId,
+         -RecipientLastName,
+         -RecipientFirstName,
+         -RecipientEmail,
+         -ExternalReference,
+         -LocationLatitude,
+         -LocationLongitude,
+         -DistributionChannel,
+         -UserLanguage)
+encuestaC_Privada_May30 <- encuestaC_Privada_May30[,colSums(is.na(encuestaC_Privada_May30))<nrow(encuestaC_Privada_May30)]
+
+encuestaC_Publica_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaC_Publica_May30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+  filter(is.na(uemail)==FALSE) %>%
+  select(-StartDate,
+         -EndDate,
+         -Status,
+         -IPAddress,
+         -Progress,
+         -`Duration (in seconds)`,
+         -Finished,
+         -RecordedDate,
+         -ResponseId,
+         -RecipientLastName,
+         -RecipientFirstName,
+         -RecipientEmail,
+         -ExternalReference,
+         -LocationLatitude,
+         -LocationLongitude,
+         -DistributionChannel,
+         -UserLanguage)
+encuestaC_Publica_May30 <- encuestaC_Publica_May30[,colSums(is.na(encuestaC_Publica_May30))<nrow(encuestaC_Publica_May30)]
+```
+
+```{r}
+encuestas <- encuestaA_May_30 %>%
+  left_join(encuestaB_Privada_May30, by = c("useridn" = "uemail")) %>%
+  left_join(encuestaB_Publica_May30, by = c("useridn" = "uemail")) %>%
+  left_join(encuestaC_Publica_May30, by = c("useridn" = "uemail")) 
+encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
+```
 
 ## Sitios
 
 ```{r}
+delete.na <- function(DF, n=0) {
+  DF[rowSums(is.na(DF)) <= n,]
+}
 #get data
 sitios <-
-  list.files(path = here::here("Pilots/Superintendencia_de_Pensiones/data"),
+  list.files(path = here::here("Pilots/Superintendencia_de_Pensiones/data/30052022"),
              pattern = "Clicks", 
              full.names = T) %>% 
   map_df(~read_csv(., col_types = cols(.default = "c"))) %>%
-  mutate(useridn = substr(userid, 1,4))
+  unite("inicio_wix", c("inicio_wix.p1", "inicio_wix.p2", "inicio_wix.p3", "inicio_wix.p4", "inicio_wix.p5", "inicio_wix.p6"), na.rm = TRUE, remove = FALSE)
+
+sitios <- sitios[,colSums(is.na(sitios))<nrow(sitios)]
+
+sitios <- delete.na(sitios, 184)
+
+sitios <- sitios %>%
+  mutate(useridn = gsub("-", "" , substr(userid, 1,4)),
+         sitio= stringi::stri_sub(userid, -1),
+         fecha = lubridate::as_date(`Created date`, format = "%Y-%m-%d"))  %>%
+  filter(useridn != "0000")
 ```
 
 ## All data
 ```{r}
-pilot_data <- df %>%
-  filter(is.na(useridn)==FALSE) %>%
-  left_join(sitios, by ="useridn") 
-  
+pilot_data <- encuestas %>%
+  full_join(sitios, by = "useridn")
 ```
 
 ```{r}
