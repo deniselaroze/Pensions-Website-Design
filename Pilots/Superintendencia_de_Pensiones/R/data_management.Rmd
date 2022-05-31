@@ -20,7 +20,9 @@ library(tidyverse)
 ```{r}
 library(lubridate)
 encuestaA_May_30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaA_May 30.csv")) %>% 
-  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         sitioderivado = stringi::stri_sub(UID, -1),
+         useridn = as.numeric(useridn)) %>%
   dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
   filter(is.na(useridn)==FALSE) %>%
   select(-StartDate,
@@ -44,7 +46,9 @@ encuestaA_May_30 <- encuestaA_May_30[,colSums(is.na(encuestaA_May_30))<nrow(encu
 
 
 encuestaB_Privada_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaB_Privada_May30.csv")) %>% 
-  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "B_Privada",
+         uemail = as.numeric(uemail)) %>%
   dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
   filter(is.na(uemail)==FALSE) %>%
   select(-StartDate,
@@ -67,7 +71,9 @@ encuestaB_Privada_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensi
 encuestaB_Privada_May30 <- encuestaB_Privada_May30[,colSums(is.na(encuestaB_Privada_May30))<nrow(encuestaB_Privada_May30)]
 
 encuestaB_Publica_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaB_Publica_May30.csv")) %>% 
-  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "B_Publica",
+         uemail = as.numeric(uemail)) %>%
   filter(is.na(uemail)==FALSE) %>%
   select(-StartDate,
          -EndDate,
@@ -89,7 +95,9 @@ encuestaB_Publica_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensi
 encuestaB_Publica_May30 <- encuestaB_Publica_May30[,colSums(is.na(encuestaB_Publica_May30))<nrow(encuestaB_Publica_May30)]
 
 encuestaC_Privada_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaC_Privada_May30.csv")) %>% 
-  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "C_Privada",
+         uemail = as.numeric(uemail)) %>%
   dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
   filter(is.na(uemail)==FALSE) %>%
   select(-StartDate,
@@ -112,7 +120,9 @@ encuestaC_Privada_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensi
 encuestaC_Privada_May30 <- encuestaC_Privada_May30[,colSums(is.na(encuestaC_Privada_May30))<nrow(encuestaC_Privada_May30)]
 
 encuestaC_Publica_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaC_Publica_May30.csv")) %>% 
-  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "C_Publica",
+         uemail = as.numeric(uemail)) %>%
   dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
   filter(is.na(uemail)==FALSE) %>%
   select(-StartDate,
@@ -139,7 +149,8 @@ encuestaC_Publica_May30 <- encuestaC_Publica_May30[,colSums(is.na(encuestaC_Publ
 encuestas <- encuestaA_May_30 %>%
   left_join(encuestaB_Privada_May30, by = c("useridn" = "uemail")) %>%
   left_join(encuestaB_Publica_May30, by = c("useridn" = "uemail")) %>%
-  left_join(encuestaC_Publica_May30, by = c("useridn" = "uemail")) 
+  left_join(encuestaC_Publica_May30, by = c("useridn" = "uemail")) %>%
+  mutate(enc = paste0(encuesta.x, encuesta.y, encuesta))
 encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
 ```
 
@@ -162,7 +173,7 @@ sitios <- sitios[,colSums(is.na(sitios))<nrow(sitios)]
 sitios <- delete.na(sitios, 184)
 
 sitios <- sitios %>%
-  mutate(useridn = gsub("-", "" , substr(userid, 1,4)),
+  mutate(useridn = as.numeric(gsub("-", "" , substr(userid, 1,4))),
          sitio= stringi::stri_sub(userid, -1),
          fecha = lubridate::as_date(`Created date`, format = "%Y-%m-%d"))  %>%
   filter(useridn != "0000")
