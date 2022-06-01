@@ -278,7 +278,6 @@ zi <- pilot_data %>% filter(useridn != 0)  %>% group_by(useridn) %>% summarise(n
 ### Dependent Variables
 
 
-
 ```{r}
 pilot_data %>%
 ggplot(aes(y = correct_response, x = as.factor(Treatments))) +
@@ -286,4 +285,43 @@ ggplot(aes(y = correct_response, x = as.factor(Treatments))) +
   stat_boxplot()
 ```
 
+```{r}
+pilot_data %>%
+ggplot(aes(y = Curiosity_1, x = as.factor(Treatments))) +
+  geom_boxplot()
+```
+
+```{r}
+pilot_data %>%
+ggplot(aes(y = Confidence_1, x = as.factor(Treatments))) +
+  geom_boxplot()
+```
+
+```{r}
+pilot_data %>%
+ggplot(aes(y = InfoAbruma2_1, x = as.factor(Treatments))) +
+  geom_boxplot()
+```
+
+
+### Models
+
+```{r}
+#pilot_data$Curiosity_1
+m_respuestas <- lm(correct_response ~ Treatments, 
+                   data = pilot_data)
+m_Confidence_1 <- lm(Confidence_1 ~ Treatments, 
+                   data = pilot_data)
+m_InfoAbruma2_1 <- lm(InfoAbruma2_1 ~ Treatments, 
+                   data = pilot_data)
+m_n_clicks <- lm(n_clicks ~ Treatments, 
+                   data = pilot_data)
+m_Curiosity_1 <- lm(Curiosity_1 ~ Treatments, 
+                   data = pilot_data)
+```
+
+```{r, results='asis'}
+stargazer::stargazer(m_respuestas, m_Confidence_1, m_InfoAbruma2_1, m_n_clicks,m_Curiosity_1,
+                     type = "html")
+```
 
