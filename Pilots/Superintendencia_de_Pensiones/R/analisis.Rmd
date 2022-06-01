@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 ## Librerias
@@ -222,7 +222,18 @@ sitios2 <- sitios %>%
 pilot_data <- encuestas %>%
   full_join(sitios2, by = "useridn") %>% 
   filter(useridn != 0) %>%
-  mutate(Age = 2022 - as.numeric(Birth))
+  mutate(Age = 2022 - as.numeric(Birth),
+         Treatments = case_when(
+           website == "1" ~ "Perfil",
+           website == "2" ~ "Video",
+           website ==  "3" ~ "VideoPerfil",
+            website == "4" ~ "Perfil",
+            website == "5" ~ "Video",
+            website == "6" ~ "VideoPerfil",
+            website == "7" ~ "LinaBase",
+            website == "8" ~ "LinaBase")
+)
+         
 ```
 
 ## Analysis {.tabset}
@@ -231,7 +242,7 @@ pilot_data <- encuestas %>%
 
 ```{r}
 pilot_data %>%
-ggplot(aes(y = n_clicks, x = as.factor(sitio))) +
+ggplot(aes(y = n_clicks, x = as.factor(Treatments))) +
 geom_boxplot()
 ```
 
@@ -239,16 +250,16 @@ geom_boxplot()
 
 ```{r}
 p1 <- pilot_data %>%
-ggplot(aes(y = n_clicks, x = as.factor(sitio))) +
+ggplot(aes(y = n_clicks, x = as.factor(Treatments))) +
   geom_jitter() +
   stat_boxplot()
 
 p2 <- pilot_data %>%
-ggplot(aes(y = n_clicks, x = as.factor(sitio), color = factor(Gender))) +
+ggplot(aes(y = n_clicks, x = as.factor(Treatments), color = factor(Gender))) +
   geom_jitter() +
   stat_boxplot()
 p3 <- pilot_data %>%
-ggplot(aes(y = n_clicks, x = as.factor(sitio), color = factor(Gender))) +
+ggplot(aes(y = n_clicks, x = as.factor(Treatments), color = factor(Gender))) +
   geom_jitter() +
   stat_boxplot()
 gridExtra::grid.arrange( p1, p2)
@@ -267,5 +278,12 @@ zi <- pilot_data %>% filter(useridn != 0)  %>% group_by(useridn) %>% summarise(n
 ### Dependent Variables
 
 
+
+```{r}
+pilot_data %>%
+ggplot(aes(y = correct_response, x = as.factor(Treatments))) +
+  geom_jitter() +
+  stat_boxplot()
+```
 
 
