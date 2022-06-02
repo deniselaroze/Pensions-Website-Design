@@ -1,0 +1,425 @@
+---
+title: "Informe Control Piloto"
+author: "J Davyt-Colo"
+date: "26/5/2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+
+```{r}
+library(tidyverse)
+```
+
+
+
+```{r}
+library(lubridate)
+
+encuestaA_May_30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaA_May 30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         sitioderivado = stringi::stri_sub(UID, -1),
+         useridn = as.numeric(useridn)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+  filter(is.na(useridn)==FALSE) %>%
+  select(-StartDate,
+         -EndDate,
+         -Status,
+         -IPAddress,
+         -Progress,
+         -`Duration (in seconds)`,
+         -Finished,
+         -RecordedDate,
+         -ResponseId,
+         -RecipientLastName,
+         -RecipientFirstName,
+         -RecipientEmail,
+         -ExternalReference,
+         -LocationLatitude,
+         -LocationLongitude,
+         -DistributionChannel,
+         -UserLanguage) %>% distinct()
+encuestaA_May_30 <- encuestaA_May_30[,colSums(is.na(encuestaA_May_30))<nrow(encuestaA_May_30)]
+
+
+encuestaB_Privada_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaB_Privada_May30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "B_Privada",
+         uemail = as.numeric(uemail)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+  filter(is.na(uemail)==FALSE) %>%
+  select(fecha,
+         encuesta,
+         contains("Comp"),
+         uemail, 
+         UID,
+         InfoUtil_1, 
+         InfoAbruma2_1, 
+         Curiosity_1, 
+         Confidence_1 , 
+         total_reward)
+encuestaB_Privada_May30 <- encuestaB_Privada_May30[,colSums(is.na(encuestaB_Privada_May30))<nrow(encuestaB_Privada_May30)]
+
+encuestaB_Publica_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaB_Publica_May30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "B_Publica",
+         uemail = as.numeric(uemail)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+    filter(is.na(uemail)==FALSE) %>%
+  select(fecha,
+         encuesta,
+         contains("Comp"),
+         uemail, 
+         UID,
+         InfoUtil_1, 
+         InfoAbruma2_1, 
+         Curiosity_1, 
+         Confidence_1 , 
+         total_reward)
+encuestaB_Publica_May30 <- encuestaB_Publica_May30[,colSums(is.na(encuestaB_Publica_May30))<nrow(encuestaB_Publica_May30)]
+
+encuestaC_Privada_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaC_Privada_May30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "C_Privada",
+         uemail = as.numeric(uemail)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+  filter(is.na(uemail)==FALSE) %>%
+  select(fecha,
+         encuesta,
+         contains("Comp"),
+         uemail, 
+         UID,
+         InfoUtil_1, 
+         InfoAbruma2_1)
+encuestaC_Privada_May30 <- encuestaC_Privada_May30[,colSums(is.na(encuestaC_Privada_May30))<nrow(encuestaC_Privada_May30)]
+
+encuestaC_Publica_May30 <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/30052022/encuestaC_Publica_May30.csv")) %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "C_Publica",
+         uemail = as.numeric(uemail)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27") %>%
+  filter(is.na(uemail)==FALSE) %>%
+  select(fecha,
+         encuesta,
+         contains("Comp"),
+         uemail, 
+         UID,
+         InfoUtil_1, 
+         InfoAbruma2_1,)
+encuestaC_Publica_May30 <- encuestaC_Publica_May30[,colSums(is.na(encuestaC_Publica_May30))<nrow(encuestaC_Publica_May30)]
+```
+
+
+```{r}
+encuestaB_Privada_May30 <- encuestaB_Privada_May30 %>%
+  mutate(
+    ncomp1 = ifelse(Comp1.RP=="No", 1, 0),
+    ncomp2=ifelse(Comp2.RP=="Solicitar el Certificado de Saldo en la AFP", 1, 0),
+    ncomp3=ifelse(Comp3.RP=="No", 1, 0),
+    ncomp4=ifelse(Comp4.RP=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, 0),
+    ncomp5=ifelse(Comp5.RP=="Sí", 1, 0),
+    ncomp6=ifelse(Comp6.RP=="Es voluntario", 1, 0),
+    ncomp7=ifelse(Comp7.RP=="El/la afiliado/a", 1, 0),
+    ncomp8=ifelse(Comp1.RV=="No", 1, 0),
+    ncomp9=ifelse(Comp2.RV=="Solicitar el Certificado de Saldo en la AFP", 1, 0),
+    ncomp10=ifelse(Comp3.RV=="No", 1, 0),
+    ncomp11=ifelse(Comp4.RV=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, 0),
+    ncomp12=ifelse(Comp5.RV=="Sí", 1, 0),
+    ncomp13=ifelse(Comp6.RV=="Es voluntario", 1, 0),
+    ncomp14=ifelse(Comp7.RV=="La Compañía de Seguros", 1, 0),
+    ncomp15=ifelse(Comp1.MM=="No", 1, 0),
+    ncomp16=ifelse(Comp2.MM=="Solicitar el Certificado de Saldo en la AFP", 1, 0),
+    ncomp17=ifelse(Comp3.MM=="No", 1, 0),
+    ncomp18=ifelse(Comp4.MM=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, 0),
+    ncomp19=ifelse(Comp5.MM=="Sí", 1, 0),
+    ncomp20=ifelse(Comp6.MM=="Es voluntario", 1, 0),
+    ncomp21=ifelse(Comp7.MM=="Ambos: la Compañía de Seguros y el/la afiliado/a", 1, 0) 
+    )
+
+
+ncomp<- encuestaB_Privada_May30 %>% select(contains("ncomp"))
+encuestaB_Privada_May30$correct_response <-rowSums(ncomp,na.rm = T)
+
+encuestaB_Privada_May30 <- encuestaB_Privada_May30 %>%
+  mutate(
+    correct_response = rowSums(ncomp, na.rm = T)
+  ) %>%
+  select(everything(), -contains("comp"))
+rm(ncomp)
+
+#table(encuestaB_Privada_May30$correct_response)
+```
+
+```{r}
+encuestaB_Publica_May30 <- encuestaB_Publica_May30 %>%
+  mutate(
+    ncomp1<-ifelse(Comp1.PP=="A partir de los 65 años", 1, 0),
+    ncomp2<-ifelse(Comp2.PP=="Tener ClaveÚnica", 1, 0),
+    ncomp3<-ifelse(Comp3.PP=="Sí", 1, 0),
+    ncomp4<-ifelse(Comp4.PP=="A través del Estado con los impuestos", 1, 0),
+    ncomp5<-ifelse(Comp5.PP=="Por encontrarse dentro del 9% de mayores ingresos", 1, 0),
+    ncomp6<-ifelse(Comp6.PP=="No", 1, 0),
+    ncomp7<-ifelse(Comp7.PP=="$1.000.000", 1, 0)
+  )
+
+ncomp<- encuestaB_Publica_May30 %>% select(contains("ncomp"))
+
+encuestaB_Publica_May30 <- encuestaB_Publica_May30 %>%
+  mutate(
+    correct_response = rowSums(ncomp, na.rm = T)
+  ) %>%
+  select(everything(), -contains("comp"))
+rm(ncomp)
+```
+
+
+```{r}
+segundas_encuestas <- bind_rows(encuestaB_Privada_May30, encuestaB_Publica_May30,
+                            encuestaC_Publica_May30)
+```
+
+
+```{r}
+encuestas <- encuestaA_May_30 %>%
+  left_join(segundas_encuestas, by = c("useridn" = "uemail"))  %>%
+  mutate(second = ifelse(is.na(encuesta)==TRUE, "sin segunda encuesta", encuesta))
+encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
+
+encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
+```
+
+```{r}
+#names(encuestaB_Publica_May30)
+```
+
+
+```{r}
+delete.na <- function(DF, n=0) {
+  DF[rowSums(is.na(DF)) <= n,]
+}
+#get data
+sitios <-
+  list.files(path = here::here("Pilots/Superintendencia_de_Pensiones/data/30052022"),
+             pattern = "Clicks", 
+             full.names = T) %>% 
+  map_df(~read_csv(., col_types = cols(.default = "c"))) %>%
+  unite("inicio_wix", c("inicio_wix.p1", "inicio_wix.p2", "inicio_wix.p3", "inicio_wix.p4", "inicio_wix.p5", "inicio_wix.p6"), na.rm = TRUE, remove = FALSE)
+
+sitios <- sitios[,colSums(is.na(sitios))<nrow(sitios)]
+
+sitios <- delete.na(sitios, 184)
+
+sitios <- sitios %>%
+  mutate(useridn = as.numeric(gsub("-", "" , substr(userid, 1,4))),
+         sitio= stringi::stri_sub(userid, -1),
+         fecha = lubridate::as_date(`Created date`, format = "%Y-%m-%d"))  %>%
+  filter(useridn != 0)
+```
+
+
+```{r}
+# z2 <- as.data.frame(Map(x = strsplit(names(pilot_data), '[.]+'), 
+#                         DATA = pilot_data, 
+#                         f = function(x,DATA){
+#                           setNames(replicate(length(x), DATA, simplify = FALSE),x  )}
+# ))
+```
+
+
+## Control All data
+
+### Contestaron la encuesta A
+
+```{r}
+c("cantidad de usuarios únicos", length(unique(encuestas$useridn)))
+```
+
+```{r}
+c("cantidad de registros en A", dim(encuestaA_May_30)[1])
+
+c("cantidad de usuarios únicos en A", length(unique(encuestaA_May_30$useridn)))
+```
+
+
+### Realizaron la etapa de los sitios
+
+Derivados a sitios:
+
+```{r}
+#ID sin sitio
+sins <- table(is.na(encuestas$sitioderivado), encuestas$fecha.x)
+rownames(sins) <- c("Derivado a sitio", "No derivado a sitio")
+
+library(kableExtra)
+
+knitr::kable(sins, 'html')
+encuestas$control <- ifelse(is.na(encuestas$sitioderivado)==TRUE, "no wix", 1)
+#table(encuestas$control)
+```
+
+--> se desprende que no hay personas sin ser derivadas a un sitio en la sesión del 27/05
+
+¿Quiénes son los casos no derivados?
+
+
+```{r}
+pilot_data <- encuestas %>%
+  full_join(sitios, by = "useridn") %>% 
+  filter(useridn != 0)
+```
+
+
+```{r}
+zi <- pilot_data %>% filter(useridn != 0)  %>% group_by(useridn) %>% summarise(n = n())
+```
+
+
+```{r}
+print(a <- encuestas %>%
+  filter(is.na(sitioderivado)==TRUE) %>% select(useridn) %>% distinct())
+```
+
+¿Llegaron a wix?
+
+```{r}
+sitios %>%
+  filter(useridn == a$useridn) %>% select(useridn)
+```
+--> Se desprende que no llegaron
+
+Estos no derivados al sitio: ¿Llegaron a la segunda encuesta?
+
+```{r}
+encuestas %>%
+  filter(is.na(sitioderivado)==TRUE) %>% select(encuesta)
+```
+
+--> Ninguno hizo la segunda encuesta
+
+¿A qué sitio deberían haber llegado?
+
+```{r}
+encuestas %>%
+  filter(is.na(sitioderivado)==TRUE) %>% select(useridn, website) %>% distinct()
+```
+### Quienes realmente navegaron por el sitio
+
+```{r}
+nav <- table(!is.na(pilot_data$sitio), pilot_data$sitioderivado)
+row.names(nav) = c("no navegaron", "navegaron")
+nav
+```
+
+```{r}
+
+```
+
+
+```{r}
+pilot_data <- pilot_data %>%
+  full_join(zi) %>%
+  mutate(control2 =case_when(
+  is.na(sitioderivado) ~ "no llega a wix",
+  is.na(sitio) ~ "no navega",
+  TRUE ~ "otro"),
+  control3 = ifelse(n == 2, "duplicado", control2)) 
+#table(pilot_data$control3)
+```
+
+
+### Terminaron la etapa de los sitios
+
+Porque clickearon el boton de contestar/no contestar
+
+```{r}
+# z <- as.data.frame(Map(x = strsplit(names(mydf), '[_.]+'), 
+#                   DATA = mydf, 
+#                   f = function(x,DATA){
+#                     setNames(replicate(length(x), DATA, simplify = FALSE),x  )}
+j1 <- sitios %>%
+  select(useridn, fecha, matches("^(n|y)_contestar"))
+j2 <- sitios %>%
+  select(useridn, fecha, matches("^(n|y)_contestar"))  %>%
+  pivot_longer(cols=c(y_contestar.p1,y_contestar.p2,y_contestar.p3,y_contestar.p4,
+                      y_contestar.p5,y_contestar.p6, y_contestar.p7, y_contestar.p8), values_to = "y_contestar") %>% select(-name) %>% distinct() 
+j2 <- delete.na(j2, 2)
+
+j2 <- j2 %>%
+  pivot_longer(cols=c(n_contestar.p2,n_contestar.p3), values_to = "n_contestar") %>% 
+  select(-name) %>% distinct() 
+j2 <- delete.na(j2, 1)
+j <- j2 %>% group_by(useridn) %>% mutate(n=n()) %>%
+  select(n_contestar) %>% distinct() %>% na.omit()
+j3 <- j2 %>% select(useridn, y_contestar) %>% distinct() %>% na.omit() %>%
+  full_join(j) %>%
+  mutate(contesta = case_when(
+    is.na(y_contestar)  ~ "C",
+    is.na(n_contestar)  ~ "B",
+    TRUE ~ "B y C"
+  ),
+  terminaron = "si") %>% 
+  full_join(sitios, by="useridn")
+```
+¿Cuántos terminaron de navegar por el sitio?
+```{r}
+table(!is.na(j3$terminaron))
+```
+Los que no terminaron estan en el sitio:
+
+```{r}
+table(!is.na(j3$terminaron), j3$sitio)
+```
+
+De los TRUE ¿Qué encuestas realizaron?
+
+```{r}
+table(j3$contesta)
+```
+```{r}
+table(j3$contesta, j3$fecha)
+```
+
+
+### Llegaron a la segunda encuesta
+
+```{r}
+pilot_data3 <- j3 %>% select(!matches("^(n|y)_contestar")) %>%
+  full_join(encuestas, by = "useridn") %>%
+  filter(useridn !=0)
+  
+table(pilot_data3$enc != "NANANA")
+```
+
+```{r}
+contestarontodo <- table(is.na(pilot_data3$contesta), pilot_data3$encuesta != "NANANA")
+
+rownames(contestarontodo) <- c("Contesta y/n sitio", "No Contesta y/n sitio")
+#colnames(contestarontodo) <- c("No tiene registro C o B", "Tiene registro C o B")
+library(kableExtra)
+
+knitr::kable(contestarontodo, 'html') 
+```
+
+### Duplicados
+
+Hay dos motivos de duplicados:
+
+1 - Realizan encuesta B y C: 1220 y 1499
+
+2 - Aparece una línea completa de NA en B_Privada: 1499 y 9434
+
+
+
+```{r}
+segundas_encuestas <- bind_rows(encuestaB_Privada_May30, encuestaB_Publica_May30,
+                            encuestaC_Publica_May30)
+duplicados <- segundas_encuestas %>%
+  filter(uemail %in% c(1220, 1499, 7522, 9434)) %>% arrange(uemail)
+knitr::kable(duplicados) %>% kableExtra::kable_styling()
+```
