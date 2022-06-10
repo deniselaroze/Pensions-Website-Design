@@ -13,7 +13,7 @@ library(BBmisc)
 library(dplyr)
 rm(list=ls())
 
-setwd("C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Piloto/Superintendencia de Pensiones")
+setwd("C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Piloto/Superintendencia de Pensiones/online")
 
 df1<-(read_csv("Encuesta_A.csv")[-1:-2,])
 df2<-(read_csv("Encuesta_B_Publica.csv")[-1:-2,])

@@ -18,12 +18,17 @@ library(ggplot2)
 library(ggpubr)
 library(likert)
 ```
+```{r}
 
+setwd("C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Piloto/Superintendencia de Pensiones/online")
+
+```
 
 ```{r}
 library(lubridate)
 
-encuestaA_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaA_online.csv"))[-2,] %>% 
+#Encuesta Privada A
+encuestaA_online <- read_csv("encuestaA_online.csv")[-2,] %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
          sitioderivado = stringi::stri_sub(UID, -1),
          useridn = as.numeric(useridn)) %>%
@@ -47,8 +52,8 @@ encuestaA_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/da
          -UserLanguage) %>% distinct()
 encuestaA_online <- encuestaA_online[,colSums(is.na(encuestaA_online))<nrow(encuestaA_online)]
 
-
-encuestaB_Privada_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaB_Privada_online.csv")) %>% 
+# Encuesta Privada B
+encuestaB_Privada_online <- read_csv("encuestaB_Privada_online.csv") %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
          encuesta = "B_Privada",
          uemail = as.numeric(uemail),
@@ -80,7 +85,8 @@ encuestaB_Privada_online <- read_csv(here::here("Pilots/Superintendencia_de_Pens
   rename(MB_Despues = SelectMode.PV)
 encuestaB_Privada_online <- encuestaB_Privada_online[,colSums(is.na(encuestaB_Privada_online))<nrow(encuestaB_Privada_online)]
 
-encuestaB_Publica_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaB_Publica_online.csv")) %>% 
+# Encuesta Pública B
+encuestaB_Publica_online <- read_csv("encuestaB_Publica_online.csv") %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
          encuesta = "B_Publica",
          uemail = as.numeric(uemail),
@@ -108,7 +114,9 @@ encuestaB_Publica_online <- read_csv(here::here("Pilots/Superintendencia_de_Pens
          total_reward)
 encuestaB_Publica_online <- encuestaB_Publica_online[,colSums(is.na(encuestaB_Publica_online))<nrow(encuestaB_Publica_online)]
 
-encuestaC_Privada_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaC_Privada_online.csv")) %>% 
+
+#Encuesta Privada C
+encuestaC_Privada_online <- read_csv("encuestaC_Privada_online.csv") %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
          encuesta = "C_Privada",
          uemail = as.numeric(uemail), 
@@ -135,7 +143,8 @@ encuestaC_Privada_online <- read_csv(here::here("Pilots/Superintendencia_de_Pens
   rename(MB_Despues = SelectMode.PV)
 encuestaC_Privada_online <- encuestaC_Privada_online[,colSums(is.na(encuestaC_Privada_online))<nrow(encuestaC_Privada_online)]
 
-encuestaC_Publica_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaC_Publica_online.csv")) %>% 
+#Encuesta Publica C
+encuestaC_Publica_online <- read_csv("encuestaC_Publica_online.csv") %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
          encuesta = "C_Publica",
          uemail = as.numeric(uemail),
@@ -165,6 +174,7 @@ encuestaC_Publica_online <- encuestaC_Publica_online[,colSums(is.na(encuestaC_Pu
 ```
 
 ```{r}
+#Preguntas de Comprensión
 encuestaB_Privada_online <- encuestaB_Privada_online %>%
   mutate(
     ncomp1 = ifelse(Comp1.RP=="No", 1, ifelse(is.na(Comp1.RP), NA, 0)),
@@ -205,15 +215,16 @@ rm(ncomp)
 ```
 
 ```{r}
+# Preguntas de compresión Públicas
 encuestaB_Publica_online <- encuestaB_Publica_online %>%
   mutate(
-    ncomp1<-ifelse(Comp1.PP=="A partir de los 65 años", 1, ifelse(is.na(Comp1.PP), NA, 0)),
-    ncomp2<-ifelse(Comp2.PP=="Tener ClaveÚnica", 1, ifelse(is.na(Comp2.PP), NA, 0)),
-    ncomp3<-ifelse(Comp3.PP=="Sí", 1, ifelse(is.na(Comp3.PP), NA, 0)),
-    ncomp4<-ifelse(Comp4.PP=="A través del Estado con los impuestos", 1, ifelse(is.na(Comp4.PP), NA, 0)),
-    ncomp5<-ifelse(Comp5.PP=="Por encontrarse dentro del 9% de mayores ingresos", 1, ifelse(is.na(Comp5.PP), NA, 0)),
-    ncomp6<-ifelse(Comp6.PP=="No", 1, ifelse(is.na(Comp6.PP), NA, 0)),
-    ncomp7<-ifelse(Comp7.PP=="$1.000.000", 1, ifelse(is.na(Comp7.PP), NA, 0))
+    ncomp1=ifelse(Comp1.PP=="A partir de los 65 años", 1, ifelse(is.na(Comp1.PP), NA, 0)),
+    ncomp2=ifelse(Comp2.PP=="Tener ClaveÚnica", 1, ifelse(is.na(Comp2.PP), NA, 0)),
+    ncomp3=ifelse(Comp3.PP=="Sí", 1, ifelse(is.na(Comp3.PP), NA, 0)),
+    ncomp4=ifelse(Comp4.PP=="A través del Estado con los impuestos", 1, ifelse(is.na(Comp4.PP), NA, 0)),
+    ncomp5=ifelse(Comp5.PP=="Por encontrarse dentro del 9% de mayores ingresos", 1, ifelse(is.na(Comp5.PP), NA, 0)),
+    ncomp6=ifelse(Comp6.PP=="No", 1, ifelse(is.na(Comp6.PP), NA, 0)),
+    ncomp7=ifelse(Comp7.PP=="$1.000.000", 1, ifelse(is.na(Comp7.PP), NA, 0))
   )
 
 ncomp<- encuestaB_Publica_online %>% select(contains("ncomp"))
@@ -239,6 +250,7 @@ encuestas <- encuestaA_online %>%
 encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
 ```
 
+save(encuestas, file = "Pilot_data.Rdata")
 
 ```{r}
 delete.na <- function(DF, n=0) {
@@ -246,8 +258,7 @@ delete.na <- function(DF, n=0) {
 }
 #get data
 sitios <-
-  list.files(path = here::here("Pilots/Superintendencia_de_Pensiones/data/online"),
-             pattern = "Clicks", 
+  list.files(pattern = "Clicks", 
              full.names = T) %>% 
   map_df(~read_csv(., col_types = cols(.default = "c"))) %>%
   unite("inicio_wix", c("inicio_wix.p1...55", "inicio_wix.p1...56", "inicio_wix.p3...65", "inicio_wix.p3...66", "inicio_wix.p2", "inicio_wix.p4", "inicio_wix.p5", "inicio_wix.p6"), na.rm = TRUE, remove = FALSE)

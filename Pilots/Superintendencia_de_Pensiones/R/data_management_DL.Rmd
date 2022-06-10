@@ -1,0 +1,1143 @@
+---
+title: "Analisis Categorical Treatments"
+author: "J Davyt-Colo"
+date: "1/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+Librerias
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(ggpubr)
+library(likert)
+```
+
+
+```{r}
+library(lubridate)
+
+#encuestaA_online <- read_csv(("Pilots/Superintendencia_de_Pensiones/data/online/encuestaA_online.csv"))[-2,] %>%   
+
+encuestaA_online <- read_csv("C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Piloto/Superintendencia de Pensiones/online/encuestaA_online.csv")[-2,] %>%
+    mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         sitioderivado = stringi::stri_sub(UID, -1),
+         useridn = as.numeric(useridn)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27" | fecha == "2022-06-08" | fecha == "2022-06-07") %>%
+  filter(is.na(useridn)==FALSE) %>%
+  select(-StartDate,
+         -EndDate,
+         -Status,
+         -IPAddress,
+         -Progress,
+         -`Duration (in seconds)`,
+         -Finished,
+         -RecordedDate,
+         -ResponseId,
+         -RecipientLastName,
+         -RecipientFirstName,
+         -RecipientEmail,
+         -ExternalReference,
+         -LocationLatitude,
+         -LocationLongitude,
+         -UserLanguage) %>% distinct()
+encuestaA_online <- encuestaA_online[,colSums(is.na(encuestaA_online))<nrow(encuestaA_online)]
+
+
+encuestaB_Privada_online <- read_csv("C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Piloto/Superintendencia de Pensiones/online/encuestaB_Privada_online.csv") %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "B_Privada",
+         uemail = as.numeric(uemail),
+         total_reward = as.numeric(total_reward)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27" | fecha == "2022-06-08" | fecha == "2022-06-07") %>%
+  filter(is.na(uemail)==FALSE) %>%
+   group_by(uemail) %>% 
+    filter(Progress==max(Progress)) %>%
+  ungroup() %>%
+  select(fecha,
+         encuesta,
+         contains("Comp"),
+         uemail, 
+         UID,
+         Progress,
+         Finished,
+         `Duration (in seconds)`,
+         Advisor,
+         Recomendar,
+         SelectMode.PV,
+         Recomendar_NPS_GROUP,
+         Confused,
+         InfoUtil_1, 
+         InfoAbruma2_1, 
+         Curiosity_1, 
+         Confidence_1 ,
+         esfuerzo,
+         total_reward) %>%
+  rename(MB_Despues = SelectMode.PV)
+encuestaB_Privada_online <- encuestaB_Privada_online[,colSums(is.na(encuestaB_Privada_online))<nrow(encuestaB_Privada_online)]
+
+#encuestaB_Publica_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaB_Publica_online.csv")) %>% 
+
+#encuestaC_Privada_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaC_Privada_online.csv")) %>% 
+encuestaC_Privada_online <- read_csv("C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Piloto/Superintendencia de Pensiones/online/encuestaC_Privada_online.csv") %>% 
+  mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "C_Privada",
+         uemail = as.numeric(uemail), 
+         total_reward = as.numeric(9200)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27" | fecha == "2022-06-08" | fecha == "2022-06-07") %>%
+  filter(is.na(uemail)==FALSE) %>%
+  group_by(uemail) %>% 
+    filter(Progress==max(Progress)) %>%
+  ungroup() %>%
+  select(fecha,
+         encuesta,
+         contains("Comp"),
+         uemail, 
+         UID,
+         Progress, 
+         Finished,
+         `Duration (in seconds)`,
+         InfoUtil_1, 
+         InfoAbruma2_1,
+         Recomendar,
+         Recomendar_NPS_GROUP,
+         SelectMode.PV,
+         total_reward) %>%
+  rename(MB_Despues = SelectMode.PV)
+encuestaC_Privada_online <- encuestaC_Privada_online[,colSums(is.na(encuestaC_Privada_online))<nrow(encuestaC_Privada_online)]
+
+#encuestaC_Publica_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaC_Publica_online.csv")) %>% 
+encuestaC_Publica_online <- read_csv("C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Piloto/Superintendencia de Pensiones/online/encuestaC_Publica_online.csv") %>% 
+    mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
+         encuesta = "C_Publica",
+         uemail = as.numeric(uemail),
+         total_reward = as.numeric(6500)) %>%
+  dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27" | fecha == "2022-06-08" | fecha == "2022-06-07") %>%
+  filter(is.na(uemail)==FALSE) %>%
+  group_by(uemail) %>% 
+    filter(Progress==max(Progress)) %>%
+  ungroup() %>%
+  select(fecha,
+         encuesta,
+         contains("Comp"),
+         uemail, 
+         UID, 
+         Progress,
+         Finished,
+         `Duration (in seconds)`,
+         InfoUtil_1, 
+         InfoAbruma2_1,
+         Recomendar,
+         Recomendar_NPS_GROUP,
+         SelectMode.PP,
+         Confused,
+         total_reward) %>%
+    rename(MB_Despues = SelectMode.PP)
+encuestaC_Publica_online <- encuestaC_Publica_online[,colSums(is.na(encuestaC_Publica_online))<nrow(encuestaC_Publica_online)]
+```
+
+```{r}
+### Respuestas correctas Privadas
+
+
+encuestaB_Privada_online <- encuestaB_Privada_online %>%
+  mutate(
+    ncomp1 = ifelse(Comp1.RP=="No", 1, ifelse(is.na(Comp1.RP), NA, 0)),
+    ncomp2=ifelse(Comp2.RP=="Solicitar el Certificado de Saldo en la AFP", 1, ifelse(is.na(Comp2.RP), NA, 0)),
+    ncomp3=ifelse(Comp3.RP=="No", 1, ifelse(is.na(Comp3.RP), NA, 0)),
+    ncomp4=ifelse(Comp4.RP=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, ifelse(is.na(Comp4.RP), NA, 0)),
+    ncomp5=ifelse(Comp5.RP=="Sí", 1, ifelse(is.na(Comp5.RP), NA, 0)),
+    ncomp6=ifelse(Comp6.RP=="Es voluntario", 1, ifelse(is.na(Comp6.RP), NA, 0)),
+    ncomp7=ifelse(Comp7.RP=="El/la afiliado/a", 1, ifelse(is.na(Comp7.RP), NA, 0)),
+    ncomp8=ifelse(Comp1.RV=="No", 1, ifelse(is.na(Comp1.RV), NA, 0)),
+    ncomp9=ifelse(Comp2.RV=="Solicitar el Certificado de Saldo en la AFP", 1, ifelse(is.na(Comp2.RV), NA, 0)),
+    ncomp10=ifelse(Comp3.RV=="No", 1, ifelse(is.na(Comp3.RV), NA, 0)),
+    ncomp11=ifelse(Comp4.RV=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, ifelse(is.na(Comp4.RV), NA, 0)),
+    ncomp12=ifelse(Comp5.RV=="Sí", 1, ifelse(is.na(Comp5.RV), NA, 0)),
+    ncomp13=ifelse(Comp6.RV=="Es voluntario", 1, ifelse(is.na(Comp6.RV), NA, 0)),
+    ncomp14=ifelse(Comp7.RV=="La Compañía de Seguros", 1, ifelse(is.na(Comp7.RV), NA, 0)),
+    ncomp15=ifelse(Comp1.MM=="No", 1, ifelse(is.na(Comp1.MM), NA, 0)),
+    ncomp16=ifelse(Comp2.MM=="Solicitar el Certificado de Saldo en la AFP", 1, ifelse(is.na(Comp2.MM), NA, 0)),
+    ncomp17=ifelse(Comp3.MM=="No", 1, ifelse(is.na(Comp3.MM), NA, 0)),
+    ncomp18=ifelse(Comp4.MM=="Para comparar todas las ofertas de pensión disponibles en un sólo lugar", 1, ifelse(is.na(Comp4.MM), NA, 0)),
+    ncomp19=ifelse(Comp5.MM=="Sí", 1, ifelse(is.na(Comp5.MM), NA, 0)),
+    ncomp20=ifelse(Comp6.MM=="Es voluntario", 1, ifelse(is.na(Comp6.MM), NA, 0)),
+    ncomp21=ifelse(Comp7.MM=="Ambos: la Compañía de Seguros y el/la afiliado/a", 1, ifelse(is.na(Comp7.MM), NA, 0)) 
+    )
+
+
+ncomp<- encuestaB_Privada_online %>% select(contains("ncomp"))
+encuestaB_Privada_online$correct_response <-rowSums(ncomp,na.rm = T)
+
+encuestaB_Privada_online <- encuestaB_Privada_online %>%
+  mutate(
+    correct_response = rowSums(ncomp, na.rm = T)
+  ) %>%
+  select(everything(), -contains("comp"))
+rm(ncomp)
+
+#table(encuestaB_Privada_online$correct_response)
+```
+
+```{r}
+encuestaB_Publica_online <- encuestaB_Publica_online %>%
+  mutate(
+    ncomp1=ifelse(Comp1.PP=="A partir de los 65 años", 1, ifelse(is.na(Comp1.PP), NA, 0)),
+    ncomp2=ifelse(Comp2.PP=="Tener ClaveÚnica", 1, ifelse(is.na(Comp2.PP), NA, 0)),
+    ncomp3=ifelse(Comp3.PP=="Sí", 1, ifelse(is.na(Comp3.PP), NA, 0)),
+    ncomp4=ifelse(Comp4.PP=="A través del Estado con los impuestos", 1, ifelse(is.na(Comp4.PP), NA, 0)),
+    ncomp5=ifelse(Comp5.PP=="Por encontrarse dentro del 9% de mayores ingresos", 1, ifelse(is.na(Comp5.PP), NA, 0)),
+    ncomp6=ifelse(Comp6.PP=="No", 1, ifelse(is.na(Comp6.PP), NA, 0)),
+    ncomp7<=ifelse(Comp7.PP=="$1.000.000", 1, ifelse(is.na(Comp7.PP), NA, 0))
+  )
+
+ncomp<- encuestaB_Publica_online %>% select(contains("ncomp"))
+
+encuestaB_Publica_online <- encuestaB_Publica_online %>%
+  mutate(
+    correct_response = rowSums(ncomp, na.rm = T)
+  ) %>%
+  select(everything(), -contains("comp"))
+rm(ncomp)
+```
+
+```{r}
+segundas_encuestas <- bind_rows(encuestaB_Privada_online, encuestaB_Publica_online,
+                            encuestaC_Publica_online)
+```
+
+
+```{r}
+encuestas <- encuestaA_online %>%
+  left_join(segundas_encuestas, by = c("useridn" = "uemail"))  %>%
+  mutate(second = ifelse(is.na(encuesta)==TRUE, "sin segunda encuesta", encuesta))
+encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
+```
+
+
+```{r}
+delete.na <- function(DF, n=0) {
+  DF[rowSums(is.na(DF)) <= n,]
+}
+#get data
+sitios <-
+  list.files(path = here::here("Pilots/Superintendencia_de_Pensiones/data/online"),
+             pattern = "Clicks", 
+             full.names = T) %>% 
+  map_df(~read_csv(., col_types = cols(.default = "c"))) %>%
+  unite("inicio_wix", c("inicio_wix.p1...55", "inicio_wix.p1...56", "inicio_wix.p3...65", "inicio_wix.p3...66", "inicio_wix.p2", "inicio_wix.p4", "inicio_wix.p5", "inicio_wix.p6"), na.rm = TRUE, remove = FALSE)
+
+sitios <- sitios[,colSums(is.na(sitios))<nrow(sitios)]
+
+sitios <- delete.na(sitios, 309)
+
+sitios <- sitios %>%
+  mutate(useridn = as.numeric(gsub("-", "" , substr(userid, 1,4))),
+         sitio= stringi::stri_sub(userid, -1),
+         fecha = lubridate::as_date(`Created date`, format = "%Y-%m-%d"),
+         created_date = lubridate::as_datetime(`Created date`, "%Y-%m-%dT%H:%M:%SZ"),
+         updated_date = lubridate::as_datetime(`Updated date`, "%Y-%m-%dT%H:%M:%SZ")) %>%
+  mutate(
+         tiempo_sec_1click_nclick = as.numeric(difftime(updated_date, created_date, units="secs")),
+         tiempo_min_1click_nclick = as.numeric(difftime(updated_date, created_date, units="secs"))/60)  %>%
+  filter(useridn != 0)
+
+sitios2 <- sitios %>%
+  select(-contains("inicio_wix")) %>%
+  mutate(na_count = apply(., 1, function(x) sum(is.na(x)))) %>%
+  mutate(n_clicks = dim(.)[2]-na_count-4)
+sitios3 <- sitios %>%
+  select(inicio_wix) %>%
+  bind_cols(sitios2)
+```
+
+```{r}
+pilot_data <- encuestas %>%
+  full_join(sitios2, by = "useridn") %>% 
+  filter(useridn != 0) %>%
+  mutate(Age = 2022 - as.numeric(Birth),
+         Treatments = factor(case_when(
+           website == "1" ~ "Perfil",
+           website == "2" ~ "Video",
+           website ==  "3" ~ "VideoPerfil",
+            website == "4" ~ "Perfil",
+            website == "5" ~ "Video",
+            website == "6" ~ "VideoPerfil",
+            website == "7" ~ "Baseline",
+            website == "8" ~ "Baseline"), levels = c("Baseline", "Perfil", "Video", "VideoPerfil"))
+)
+
+```
+
+```{r}
+sitios_pivot <- sitios3 %>%
+  dplyr::select(-`Created date`, -`Updated date`) %>%
+  pivot_longer(cols = !c(userid, useridn, fecha, sitio, created_date, updated_date,
+                         tiempo_sec_1click_nclick, tiempo_min_1click_nclick,
+                         na_count, n_clicks, inicio_wix, ),
+               names_to = "botones", 
+               values_to = "time"
+               ) %>%
+  na.omit() %>%
+  mutate(page = str_split(botones, "_", simplify = TRUE)) %>%
+  mutate(site = str_split(page[,2], ".p", simplify = TRUE)) %>%
+  mutate(pagina = case_when(
+    site[,1] == "inicio" ~ "inicio",
+    site[,1] == "contestar" ~ "contestar",
+    site[,1] == "cm" ~ "comparar",
+    site[,1] == "ps" ~ "pasos",
+    site[,1] == "pgucona" & sitio
+    == 1 ~ "perfil",
+    site[,1] == "pguscona" & sitio == 1 ~ "perfil",
+    site[,1] == "pgucona" & sitio == 3 ~ "perfil",
+    site[,1] == "pgucona" & sitio == 8 ~ "producto",
+    site[,1] == "pgucona" & sitio == 2 ~ "producto",
+    site[,1] == "clickaqui" ~ "clickaqui",
+    site[,1] == "pgusina" & sitio == 1 ~ "perfil",
+    site[,1] == "pgusina" & sitio == 3 ~ "perfil",
+    site[,1] == "pgusina" & sitio == 8 ~ "producto",
+    site[,1] == "pgusina" & sitio == 2 ~ "producto",
+    site[,1] == "instrucciones" ~ "instrucciones",
+    site[,1] == "invsina" & sitio == 1 ~ "perfil",
+    site[,1] == "invsina" & sitio == 3 ~ "perfil",
+    site[,1] == "invsina" & sitio == 8 ~ "producto",
+    site[,1] == "invsina" & sitio == 2 ~ "producto",
+    site[,1] == "rsh" ~ "rsh",
+    site[,1] == "heahorrado" ~ "perfil",
+    site[,1] == "saludable" ~ "perfil",
+    site[,1] == "gf" ~ "gf",
+    site[,1] == "difmodmix" ~ "difmodmix",
+    site[,1] == "ctie" ~ "ctie",
+    site[,1] == "rv" ~ "rv",
+    site[,1] == "pg" ~ "pg",
+    site[,1] == "masinfo" ~ "masinfo",
+    site[,1] == "novoyavivir" ~ "perfil",
+    site[,1] == "pg" ~ "pg",
+    site[,1] == "modmixtas" & sitio == 7 ~ "producto",
+    site[,1] == "ci" ~ "c_invalidez",
+    site[,1] == "cu" ~ "cu",
+    site[,1] == "" & sitio == 7 ~ "producto"
+  )) %>%
+  separate(time, c("first_time", "second_time"), " ; ") %>%
+  pivot_longer(cols = !c(userid, useridn, fecha, sitio, created_date, updated_date,
+                         tiempo_sec_1click_nclick, tiempo_min_1click_nclick,
+                         na_count, n_clicks, inicio_wix,
+                         botones, page, site, pagina),
+               names_to = "veces", 
+               values_to = "boton_time"
+               ) %>%
+  na.omit() %>%
+  mutate(
+    boton = page[,1],
+    boton_time = lubridate::parse_date_time(as.character(boton_time), "%Y-%m-%d %H:%M:%S")
+  ) %>%
+  group_by(useridn) %>%
+  arrange(useridn,boton_time ) %>%
+  mutate(first_click_diff = boton_time - lag(boton_time),
+         video = case_when(
+           boton == "cmvideoplay" ~ "video_play",
+           boton == "cmvideopausa" ~ "video_pausa",
+           boton == "psvideoplay" ~ "video_play",
+           boton == "psvideopausa" ~ "video_pausa",
+           boton == "videoplay" ~ "video_play",
+           boton == "videopausa" ~ "video_pausa",
+           TRUE ~ "non_video"
+         ),
+         date_play = lubridate::parse_date_time(as.character((ifelse(video == "video_play", as.character(boton_time), NA))), "%Y-%m-%d %H:%M:%S"),
+         date_pause = lubridate::parse_date_time(as.character((ifelse(video == "video_pausa", as.character(boton_time), NA))), "%Y-%m-%d %H:%M:%S"),
+         video_pausa = ifelse(video == "video_pausa", "si", "no"),
+         tiempo_video = ifelse(lag(video)=="video_play", first_click_diff, NA)) 
+#names(sitios_pivot)[17] <- "pagina"
+
+sitios_sm <- sitios_pivot %>%
+  group_by(useridn, sitio, pagina) %>%
+  dplyr::summarise(
+    tiempo_pag = sum(first_click_diff, na.rm = TRUE),
+    boton_time = boton_time,
+    video = video,
+    tiempo_video = tiempo_video,  na.rm = TRUE) %>%
+  mutate(t_perfil = ifelse(sitio %in% c(1,3,4,6), "perfil", "producto"),
+         t_video = ifelse(sitio %in% c(2,3,5,6), "video", "texto"),
+         tratamientos = paste0(t_perfil, "-", t_video),
+         Treatments = factor(case_when(
+           sitio == 1 ~ "Perfil",
+           sitio == 2 ~ "Video",
+           sitio ==  3 ~ "VideoPerfil",
+           sitio == 4 ~ "Perfil",
+           sitio == 5 ~ "Video",
+           sitio == 6 ~ "VideoPerfil",
+           sitio == 7 ~ "Baseline",
+           sitio == 8 ~ "Baseline"), levels = c("Baseline", "Perfil", "Video", "VideoPerfil")),
+         tiempo_sin_video = ifelse(is.na(tiempo_video),tiempo_pag, tiempo_pag - tiempo_video),
+         tiempo_con_video = as.numeric(tiempo_pag),
+         vieron_video = as.factor(ifelse(is.na(tiempo_video), "no", "si")),
+         tiempo_video =  ifelse(is.na(tiempo_video),0, tiempo_video)
+         )
+```
+
+```{r}
+j1 <- sitios %>%
+  select(useridn, fecha, matches("^(n|y)_contestar"))
+j2 <- sitios %>%
+  select(useridn, fecha, matches("^(n|y)_contestar"))  %>%
+  pivot_longer(cols=c(y_contestar.p1,y_contestar.p2,y_contestar.p3,y_contestar.p4,
+                      y_contestar.p5,y_contestar.p6, y_contestar.p7, y_contestar.p8), values_to = "y_contestar") %>% select(-name) %>% distinct() 
+j2 <- delete.na(j2, 2)
+
+j2 <- j2 %>%
+  pivot_longer(cols=c(n_contestar.p2,n_contestar.p3), values_to = "n_contestar") %>% 
+  select(-name) %>% distinct() 
+j2 <- delete.na(j2, 1)
+j <- j2 %>% group_by(useridn) %>% mutate(n=n()) %>%
+  select(n_contestar) %>% distinct() %>% na.omit()
+j3 <- j2 %>% select(useridn, y_contestar) %>% distinct() %>% na.omit() %>%
+  full_join(j) %>%
+  mutate(contesta = case_when(
+    is.na(y_contestar)  ~ "C",
+    is.na(n_contestar)  ~ "B",
+    TRUE ~ "B y C"
+  ),
+  terminaron = "si") %>% 
+  full_join(sitios, by="useridn")
+
+pilot_data3 <- j3 %>% select(!matches("^(n|y)_contestar")) %>%
+  full_join(encuestas, by = "useridn") %>%
+  filter(useridn !=0)
+```
+
+
+## Analysis {.tabset}
+
+```{r}
+zi <- pilot_data %>% filter(useridn != 0)  %>% group_by(useridn) %>% summarise(n = n())
+```
+
+
+```{r}
+theme_gppr <- function(){ 
+    font <- "Georgia"   #assign font family up front
+    
+    ggthemes::theme_economist_white() %+replace%    #replace elements we want to change
+    
+    theme(
+      legend.position = "bottom",
+      #grid elements
+      panel.grid.major = element_blank(),    #strip major gridlines
+      panel.grid.minor = element_blank(),    #strip minor gridlines
+      
+      #since theme_minimal() already strips axis lines, 
+      #we don't need to do that again
+      
+      #text elements
+      plot.title = element_text(             #title
+                   family = font,            #set font family
+                   size = 20,                #set font size
+                   face = 'bold',            #bold typeface
+                   hjust = 0,                #left align
+                   vjust = 2),               #raise slightly
+      
+      plot.subtitle = element_text(          #subtitle
+                   family = font,            #font family
+                   size = 14),               #font size
+      
+      plot.caption = element_text(           #caption
+                   family = font,            #font family
+                   size = 9,                 #font size
+                   hjust = 1),               #right align
+      
+      axis.title = element_text(             #axis titles
+                   family = font,            #font family
+                   size = 10),               #font size
+      
+      axis.text = element_text(              #axis text
+                   family = font,            #axis famuly
+                   size = 10),                #font size
+      
+      axis.text.x = element_text(            #margin for axis text
+                    margin=margin(5, b = 10)),
+      axis.title.x = element_text(size=12),
+      axis.title.y = element_text(size=12, angle = 90, vjust = +3)
+      
+      #since the legend often requires manual tweaking 
+      #based on plot content, don't define it here
+    )
+}
+```
+
+
+
+### Website navigation behaviors
+
+```{r}
+sitios_sm <- sitios_sm %>%
+  mutate(pagina2 = factor(case_when(
+    pagina == "perfil" ~ "Pension Type",
+    pagina == "producto" ~ "Pension Type",
+    pagina == "inicio" ~ "Start",
+    pagina == "clickaqui" ~ "Click Here",
+    pagina == "comparar" ~ "Compare",
+    pagina == "pasos" ~ "Steps",
+    pagina == "masinfo" | pagina == "difmodmix" | pagina == "gf" | pagina == "rsh" | pagina == "rv" | pagina == "pg" | pagina == "cu" | pagina == "c_invalidez" | pagina == "ctie" ~ "More Info",
+    pagina == "instrucciones" ~ "Instructions",
+    pagina == "contestar" ~ "Answer",
+    TRUE ~ "More Info"
+  ), levels = c("Start", "Click Here", "Pension Type", "Compare",  "Steps",  "Instructions",  "Answer", "More Info" )),
+         pagina = factor(pagina, levels = c("inicio", "clickaqui", "comparar","pasos", "perfil", "producto", "masinfo", "instrucciones", "contestar", "difmodmix", "gf", "rsh", "rv", "pg", "cu", "c_invalidez", "ctie"))
+                         )
+```
+
+
+```{r, , results='asis'}
+my_comparisons <- list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Perfil", "VideoPerfil"), c("Baseline", "VideoPerfil") )
+# 
+# n_clicks_wilcox  <- ggpubr::compare_means(n_clicks ~ Treatments,  data = pilot_data, 
+#                       comparisons = my_comparisons,  method = "wilcox.test")
+# 
+# n_clicks_wilcox %>%
+#     knitr::kable(format = 'latex', booktabs = TRUE) %>%
+#     kableExtra::add_header_above(header = c("Text" = 2, "Values" = 2))
+```
+
+
+```{r}
+h <- round(mean(pilot_data$n_clicks, na.rm = TRUE), digits = 2)
+
+
+symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 0.1, 1), 
+                   symbols = c("****", "***", "**", "*",".", "ns"))
+
+pilot_data %>%
+  ggplot(aes(y = n_clicks, x = Treatments, color=Treatments)) +
+  geom_boxplot() +
+  geom_jitter(width=0.15) +
+  ylab("Number of Clicks") +
+  geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+  geom_text(aes(y=h+2, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  theme_gppr() +
+  ggsci::scale_color_aaas() + 
+  #ggpubr::stat_compare_means(method = "anova", vjust = 1, hjust = -0.1) +      # Add global p-value
+  ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                             label = "p.signif", method = "wilcox.test",
+                             symnum.args = symnum.args) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank()) +
+  scale_y_continuous(limits = c(0,50)) 
+  #ggpubr::stat_compare_means(method = "wilcox.test")
+  #scale_fill_distiller()
+  #paletteer::scale_color_paletteer_d("colorBlindness::paletteMartin")
+    #scale_colour_brewer(type = "seq", palette = "Spectral")
+```
+
+```{r}
+ggline(pilot_data, x = "Treatments", y = "n_clicks", add = "mean_se",
+       color = "Gender", palette = "jco") +
+  xlab("Treatments") +
+  ylab("Number of Clicks") +
+  ggpubr::stat_compare_means(aes(group=Gender), label = "p.signif", method = "wilcox.test") +
+  scale_y_continuous(limits = c(0,50)) 
+  theme_gppr()
+```
+
+
+```{r}
+pilot_data %>%
+  ggplot(aes(y = n_clicks, x = Treatments,  color = factor(Gender))) +
+  geom_boxplot() +
+ geom_point(position = position_jitterdodge()) +
+  xlab("Treatments") +
+  ylab("Number of Clicks") +
+  geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+  geom_text(aes(y=h+5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  #geom_text(aes(h, label=h, hjust=-0.1)) +
+  # geom_text(aes(y=mean(pilot_data$n_clicks),
+  #               label=prettyNum(round(mean(pilot_data$n_clicks)),big.mark=","), x=1),
+  #           colour='blue' )   +
+  theme_gppr() +
+  ggsci::scale_color_jco() + 
+  stat_compare_means(aes(group = Gender), label = "p.signif") +
+  scale_y_continuous(limits = c(0,50)) 
+  #ggpubr::stat_compare_means(method = "wilcox.test")
+  #scale_fill_distiller()
+  #paletteer::scale_color_paletteer_d("colorBlindness::paletteMartin")
+    #scale_colour_brewer(type = "seq", palette = "Spectral")
+```
+
+```{r, echo=TRUE}
+ggpubr::compare_means(tiempo_con_video ~ Treatments,  data = sitios_sm, ref.group = "Baseline",
+              method = "t.test")
+```
+
+```{r}
+ggpubr::compare_means(tiempo_sec_1click_nclick ~ Treatments,  data = pilot_data, ref.group = "Baseline",
+              method = "t.test")
+```
+
+
+```{r}
+h <- round(mean(pilot_data$tiempo_sec_1click_nclick, na.rm = TRUE), digits = 1)
+  
+my_comparisons <- rev(list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Perfil", "VideoPerfil"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Baseline", "VideoPerfil") ))
+
+pilot_data %>%
+  dplyr::select(tiempo_sec_1click_nclick, Treatments) %>% na.omit() %>%
+  ggplot(aes(y = tiempo_sec_1click_nclick, x = Treatments, color=Treatments)) +
+  geom_boxplot() +
+  geom_jitter(width=0.15) +
+  xlab("Treatments") +
+  ylab("Time Spend (seconds)") +
+  geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+  geom_text(aes(y=h+60, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  #geom_text(aes(h, label=h, hjust=-0.1)) +
+  # geom_text(aes(y=mean(pilot_data$n_clicks),
+  #               label=prettyNum(round(mean(pilot_data$n_clicks)),big.mark=","), x=1),
+  #           colour='blue' )   +
+  theme_gppr() +
+  ggsci::scale_color_aaas() + 
+  ggpubr::stat_compare_means(method = "anova", vjust = 1, hjust = -0.1) +      # Add global p-value
+  ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                             label = "p.signif", method = "wilcox.test") 
+
+```
+
+
+```{r}
+h <- round(mean(sitios_sm$tiempo_con_video, na.rm = TRUE), digits = 1)
+  
+sitios_sm %>%
+  ggplot(aes(y = tiempo_con_video, x = Treatments, color=Treatments)) +
+  geom_boxplot() +
+  geom_jitter(width=0.15) +
+  xlab("Treatments") +
+  ylab("Time Spend Per Page (seconds)") +
+  geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+  geom_text(aes(y=h+60, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  theme_gppr() +
+  ggsci::scale_color_aaas() + 
+  ggpubr::stat_compare_means(method = "anova", vjust = 1, hjust = -0.05) +      # Add global p-value
+  ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                             label = "p.signif", method = "wilcox.test") 
+  #ggpubr::stat_compare_means(method = "wilcox.test")
+  #scale_fill_distiller()
+  #paletteer::scale_color_paletteer_d("colorBlindness::paletteMartin")
+    #scale_colour_brewer(type = "seq", palette = "Spectral")
+```
+```{r}
+p <- sitios_sm %>%
+  ggplot(aes(pagina, tiempo_pag)) + 
+    geom_point(color = "gray")
+p + geom_line(aes(group = useridn), color = "gray") +
+  stat_summary(aes(group = Treatments, color = Treatments), 
+                 fun.y = "mean", geom = "line", size = 2) +
+  ggsci::scale_color_aaas() +
+   theme_gppr() +
+  theme(axis.text.x = element_text(angle = 45)) +
+  scale_y_continuous(breaks =c(0, 200, 400, 600, 800, 1000), limits = c(0, 1000)) +
+  xlab("Treatments") +
+  ylab("Time Spend Per Page (seconds)")
+ 
+```
+```{r}
+p <- sitios_sm %>%
+  ggplot(aes(pagina2, tiempo_pag)) + 
+    geom_point(color = "gray")
+p + geom_line(aes(group = useridn), color = "gray") +
+  stat_summary(aes(group = Treatments, color = Treatments), 
+                 fun.y = "mean", geom = "line", size = 2) +
+  ggsci::scale_color_aaas() +
+   theme_gppr() +
+  theme(axis.text.x = element_text(angle = 45)) +
+  scale_y_continuous(breaks =c(0, 200, 400, 600, 800, 1000), limits = c(0, 1000)) +
+  xlab("Treatments") +
+  ylab("Time Spend Per Page (seconds)")
+ 
+```
+
+```{r}
+sitios_sm %>%
+ggplot(aes(pagina, tiempo_pag, group = Treatments, color = Treatments)) +
+    geom_line(aes(group = useridn, color = Treatments), alpha = .3) +
+    stat_summary(fun.data = "mean_cl_normal", geom = "errorbar", width = .1,
+                 position = position_dodge(.1), color = "black") +
+    stat_summary(fun.y = "mean", geom = "line", size = 1.2,
+                 position = position_dodge(.1)) +
+    stat_summary(fun.y = "mean", geom = "point", size = 2,
+                 position = position_dodge(.1)) +
+  ggsci::scale_color_aaas() +
+  scale_y_continuous(breaks =c(0, 200, 400, 600, 800, 1000), limits = c(0, 1000)) +
+  theme_gppr() +
+  theme(axis.text.x = element_text(angle = 45)) +
+  xlab("Treatments") +
+  ylab("Time Spend Per Page (seconds)")
+```
+```{r}
+sitios_sm %>%
+ggplot(aes(x = pagina, y =tiempo_pag, group = Treatments, color = Treatments)) +
+    geom_line(aes(group = useridn, color = Treatments), alpha = .3) +
+    stat_summary(fun.data = "mean_cl_normal", geom = "errorbar", width = .1,
+                 position = position_dodge(.1), color = "black") +
+    stat_summary(fun.y = "mean", geom = "line", size = 1.2,
+                 position = position_dodge(.1)) +
+    stat_summary(fun.y = "mean", geom = "point", size = 2,
+                 position = position_dodge(.1)) +
+    ggsci::scale_color_aaas() +
+  theme_gppr() +
+  facet_wrap(~Treatments) +
+  theme(strip.text.x = element_blank(),
+        axis.text.x = element_text(angle = 45))
+```
+
+```{r}
+pilot_data %>%
+  ggplot(aes(n_clicks, tiempo_sec_1click_nclick, colour = fct_reorder2(Treatments, n_clicks, tiempo_sec_1click_nclick))) +
+  geom_point(size = 2) +
+  geom_line(size = 1.5) +
+  ggsci::scale_color_aaas() +
+  labs(colour = "Treatments") +
+  theme_gppr() +
+  xlab("Number of clicks") +
+  ylab("Time Spend")
+```
+
+
+```{r}
+# di <-sitios_sm %>% 
+#   dplyr::select(useridn, sitio, pagina, Treatments, tiempo_con_video) %>%
+#   pivot_wider(names_from = pagina, 
+#               values_from = tiempo_con_video,
+#               values_fn  = sum,
+#               values_fill = 0) 
+# gd <- sitios_sm %>% 
+#         group_by(Treatments) %>% 
+#         summarise(tiempo_con_video = mean(tiempo_con_video))
+# 
+# do <- sitios_sm %>%
+#   group_by(Treatments, pagina) %>%
+#   summarise(tiempo_con_video = sum(tiempo_con_video)) %>%
+#   ggplot(aes(x = Treatments, y = tiempo_con_video, color = Treatments, fill = Treatments)) +
+#   geom_bar(data = gd, stat = "identity", alpha = .3) +
+#   ggrepel::geom_text_repel(aes(label = pagina), color = "black", size = 2.5, segment.color = "grey") +
+#   geom_point() +
+#   guides(color = "none", fill = "none") 
+```
+
+
+```{r}
+g <- pilot_data %>% ggplot(aes(tiempo_min_1click_nclick, n_clicks)) 
+
+g + geom_jitter(aes(col=Treatments,)) + 
+  geom_smooth(aes(col=Treatments), method="lm", se=F) +
+  ggsci::scale_color_aaas() +
+  theme_gppr()
+```
+
+
+### Correct responses
+
+```{r}
+h <- round(mean(pilot_data$correct_response, na.rm = TRUE), digits = 1)
+  
+pilot_data %>%
+  ggplot(aes(y = correct_response, x = Treatments, color=Treatments)) +
+  geom_boxplot() +
+  geom_jitter(width=0.15) +
+  xlab("Treatments") +
+  ylab("Corrects Responses") +
+  geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+  geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  #geom_text(aes(h, label=h, hjust=-0.1)) +
+  # geom_text(aes(y=mean(pilot_data$n_clicks),
+  #               label=prettyNum(round(mean(pilot_data$n_clicks)),big.mark=","), x=1),
+  #           colour='blue' )   +
+  theme_gppr() +
+  ggsci::scale_color_aaas() + 
+  ggpubr::stat_compare_means(method = "anova", vjust = 1, hjust = -0.05) +      # Add global p-value
+  ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                             label = "p.signif", method = "wilcox.test")
+  #ggpubr::stat_compare_means(method = "wilcox.test")
+  #scale_fill_distiller()
+  #paletteer::scale_color_paletteer_d("colorBlindness::paletteMartin")
+    #scale_colour_brewer(type = "seq", palette = "Spectral")
+```
+
+```{r}
+pilot_data %>%
+  ggplot(aes(n_clicks, correct_response, colour = fct_reorder2(Treatments, n_clicks, correct_response))) +
+  geom_point() +
+  geom_line() +
+  labs(colour = "Treatments") +
+  theme_gppr() +
+  xlab("Number of clicks") +
+  ylab("Number of Correct Response")
+```
+```{r}
+pilot_data %>%
+  ggplot(aes(tiempo_sec_1click_nclick, correct_response, colour = fct_reorder2(Treatments, tiempo_sec_1click_nclick, correct_response))) +
+  geom_point() +
+  geom_line() +
+  labs(colour = "Treatments") +
+  theme_gppr() +
+  xlab("Time Spend (seconds)") +
+  ylab("Number of Correct Response")
+```
+
+### Self reported measures
+
+```{r}
+dependent <- pilot_data %>%
+  dplyr::select(correct_response, Confidence_1, InfoAbruma2_1, Curiosity_1, tiempo_min_1click_nclick, Treatments, Gender) %>%
+  mutate(Treatments = as.factor(Treatments)) %>%
+  mutate(Gender = as.factor(Gender)) %>%
+  mutate_if(is.character,as.numeric) %>% na.omit() %>%
+  as.data.frame()
+```
+
+
+```{r}
+q_labs <- c("Confidence", "Curiosity", "Overwhelming information")
+
+dependent %>%
+  mutate_if(is.factor,as.character) %>%
+  mutate(Treatments = as.factor(Treatments)) %>%
+  mutate_if(is.character,as.numeric) %>%
+  dplyr::select(Confidence_1, InfoAbruma2_1, Curiosity_1, Treatments) %>%
+  pivot_longer(-Treatments, names_to = "question", values_to = "response") %>%
+  mutate(question = factor(question, levels = c("Confidence_1", "Curiosity_1", "InfoAbruma2_1"), 
+                  labels =c("Confidence", "Curiosity", "Overwhelming information"))) %>%
+  ggplot(aes(y = response, x = Treatments, fill=Treatments)) +
+  geom_boxplot() +
+  labs(x ="", y = "Response (on a 0 to 10 scale)") +
+  #scale_y_discrete(limits = 0:10) +
+  scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+  theme_gppr() +
+  theme(axis.ticks.x = element_blank())+
+  ggsci::scale_color_aaas() +
+  ggsci::scale_fill_aaas() +
+  facet_wrap(~question) +
+  theme(axis.text.x = element_blank())
+
+```
+
+```{r}
+h_cu <- round(mean(dependent$Curiosity_1, na.rm = TRUE), digits = 1)
+h_co <- round(mean(dependent$Confidence_1, na.rm = TRUE), digits = 1)
+h_a <- round(mean(dependent$InfoAbruma2_1, na.rm = TRUE), digits = 1)
+cu <- dependent %>%
+  mutate_if(is.factor,as.character) %>%
+  mutate(Treatments = as.factor(Treatments)) %>%
+  mutate_if(is.character,as.numeric) %>%
+ggplot(aes(y = Curiosity_1, x = as.factor(Treatments), color = Treatments)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(aes(yintercept = h_cu), linetype = 2, color = "gray") +
+  geom_text(aes(y=h_cu+0.5, label=paste0("Mean ", prettyNum(h_cu,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+  theme_gppr() +
+  ggsci::scale_color_aaas() +
+  ggsci::scale_fill_aaas() +
+  labs(x ="", y = "", title = "Curiosity")  +
+  theme(axis.text.x=element_blank(),
+         axis.title.y = element_text(vjust = +6),
+        axis.ticks.x = element_blank(),
+        plot.title = element_text(vjust = -1, size = 12))
+co <- dependent %>%
+  mutate_if(is.factor,as.character) %>%
+  mutate(Treatments = as.factor(Treatments)) %>%
+  mutate_if(is.character,as.numeric) %>%
+ggplot(aes(y = Confidence_1, x = as.factor(Treatments), color = Treatments)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(aes(yintercept = h_co), linetype = 2, color = "gray") +
+  geom_text(aes(y=h_co+0.5, label=paste0("Mean ", prettyNum(h_co,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+  theme_gppr() +
+  ggsci::scale_color_aaas() +
+  ggsci::scale_fill_aaas() +
+  labs(x ="", y = "", title = "Confidence")  +
+  theme(axis.text.x=element_blank(),
+        axis.title.y = element_text(vjust = +6),
+        plot.title = element_text(vjust = -1, size = 12),
+        axis.ticks.x = element_blank())
+abru <- dependent %>%
+  mutate_if(is.factor,as.character) %>%
+  mutate(Treatments = as.factor(Treatments)) %>%
+  mutate_if(is.character,as.numeric) %>%
+ggplot(aes(y = InfoAbruma2_1, x = as.factor(Treatments), color = Treatments)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(aes(yintercept = h_a), linetype = 2, color = "gray") +
+  geom_text(aes(y=h_a+0.5, label=paste0("Mean ", prettyNum(h_a,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+  theme_gppr() +
+  ggsci::scale_color_aaas() +
+  ggsci::scale_fill_aaas() +
+  labs(x ="", y = "", title = "Overwhelmed")  +
+  theme(axis.text.x=element_blank(),
+        axis.title.y = element_text(vjust = +6),
+        plot.title = element_text(vjust = -1, size = 12),
+        axis.ticks.x = element_blank())
+
+ggarrange(cu, co,  abru, common.legend = TRUE, legend = "bottom", ncol = 3)
+```
+
+```{r}
+h_cu <- round(mean(dependent$Curiosity_1, na.rm = TRUE), digits = 1)
+h_co <- round(mean(dependent$Confidence_1, na.rm = TRUE), digits = 1)
+h_a <- round(mean(dependent$InfoAbruma2_1, na.rm = TRUE), digits = 1)
+cu <- dependent %>%
+ggplot(aes(y = Curiosity_1, x = as.factor(Treatments), color = Gender)) +
+  geom_boxplot() +
+  geom_point(position = position_jitterdodge()) +
+  geom_hline(aes(yintercept = h_cu), linetype = 2, color = "gray") +
+  geom_text(aes(y=h_cu+0.5, label=paste0("Mean ", prettyNum(h_cu,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+  theme_gppr() +
+ ggsci::scale_color_jco() + 
+  labs(x ="Treatments", y = "", title = "Curiosity")  +
+  theme(axis.title.y = element_text(vjust = +6),
+        axis.ticks.x = element_blank(),
+        plot.title = element_text(vjust = -1, size = 12)) +
+  stat_compare_means(aes(group = Gender), label = "p.signif")
+co <- dependent %>%
+ggplot(aes(y = Confidence_1, x = as.factor(Treatments), color = Gender)) +
+  geom_boxplot() +
+  geom_point(position = position_jitterdodge()) +
+  geom_hline(aes(yintercept = h_co), linetype = 2, color = "gray") +
+  geom_text(aes(y=h_co+0.5, label=paste0("Mean ", prettyNum(h_co,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+  theme_gppr() +
+  ggsci::scale_color_jco() + 
+  labs(x ="Treatments", y = "", title = "Confidence")  +
+  theme(axis.title.y = element_text(vjust = +6),
+        plot.title = element_text(vjust = -1, size = 12),
+        axis.ticks.x = element_blank())  +
+  stat_compare_means(aes(group = Gender), label = "p.signif")
+
+abru <- dependent %>%
+ggplot(aes(y = InfoAbruma2_1, x = as.factor(Treatments), color = Gender)) +
+  geom_boxplot() +
+  geom_point(position = position_jitterdodge()) +
+  geom_hline(aes(yintercept = h_a), linetype = 2, color = "gray") +
+  geom_text(aes(y=h_a+0.5, label=paste0("Mean ", prettyNum(h_a,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+  theme_gppr() +
+  ggsci::scale_color_jco() + 
+  labs(x ="Treatments", y = "", title = "Overwhelmed")  +
+  theme(axis.title.y = element_text(vjust = +6),
+        plot.title = element_text(vjust = -1, size = 12),
+        axis.ticks.x = element_blank()) +
+  stat_compare_means(aes(group = Gender), label = "p.signif")
+cu
+co
+abru
+```
+
+```{r}
+pilot_data %>%
+  group_by(Curiosity_1) %>%                                            # for each question number
+  count(Treatments) %>%                                                  # count gender type
+  mutate(Prc = round(n/sum(n),2)) %>%            # update variable
+  ungroup() %>%                                                   # forget the grouping
+  mutate(Prc_text = paste0(Prc*100, "%")) %>%
+  ggplot(aes(Treatments, Prc, fill=factor(Curiosity_1)))+                     # plot
+  geom_bar(position = "fill", stat = "identity")+                # add bars
+  #geom_text(aes(label=Prc_text), position = position_dodge(width=1), size=4) +
+  coord_flip() 
+curiosity_count <- pilot_data %>%
+  ggplot(aes(Curiosity_1)) +
+  geom_bar() +
+  facet_wrap(~Treatments)
+curiosity_count <- curiosity_count$data
+
+```
+
+```{r}
+pilot_data %>%
+  group_by(Curiosity_1) %>%                                            # for each question number
+  count(Treatments) %>%                                                  # count gender type
+  mutate(Prc = round(n/sum(n),2)) %>%            # update variable
+  ungroup() %>%                                                   # forget the grouping
+  mutate(Prc_text = paste0(Prc*100, "%")) %>%
+  ggplot(aes(Treatments, Prc, fill=factor(Curiosity_1)))+                     # plot
+  geom_bar(position = "fill", stat = "identity")+                # add bars
+  #geom_text(aes(label=Prc_text), position = position_dodge(width=1), size=4) +
+  coord_flip() 
+
+```
+  
+```{r}
+dependent[,2:4] <- lapply( dependent[,2:4], factor, levels=0:10)
+
+both_likert_2 = likert(dependent[, c(2:4), drop = FALSE], grouping = dependent$Treatments)
+library(grid)
+plot(both_likert_2)
+```
+```{r}
+plot(both_likert_2, type = "density")
+```
+
+
+
+
+
+
+
+
+```{r}
+# V %>%
+#   ggplot() + geom_bar(aes(x = outcome, y=value, fill=col), position="stack", stat="identity") +
+#   geom_bar(data=lows, aes(x = outcome, y=-value, fill=col), position="stack", stat="identity") +
+#   geom_hline(yintercept = 0, color =c("white")) +
+#   scale_fill_identity("Percent", labels = mylevels, breaks=legend.pal, guide="legend") + 
+#   theme_fivethirtyeight() + 
+#   coord_flip() +
+#   labs(title=mytitle, y="",x="") +
+#   theme(plot.title = element_text(size=14, hjust=0.5)) +
+#   theme(axis.text.y = element_text(hjust=0)) +
+#   theme(legend.position = "bottom") +
+#   scale_y_continuous(breaks=seq(mymin,mymax,25), limits=c(mymin,mymax))
+```
+
+```{r}
+library(sjPlot)
+library(sjmisc)
+#plot_likert(pilot_data$Curiosity_1)
+```
+
+
+### Models
+
+#### Correlation between dependent variables
+
+```{r}
+my_cols <- ggpubr::get_palette("Dark2", 4)  
+palette = ggpubr::get_palette("Dark2", 4)
+
+panel.cor <- function(x, y){
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- round(cor(x, y), digits=2)
+    txt <- paste0("R = ", r)
+    cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+# Customize upper panel
+upper.panel<-function(x, y){
+  points(x,y, pch = 19, col = my_cols[dependent$Treatments])
+}
+# Create the plots
+pairs(dependent[,1:5], 
+      lower.panel = panel.cor,
+      upper.panel = upper.panel)
+
+
+# 
+# pairs(dependent[,1:5], pch = 19,  cex = 0.5,
+#       col = palette[dependent$Treatments],
+#       lower.panel=NULL)
+```
+
+#### Linear Models
+
+```{r}
+#pilot_data$Curiosity_1
+m_respuestas <- lm(correct_response ~ Treatments, 
+                   data = pilot_data)
+m_Confidence_1 <- lm(Confidence_1 ~ Treatments, 
+                   data = pilot_data)
+m_InfoAbruma2_1 <- lm(InfoAbruma2_1 ~ Treatments, 
+                   data = pilot_data)
+m_n_clicks <- lm(n_clicks ~ Treatments, 
+                   data = pilot_data)
+m_Curiosity_1 <- lm(Curiosity_1 ~ Treatments, 
+                   data = pilot_data)
+m_tiempo_min_1click_nclick <- lm(tiempo_min_1click_nclick ~ Treatments, 
+                   data = pilot_data)
+```
+
+```{r, results='asis'}
+stargazer::stargazer(m_respuestas, m_Confidence_1, m_InfoAbruma2_1, m_n_clicks,m_Curiosity_1, m_n_clicks,
+                     m_tiempo_min_1click_nclick,
+                     type = "html")
+```
+
+
+
+
+
+```{r}
+
+nb = length(unique(sitios_sm$pagina))
+nm = length(unique(sitios_sm$t_perfil))
+
+colors = apply(expand.grid(seq(70,40,length=nm), 100, seq(15,375,length=nb+1)[1:nb]), 1, 
+               function(x) hcl(x[3],x[2],x[1]))
+
+bar <- sitios_sm %>%
+  ggplot(aes(pagina, tiempo_pag, fill=interaction(t_perfil, pagina))) + 
+  geom_hline(yintercept=0, colour="grey60") +
+  geom_bar(stat="identity", position = "dodge", show.legend=FALSE) +
+  scale_fill_manual(values=colors) +
+  facet_wrap(~ tratamientos) +
+  theme_classic() +
+  ggpubr::rotate_x_text()
+
+ 
+bar
+
+p <- sitios_sm %>%
+  ggplot(aes(pagina, tiempo_pag)) + 
+    geom_point(aes(color = as.factor(useridn)))
+p + geom_line(aes(group = useridn, color = as.factor(useridn))) +
+  facet_wrap(~ tratamientos) +
+  theme(axis.text.x = element_text(angle = 45))
+
+p + geom_line(aes(group = useridn, color = as.factor(useridn))) +
+  facet_wrap(~ Treatments) +
+  theme(axis.text.x = element_text(angle = 45))
+
+```
+
+
+
+
+
+```{r}
+sitios_sm %>%
+  pivot_longer(cols = c(tiempo_sin_video, tiempo_video),
+               names_to = "tipo", 
+               values_to = "spend_time"
+               ) %>%
+  ggplot(aes(pagina, spend_time)) + 
+  geom_point()+
+  geom_line(aes(group = useridn, fill=tipo, color = tipo), show.legend=FALSE,
+            size = 1.5) +
+  theme(axis.text.x = element_text(angle = -45)) +
+  facet_wrap(~Treatments)
+```
+```{r}
+ss <- sitios_sm %>%
+  pivot_longer(cols = c(tiempo_sin_video, tiempo_video),
+               names_to = "tipo", 
+               values_to = "spend_time"
+               )  %>%
+  mutate(tipo = relevel(as.factor(tipo), "tiempo_video"),
+         spend_time = as.numeric(spend_time))
+
+ss %>% ggplot(aes(spend_time, pagina)) + 
+  geom_col() +
+  theme(axis.text.x = element_text(angle = -45)) +
+  coord_cartesian(ylim = c(min(ss$spend_time), max(ss$spend_time)))
+
+a <- ss %>% ggplot(aes(pagina, spend_time, fill = tipo)) + 
+  geom_col() +
+  scale_y_continuous() +
+  theme(axis.text.x = element_text(angle = -45)) 
+a
+b <- a$data
+```
