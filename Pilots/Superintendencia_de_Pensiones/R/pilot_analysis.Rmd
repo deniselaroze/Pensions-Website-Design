@@ -11,16 +11,16 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 ```{r}
 ## Set directory
-path <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
+#path <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
 #setwd("C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/")
 
 ## Load packages
-source(paste0(path,"Pilots/Superintendencia_de_Pensiones/R/paquetes.R"))
+source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/paquetes.R"))
 ```
 
 ```{r}
 ## Load own functions
-source(here::here("Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
+source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
 ```
 
 
@@ -28,8 +28,8 @@ source(here::here("Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
 ## Analysis {.tabset}
 
 ```{r}
-pilot_data <- readRDS(here::here("Pilots/Superintendencia_de_Pensiones/data/pilot_data.rds"))
-sitios_sm <- readRDS(here::here("Pilots/Superintendencia_de_Pensiones/data/sitios_sm.rds"))
+pilot_data <- readRDS(paste0(path_datos, "pilot_data.rds"))
+sitios_sm <- readRDS(paste0(path_datos, "sitios_sm.rds"))
 ```
 
 
@@ -167,7 +167,7 @@ proporciones %>%
   geom_hline(aes(yintercept = 0.8), linetype = 2, color = "gray") +
   geom_text(aes(y=0.85, label=paste0("0.8"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
   ylab("Opt In")
-ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/prop.pdf"))
+ggsave(paste0(path_github, "Pilots/Superintendencia_de_Pensiones/figures/prop.pdf"))
 ```
 
 
@@ -192,7 +192,7 @@ proporciones_recomendar %>%
   ylab("Promoter") +
   #coord_cartesian(ylim = c(0,0.5))
   scale_y_continuous(breaks = c(0.2, 0.40), limits=c(0,0.5)) 
-ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/prop_promoter.pdf"))
+ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/prop_promoter.pdf"))
 ```
 
 
@@ -214,7 +214,7 @@ proporciones_asesor %>%
   geom_hline(aes(yintercept = 0.5), linetype = 2, color = "gray") +
   geom_text(aes(y=0.55, label=paste0("0.5"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
   ylab("Not hire an advisor")
-ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/prop_asesor.pdf"))
+ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/prop_asesor.pdf"))
 ```
 
 ```{r}
@@ -271,7 +271,7 @@ pilot_data %>%
   #scale_fill_distiller()
   #paletteer::scale_color_paletteer_d("colorBlindness::paletteMartin")
     #scale_colour_brewer(type = "seq", palette = "Spectral")
-ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/n_clicks.pdf"))
+ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/n_clicks.pdf"))
 ```
 
 ```{r}
@@ -472,7 +472,7 @@ pilot_data %>%
 ```{r}
 g <- pilot_data %>% ggplot(aes(tiempo_min_1click_nclick, n_clicks)) 
 
-g + geom_jitter(aes(col=Treatments,)) + 
+g + geom_jitter(aes(col=Treatments)) + 
   geom_smooth(aes(col=Treatments), method="lm", se=F) +
   ggsci::scale_color_aaas() +
   theme_gppr()
@@ -505,7 +505,7 @@ pilot_data %>%
         axis.ticks.x = element_blank(),
         axis.title.x = element_blank()) +
   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12))
-ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/responses.pdf"))
+ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/responses.pdf"))
 
 ```
 ```{r, heterog}
@@ -681,7 +681,7 @@ ggplot(aes(y = InfoUtil_1, x = as.factor(Treatments), color = Treatments)) +
         plot.title = element_text(vjust = -1, size = 12),
         axis.ticks.x = element_blank()) +
   coord_cartesian(ylim = c(2,15))
-ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/utility.pdf"))
+ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/utility.pdf"))
 ```
 ```{r, toomuch}
 symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 0.1, 1), 
@@ -713,7 +713,7 @@ ggplot(aes(y = InfoAbruma2_1, x = as.factor(Treatments), color = Treatments)) +
         plot.title = element_text(vjust = -1, size = 12),
         axis.ticks.x = element_blank()) +
   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12))
-ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/toomuch.pdf"))
+ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/toomuch.pdf"))
 ```
 
 
@@ -820,7 +820,7 @@ ggplot(aes(y = correct_response, x = as.factor(Treatments), color = Pension_Type
         axis.ticks.x = element_blank(),
         plot.title = element_text(vjust = -1, size = 12)) +
   stat_compare_means(aes(group = Pension_Type), label = "p.signif")
-ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/responses_het.pdf"))
+ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/responses_het.pdf"))
 
 ```
 

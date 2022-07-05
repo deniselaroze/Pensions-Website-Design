@@ -33,4 +33,7 @@ labels <- c("Night", "Morning", "Afternoon", "Evening")
 
 pilot_data$Time_of_day <- cut(x=hour(pilot_data$StartDate), breaks = breaks, labels = labels, include.lowest=TRUE)
 
-saveRDS(pilot_data, here::here("Pilots/Superintendencia_de_Pensiones/data/pilot_data.rds"))
+saveRDS(pilot_data, paste0(path_datos, "pilot_data.rds"))
+
+save(pilot_data, file=paste0(path_datos, "pilot_data.Rdata"))
+

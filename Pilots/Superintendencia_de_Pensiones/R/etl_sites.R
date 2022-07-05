@@ -1,7 +1,7 @@
 #get data
 # individuals as observation units
 sitios <-
-  list.files(path = here::here("Pilots/Superintendencia_de_Pensiones/data/online"),
+  list.files(path = path_datos,
              pattern = "Clicks", 
              full.names = T) %>% 
   map_df(~read_csv(., col_types = cols(.default = "c"))) %>%
@@ -58,15 +58,15 @@ sitios_complete <- contestar %>%
   full_join(sitios2, by="useridn") %>% 
   select(!matches("^(n|y)_contestar"))
 
-saveRDS(sitios_complete, here::here("Pilots/Superintendencia_de_Pensiones/data/sitios_complete.rds"))
-
+saveRDS(sitios_complete, paste0(path_datos,"sitios_complete.rds"))
+save(sitios_complete, file= paste0(path_datos,"sitios_complete.Rdata"))
 # Pivot sites for page behavior analysis
 
 sitios_pivot <- sitios2 %>%
   dplyr::select(-`Created date`, -`Updated date`) %>%
   pivot_longer(cols = !c(userid, useridn, fecha, sitio, created_date, updated_date,
                          tiempo_sec_1click_nclick, tiempo_min_1click_nclick,
-                         na_count, n_clicks, inicio_wix, ),
+                         na_count, n_clicks, inicio_wix),
                names_to = "botones", 
                values_to = "time"
   ) %>%
@@ -180,4 +180,6 @@ sitios_sm <- sitios_pivot %>%
   ), levels = c("Start", "Click Here", "Pension Type", "Compare",  "Steps",  "Instructions",  "Answer", "More Info" )),
   pagina = factor(pagina, levels = c("inicio", "clickaqui", "comparar","pasos", "perfil", "producto", "masinfo", "instrucciones", "contestar", "difmodmix", "gf", "rsh", "rv", "pg", "cu", "c_invalidez", "ctie"))
   )
-saveRDS(sitios_sm, here::here("Pilots/Superintendencia_de_Pensiones/data/sitios_sm.rds"))
+
+saveRDS(sitios_sm, paste0(path_datos,"sitios_sm.rds"))
+save(sitios_sm, file= paste0(path_datos,"sitios_sm.Rdata"))
