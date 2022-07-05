@@ -12,6 +12,9 @@ ifelse(!dir.exists(file.path(path, "R")),
 ifelse(!dir.exists(file.path(path, "data")), 
        dir.create(file.path(path, "data")), FALSE)
 
+ifelse(!dir.exists(file.path(path, "figures")), 
+       dir.create(file.path(path, "figures")), FALSE)
+
 ## Load packages
 source(paste0(path,"Pilots/Superintendencia_de_Pensiones/R/paquetes.R"))
 
