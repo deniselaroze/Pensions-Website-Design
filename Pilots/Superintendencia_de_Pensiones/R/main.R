@@ -1,9 +1,14 @@
 ## Set directory
 # change your path
-path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
+#path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
+path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Piloto/Superintendencia de Pensiones/online/"
 # If you don´t use Rprojects functionality setwd
 #setwd("C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/")
-path_github <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/Pilots/Superintendencia_de_Pensiones"
+#path_github <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/Pilots/Superintendencia_de_Pensiones"
+
+path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+
+
 
 # create folders if doesn´t exists
 
@@ -17,14 +22,14 @@ ifelse(!dir.exists(file.path(path_github, "figures")),
 ## Load packages
 source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/paquetes.R"))
 ## Load own functions
-source(here::here("Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
+source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
 ## ETL
 # import, transform and save data surveys
-source(here::here("Pilots/Superintendencia_de_Pensiones/R/etl_surveys.R"))
+source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/etl_surveys.R"))
 # import, transform and save site data
-source(here::here("Pilots/Superintendencia_de_Pensiones/R/etl_sites.R"))
+source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/etl_sites.R"))
 # complete join (surveys + sites)
-source(here::here("Pilots/Superintendencia_de_Pensiones/R/etl_complete.R"))
+source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/etl_complete.R"))
 # if you don´t use  Rprojects functionality setwd inside the Rmd
 ## Primary Analysis
 rmarkdown::render(

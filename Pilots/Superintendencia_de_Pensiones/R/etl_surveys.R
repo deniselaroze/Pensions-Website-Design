@@ -2,7 +2,7 @@
 
 # Encuesta A, load and transformation
 
-encuestaA_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaA_online.csv"))[-2,] %>% 
+encuestaA_online <- read_csv(paste0(path_datos, "encuestaA_online.csv"))[-2,] %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
          sitioderivado = stringi::stri_sub(UID, -1),
          useridn = as.numeric(useridn)) %>%
@@ -31,7 +31,7 @@ encuestaA_online <- encuestaA_online[,colSums(is.na(encuestaA_online))<nrow(encu
 
 # Encuesta B Privada, load and transformation
 
-encuestaB_Privada_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaB_Privada_online.csv")) %>% 
+encuestaB_Privada_online <- read_csv(paste0(path_datos, "encuestaB_Privada_online.csv")) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
   mutate(EndDate = lubridate::ymd_hms(EndDate),
          StartDate = lubridate::ymd_hms(StartDate),
@@ -71,7 +71,7 @@ encuestaB_Privada_online <- encuestaB_Privada_online[,colSums(is.na(encuestaB_Pr
 
 # Encuesta B Publica, load and transformation
 
-encuestaB_Publica_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaB_Publica_online.csv")) %>% 
+encuestaB_Publica_online <- read_csv(paste0(path_datos, "encuestaB_Publica_online.csv")) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
   mutate(EndDate = lubridate::ymd_hms(EndDate),
          StartDate = lubridate::ymd_hms(StartDate),
@@ -108,7 +108,7 @@ encuestaB_Publica_online <- encuestaB_Publica_online[,colSums(is.na(encuestaB_Pu
 
 # Encuesta C Privada, load and transformation
 
-encuestaC_Privada_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaC_Privada_online.csv")) %>% 
+encuestaC_Privada_online <- read_csv(paste0(path_datos, "encuestaC_Privada_online.csv")) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
   mutate(EndDate = lubridate::ymd_hms(EndDate),
          StartDate = lubridate::ymd_hms(StartDate),
@@ -144,7 +144,7 @@ encuestaC_Privada_online <- encuestaC_Privada_online[,colSums(is.na(encuestaC_Pr
 
 # Encuesta C Publica, load and transformation
 
-encuestaC_Publica_online <- read_csv(here::here("Pilots/Superintendencia_de_Pensiones/data/online/encuestaC_Publica_online.csv")) %>% 
+encuestaC_Publica_online <- read_csv(paste0(path_datos, "encuestaC_Publica_online.csv")) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
   mutate(EndDate = lubridate::ymd_hms(EndDate),
          StartDate = lubridate::ymd_hms(StartDate),
@@ -256,4 +256,4 @@ encuestas <- encuestaA_online %>%
 encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
 
 
-#saveRDS(encuestas, here::here("Pilots/Superintendencia_de_Pensiones/data/encuestas_clean.rds"))
+save(encuestas, file= paste0(path_datos, "encuestas_clean.Rdata"))
