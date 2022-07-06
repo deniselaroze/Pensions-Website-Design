@@ -29,7 +29,7 @@ source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
 
 ```{r}
 pilot_data <- readRDS(paste0(path_datos, "pilot_data.rds"))
-sitios_sm <- readRDS(paste0(path_datos, "sitios_sm.rds"))
+sitios_sm <- readRDS(paste0(path_datos, "sitios_complete.rds"))
 ```
 
 
