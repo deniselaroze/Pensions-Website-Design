@@ -33,5 +33,5 @@ source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/etl_complete.R
 # if you don´t use  Rprojects functionality setwd inside the Rmd
 ## Primary Analysis
 rmarkdown::render(
-  here::here("Pilots/Superintendencia_de_Pensiones/R/pilot_analysis.Rmd")
+  paste0(path_github, "Pilots/Superintendencia_de_Pensiones/R/pilot_analysis.Rmd")
 )

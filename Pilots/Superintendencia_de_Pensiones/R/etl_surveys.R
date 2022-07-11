@@ -65,6 +65,11 @@ encuestaB_Privada_online <- read_csv(paste0(path_datos, "encuestaB_Privada_onlin
          Curiosity_1, 
          Confidence_1,
          esfuerzo,
+         contains("Math"),
+         contains("Q1"),
+         contains("Q2"),
+         LotteryRisk,
+         Risk_Tende_1,
          total_reward) %>%
   rename(MB_Despues = SelectMode.PV)
 encuestaB_Privada_online <- encuestaB_Privada_online[,colSums(is.na(encuestaB_Privada_online))<nrow(encuestaB_Privada_online)]
@@ -109,6 +114,11 @@ encuestaB_Publica_online <- read_csv(paste0(path_datos, "encuestaB_Publica_onlin
          Curiosity_1, 
          Confidence_1,
          esfuerzo,
+         contains("Math"),
+         contains("Q1"),
+         contains("Q2"),
+         LotteryRisk,
+         Risk_Tende_1,
          total_reward)
 encuestaB_Publica_online <- encuestaB_Publica_online[,colSums(is.na(encuestaB_Publica_online))<nrow(encuestaB_Publica_online)]
 
@@ -144,6 +154,12 @@ encuestaC_Privada_online <- read_csv(paste0(path_datos, "encuestaC_Privada_onlin
          Recomendar,
          Recomendar_NPS_GROUP,
          SelectMode.PV,
+         Confused,
+         contains("Math"),
+         contains("Q1"),
+         contains("Q2"),
+         LotteryRisk,
+         Risk_Tende_1,
          total_reward) %>%
   rename(MB_Despues = SelectMode.PV)
 encuestaC_Privada_online <- encuestaC_Privada_online[,colSums(is.na(encuestaC_Privada_online))<nrow(encuestaC_Privada_online)]
@@ -181,6 +197,11 @@ encuestaC_Publica_online <- read_csv(paste0(path_datos, "encuestaC_Publica_onlin
          Recomendar_NPS_GROUP,
          SelectMode.PP,
          Confused,
+         contains("Math"),
+         contains("Q1"),
+         contains("Q2"),
+         LotteryRisk,
+         Risk_Tende_1,
          total_reward) %>%
   rename(MB_Despues = SelectMode.PP)
 encuestaC_Publica_online <- encuestaC_Publica_online[,colSums(is.na(encuestaC_Publica_online))<nrow(encuestaC_Publica_online)]

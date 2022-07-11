@@ -22,69 +22,78 @@ source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/paquetes.R"))
 #source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
 
 
-pilot_data$Confidence<-as.numeric(pilot_data$Confidence_1)
 
-### Hay un problema en NA que ingresan arbitrariamente a Confianza
-
-  
-  
-plot(pilot_data$overconfidence)
-  
-
-#### Exceso de Confianza por tratamientos
-pilot_data$overconfidence<- pilot_data$Confidence/10 - pilot_data$correct_response/7
-
+### Overconfidence graph
   ggplot(pilot_data, aes(y = overconfidence, x = Treatments, fill=Treatments)) +
   geom_boxplot() +
   labs(x ="", y = "Overconfidence") + facet_grid(. ~ Gender)
 
   
+### 
   
-  
-  #Checking overconfidence
-  
-  table(pilot_data$Confidence)
-  table(pilot_data$Confidence/10, pilot_data$correct_response/7)
-  
-  tmp<-pilot_data[, c("Treatments", "correct_response", "Confidence_1", "overconfidence", "website", "InfoAbruma2_1")]
-  
-  View(tmp)
+  names(encuestaB_Privada_online)
   
   
   
   
+  table(pilot_data$QMath1)
+  table(pilot_data$QMath2)
+  table(pilot_data$QMath3)
+  
+  ### Correct answers for Finantial Literacy Questions 
+  
+   #table(df$Qmath1)
+  pilot_data$QMath1_correct<-ifelse(pilot_data$QMath1=="Más de $125.000.000", 1, 0)
+  #table(pilot_data$QMath1, pilot_data$QMath1_correct)
+ 
+  #table(df$Qmath2)
+  pilot_data$QMath2_correct<-ifelse(pilot_data$QMath2=="Nunca se terminaría de pagar el crédito", 1, 0)
+  #table(pilot_data$QMath2, pilot_data$QMath2_correct)
+  
+  #pilot_data$Qmath3num<-parse_number(pilot_data$Qmath3)
+  pilot_data$QMath3_correct<-ifelse(pilot_data$QMath3 == 5000,1, ifelse(pilot_data$QMath3==5, 1, 0))
+  #table(pilot_data$QMath3, pilot_data$QMath3_correct)
   
   
-#### Cambios de opinión en Advisor
-table(pilot_data$PAdvice)  
-table(pilot_data$Advisor)
-
-#Recodificación de variable
-pilot_data$Change_Advisor<-ifelse(pilot_data$PAdvice=="No" & pilot_data$Advisor=="No", "Maintain No", 
-                                  ifelse (pilot_data$PAdvice=="No" & pilot_data$Advisor=="Sí", "> advisor",
-                                          ifelse(pilot_data$PAdvice=="Sí" & pilot_data$Advisor=="Sí", "Maintain Yes",
-                                                        ifelse(pilot_data$PAdvice=="Sí" & pilot_data$Advisor=="No", "< advisor",
-                                                               ifelse (pilot_data$PAdvice=="Sí" & pilot_data$Advisor=="Sí", "Maintain",
-                                                                       ifelse(pilot_data$PAdvice=="No lo ha pensado" & pilot_data$Advisor=="Sí", "> advisor", 
-                                                                              ifelse(pilot_data$PAdvice=="No lo ha pensado" & pilot_data$Advisor=="No", "< advisor", "Error"
-                                                                              )))))))
-
-
+  tmp<-pilot_data[, c("QMath1_correct", "QMath2_correct", "QMath3_correct") ]
   
-  
-#tmp<-pilot_data[, c("Treatments", "PAdvice", "Advisor", "Change_Advisor")]
-#View(tmp)
-  
-table(pilot_data$Treatments, pilot_data$Change_Advisor)
-  
-  
-  
-  
-  
-  
-  
+  tmp[is.na(tmp)] <- 0
+  tmp$financial_lit<-rowSums(tmp)
+  pilot_data$financial_lit<-tmp$financial_lit
+  rm(tmp)
   
   
 
+  
+  
+  # Time preferences
+  df1<-grep("Q1", names(pilot_data), value=TRUE)
+  df2<-grep("Q2", names(pilot_data), value=TRUE)  
+  df<-as.factor(c(tmp1, tmp2)) 
+  tmp<-pilot_data[, C(df)]
+  
+   tmp$timevalue<-NA
+   for (i in 1:nrow(tmp)){
+     NonNAindex <- which(!is.na(tmp[i,]))
+     last <- max(NonNAindex)
+     tmp$timevalue[i]<-colnames(tmp)[last]
+   }
+
+ tmp$pb<-as.numeric(gsub('\\D+','',tmp$timevalue))
+ 
+ pilot_data$present_bias<-tmp$pb
+ 
+ 
+ rm(df1, df2, df, tmp, tmp1, tmp2)
+ 
+ 
+   # 
+  # df$timevalue<-tmp$timevalue
+  
+  
+  
+  
+  
+  
 
 
