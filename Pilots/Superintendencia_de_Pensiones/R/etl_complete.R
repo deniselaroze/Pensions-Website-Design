@@ -55,11 +55,11 @@ pilot_data$Change_Advisor<-ifelse(pilot_data$PAdvice=="No" & pilot_data$Advisor=
 
 ### Correct answers for Finantial Literacy Questions 
 
-#table(df$Qmath1)
+#table(pilot_data$QMath1)
 pilot_data$QMath1_correct<-ifelse(pilot_data$QMath1=="Más de $125.000.000", 1, 0)
 #table(pilot_data$QMath1, pilot_data$QMath1_correct)
 
-#table(df$Qmath2)
+#table(pilot_data$QMath2)
 pilot_data$QMath2_correct<-ifelse(pilot_data$QMath2=="Nunca se terminaría de pagar el crédito", 1, 0)
 #table(pilot_data$QMath2, pilot_data$QMath2_correct)
 
@@ -72,6 +72,8 @@ tmp<-pilot_data[, c("QMath1_correct", "QMath2_correct", "QMath3_correct") ]
 
 tmp[is.na(tmp)] <- 0
 tmp$financial_lit<-rowSums(tmp)
+
+
 pilot_data$financial_lit<-tmp$financial_lit
 rm(tmp)
 
@@ -79,7 +81,7 @@ rm(tmp)
 # Time preferences
 df1<-grep("Q1", names(pilot_data), value=TRUE)
 df2<-grep("Q2", names(pilot_data), value=TRUE)  
-df<-as.factor(c(tmp1, tmp2)) 
+df<-as.factor(c(df1, df2)) 
 tmp<-pilot_data[, C(df)]
 
 tmp$timevalue<-NA
@@ -94,7 +96,7 @@ tmp$pb<-as.numeric(gsub('\\D+','',tmp$timevalue))
 pilot_data$present_bias<-tmp$pb
 
 
-rm(df1, df2, df, tmp, tmp1, tmp2)
+rm(df1, df2, df, tmp)
 
 
 saveRDS(pilot_data, paste0(path_datos, "pilot_data.rds"))
