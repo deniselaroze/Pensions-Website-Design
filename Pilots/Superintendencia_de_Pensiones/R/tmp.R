@@ -91,7 +91,33 @@ source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/paquetes.R"))
   # df$timevalue<-tmp$timevalue
   
   
-  
+ h <- round(mean(pilot_data$correct_response, na.rm = TRUE), digits = 1)
+ 
+ pilot_data %>%
+   ggplot(aes(y = correct_response, x = Treatments, color=Treatments)) +
+   geom_boxplot() +
+   geom_jitter(width=0.15) +
+   #xlab("Treatments") +
+   ylab("Correct Responses") +
+   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   facet_wrap(~ as.factor(financial_lit))
+   
+   #geom_text(aes(h, label=h, hjust=-0.1)) +
+   # geom_text(aes(y=mean(pilot_data$n_clicks),
+   #               label=prettyNum(round(mean(pilot_data$n_clicks)),big.mark=","), x=1),
+   #           colour='blue' )   +
+   #theme_gppr() +
+   #ggsci::scale_color_aaas() + 
+   #ggpubr::stat_compare_means(method = "anova", vjust = 1, hjust = -0.05) +
+   #theme(axis.text.x=element_blank(),
+         axis.title.y = element_text(vjust = +3),
+         plot.title = element_text(vjust = -1, size = 12),
+         axis.ticks.x = element_blank(),
+         axis.title.x = element_blank()) +
+   #scale_y_continuous(breakgrs = seq(0, 10, 2), limits = c(0,12)) 
+ ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/responses.pdf"))
+ 
   
   
   
