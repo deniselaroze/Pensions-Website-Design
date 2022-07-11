@@ -63,7 +63,7 @@ encuestaB_Privada_online <- read_csv(paste0(path_datos, "encuestaB_Privada_onlin
          InfoUtil_1, 
          InfoAbruma2_1, 
          Curiosity_1, 
-         Confidence_1 ,
+         Confidence_1,
          esfuerzo,
          total_reward) %>%
   rename(MB_Despues = SelectMode.PV)
@@ -102,6 +102,12 @@ encuestaB_Publica_online <- read_csv(paste0(path_datos, "encuestaB_Publica_onlin
          Recomendar,
          Recomendar_NPS_GROUP,
          SelectMode.PP,
+         esfuerzo,
+         Confused,
+         InfoUtil_1, 
+         InfoAbruma2_1, 
+         Curiosity_1, 
+         Confidence_1,
          esfuerzo,
          total_reward)
 encuestaB_Publica_online <- encuestaB_Publica_online[,colSums(is.na(encuestaB_Publica_online))<nrow(encuestaB_Publica_online)]
