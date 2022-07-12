@@ -45,8 +45,7 @@ pilot_data$Change_Advisor<-ifelse(pilot_data$PAdvice=="No" & pilot_data$Advisor=
                                   ifelse (pilot_data$PAdvice=="No" & pilot_data$Advisor=="Sí", "> advisor",
                                           ifelse(pilot_data$PAdvice=="Sí" & pilot_data$Advisor=="Sí", "Maintain Yes",
                                                  ifelse(pilot_data$PAdvice=="Sí" & pilot_data$Advisor=="No", "< advisor",
-                                                        ifelse (pilot_data$PAdvice=="Sí" & pilot_data$Advisor=="Sí", "Maintain",
-                                                                ifelse(pilot_data$PAdvice=="No lo ha pensado" & pilot_data$Advisor=="Sí", "> advisor", 
+                                                        ifelse(pilot_data$PAdvice=="No lo ha pensado" & pilot_data$Advisor=="Sí", "> advisor", 
                                                                        ifelse(pilot_data$PAdvice=="No lo ha pensado" & pilot_data$Advisor=="No", "< advisor", "Error"
                                                                        )))))))
 
