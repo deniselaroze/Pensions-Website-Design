@@ -94,11 +94,11 @@ theme_gppr <- function(){
 ### Website navigation behaviors
 
 ```{r}
-proporciones <- pilot_data %>%
+proporciones1 <- pilot_data %>%
  group_by(Treatments, online) %>% #group
   summarise(prop = sum(OptOut =="In")/n()) %>% #calculate proportion 
   na.omit() 
-proporciones
+proporciones1
 ```
 
 ```{r}
@@ -116,7 +116,7 @@ proporciones
 #   ))) 
   
 
-# proporciones %>% ggplot() +
+# proporciones1 %>% ggplot() +
 #   theme_classic() + 
 #   geom_smooth(aes(x = sesion , y = prop, color = Treatments), se = F) +
 #   geom_point(aes(x = sesion, y = prop, color = Treatments)) +
@@ -155,10 +155,16 @@ proporciones %>%
   # xlab("Year") + ylab("Avg wind power") +
   # ggtitle("Average wind power in 1975 and 2015")
 ```
-
+```{r}
+proporciones2 <- pilot_data %>%
+ group_by(Treatments) %>% #group
+  summarise(prop = sum(OptOut =="In")/n()) %>% #calculate proportion 
+  na.omit() 
+proporciones2
+```
 
 ```{r}
-proporciones %>%
+proporciones2 %>%
   ggplot(aes(x=Treatments, y=prop, fill = Treatments)) +
   geom_bar(stat="identity") +
   theme_gppr() +
