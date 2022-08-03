@@ -1,6 +1,6 @@
 ---
 title: "Analysis"
-author: "Joselina Davyt-Colo"
+author: "Joselina Davyt-Colo y Denise Laroze"
 date: '2022-07-05'
 output: html_document
 ---
@@ -28,13 +28,13 @@ source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
 ## Analysis {.tabset}
 
 ```{r}
-pilot_data <- readRDS(paste0(path_datos, "pilot_data.rds"))
+df <- readRDS(paste0(path_datos, "df.rds"))
 sitios_sm <- readRDS(paste0(path_datos, "sitios_complete.rds"))
 ```
 
 
 ```{r}
-zi <- pilot_data %>% filter(useridn != 0)  %>% group_by(useridn) %>% summarise(n = n())
+zi <- df %>% filter(useridn != 0)  %>% group_by(useridn) %>% summarise(n = n())
 ```
 
 
@@ -94,7 +94,7 @@ theme_gppr <- function(){
 ### Website navigation behaviors
 
 ```{r}
-proporciones1 <- pilot_data %>%
+proporciones1 <- df %>%
  group_by(Treatments, online) %>% #group
   summarise(prop = sum(OptOut =="In")/n()) %>% #calculate proportion 
   na.omit() 
@@ -102,7 +102,7 @@ proporciones1
 ```
 
 ```{r}
-# pilot_data %>%
+# df %>%
 #   arrange(StartDate) %>%
 #   mutate(sesion = as.numeric(case_when(
 #     fecha.x.x == "2022-05-20" & Time_of_day == "Morning" ~ 1,
@@ -133,7 +133,7 @@ proporciones1
 # newggslopegraph(proporciones, Time_of_day, prop, Treatments)
 # 
 # # Plot
-# pilot_data %>%
+# df %>%
 #   ggplot() +
 #   geom_segment(aes(x=1, xend=2, y="Morning", yend="Afternoon", col=class), size=.75, show.legend=F) + 
 #                   geom_vline(xintercept=1, linetype="dashed", size=.1) + 
@@ -156,7 +156,7 @@ proporciones %>%
   # ggtitle("Average wind power in 1975 and 2015")
 ```
 ```{r}
-proporciones2 <- pilot_data %>%
+proporciones2 <- df %>%
  group_by(Treatments) %>% #group
   summarise(prop = sum(OptOut =="In")/n()) %>% #calculate proportion 
   na.omit() 
@@ -179,7 +179,7 @@ ggsave(paste0(path_github, "Pilots/Superintendencia_de_Pensiones/figures/prop.pd
 
 ```{r}
 library("viridis") 
-proporciones_recomendar <- pilot_data %>%
+proporciones_recomendar <- df %>%
   dplyr::select(Treatments, Recomendar_NPS_GROUP) %>%
   na.omit() %>%
   group_by(Treatments) %>% 
@@ -203,7 +203,7 @@ ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/prop_pro
 
 
 ```{r}
-proporciones_asesor <- pilot_data %>%
+proporciones_asesor <- df %>%
   dplyr::select(Treatments, Advisor) %>%
   na.omit() %>%
   group_by(Treatments) %>% 
@@ -224,7 +224,7 @@ ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/prop_ase
 ```
 
 ```{r}
-pilot_data %>%
+df %>%
   ggplot(aes(n_clicks, tiempo_sec_1click_nclick, colour = fct_reorder2(Treatments, n_clicks, tiempo_sec_1click_nclick))) +
   geom_point(size = 2) +
   geom_line(size = 1.5) +
@@ -242,7 +242,7 @@ pilot_data %>%
 ```{r, , results='asis'}
 my_comparisons <- list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Perfil", "VideoPerfil"), c("Baseline", "VideoPerfil") )
 # 
-# n_clicks_wilcox  <- ggpubr::compare_means(n_clicks ~ Treatments,  data = pilot_data, 
+# n_clicks_wilcox  <- ggpubr::compare_means(n_clicks ~ Treatments,  data = df, 
 #                       comparisons = my_comparisons,  method = "wilcox.test")
 # 
 # n_clicks_wilcox %>%
@@ -252,13 +252,13 @@ my_comparisons <- list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Video"
 
 
 ```{r}
-h <- round(mean(pilot_data$n_clicks, na.rm = TRUE), digits = 2)
+h <- round(mean(df$n_clicks, na.rm = TRUE), digits = 2)
 
 
 symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 0.1, 1), 
                    symbols = c("****", "***", "**", "*",".", "ns"))
 
-pilot_data %>%
+df %>%
   ggplot(aes(y = n_clicks, x = Treatments, color=Treatments)) +
   geom_boxplot() +
   geom_jitter(width=0.15) +
@@ -281,7 +281,7 @@ ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/n_clicks
 ```
 
 ```{r}
-ggline(pilot_data, x = "Treatments", y = "n_clicks", add = "mean_se",
+ggline(df, x = "Treatments", y = "n_clicks", add = "mean_se",
        color = "Gender", palette = "jco") +
   xlab("Treatments") +
   ylab("Number of Clicks") +
@@ -292,7 +292,7 @@ ggline(pilot_data, x = "Treatments", y = "n_clicks", add = "mean_se",
 
 
 ```{r}
-pilot_data %>%
+df %>%
   ggplot(aes(y = n_clicks, x = Treatments,  color = factor(Gender))) +
   geom_boxplot() +
  geom_point(position = position_jitterdodge()) +
@@ -301,8 +301,8 @@ pilot_data %>%
   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
   geom_text(aes(y=h+5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
   #geom_text(aes(h, label=h, hjust=-0.1)) +
-  # geom_text(aes(y=mean(pilot_data$n_clicks),
-  #               label=prettyNum(round(mean(pilot_data$n_clicks)),big.mark=","), x=1),
+  # geom_text(aes(y=mean(df$n_clicks),
+  #               label=prettyNum(round(mean(df$n_clicks)),big.mark=","), x=1),
   #           colour='blue' )   +
   theme_gppr() +
   ggsci::scale_color_jco() + 
@@ -320,17 +320,17 @@ ggpubr::compare_means(tiempo_con_video ~ Treatments,  data = sitios_sm, ref.grou
 ```
 
 ```{r}
-ggpubr::compare_means(tiempo_sec_1click_nclick ~ Treatments,  data = pilot_data, ref.group = "Baseline",
+ggpubr::compare_means(tiempo_sec_1click_nclick ~ Treatments,  data = df, ref.group = "Baseline",
               method = "t.test")
 ```
 
 
 ```{r}
-h <- round(mean(pilot_data$tiempo_sec_1click_nclick, na.rm = TRUE), digits = 1)
+h <- round(mean(df$tiempo_sec_1click_nclick, na.rm = TRUE), digits = 1)
   
 my_comparisons <- rev(list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Perfil", "VideoPerfil"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Baseline", "VideoPerfil") ))
 
-pilot_data %>%
+df %>%
   dplyr::select(tiempo_sec_1click_nclick, Treatments) %>% na.omit() %>%
   ggplot(aes(y = tiempo_sec_1click_nclick, x = Treatments, color=Treatments)) +
   geom_boxplot() +
@@ -340,8 +340,8 @@ pilot_data %>%
   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
   geom_text(aes(y=h+60, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
   #geom_text(aes(h, label=h, hjust=-0.1)) +
-  # geom_text(aes(y=mean(pilot_data$n_clicks),
-  #               label=prettyNum(round(mean(pilot_data$n_clicks)),big.mark=","), x=1),
+  # geom_text(aes(y=mean(df$n_clicks),
+  #               label=prettyNum(round(mean(df$n_clicks)),big.mark=","), x=1),
   #           colour='blue' )   +
   theme_gppr() +
   ggsci::scale_color_aaas() + 
@@ -441,7 +441,7 @@ ggplot(aes(x = pagina, y =tiempo_pag, group = Treatments, color = Treatments)) +
 ```
 
 ```{r}
-pilot_data %>%
+df %>%
   ggplot(aes(n_clicks, tiempo_sec_1click_nclick, colour = fct_reorder2(Treatments, n_clicks, tiempo_sec_1click_nclick))) +
   geom_point(size = 2) +
   geom_line(size = 1.5) +
@@ -476,7 +476,7 @@ pilot_data %>%
 
 
 ```{r}
-g <- pilot_data %>% ggplot(aes(tiempo_min_1click_nclick, n_clicks)) 
+g <- df %>% ggplot(aes(tiempo_min_1click_nclick, n_clicks)) 
 
 g + geom_jitter(aes(col=Treatments)) + 
   geom_smooth(aes(col=Treatments), method="lm", se=F) +
@@ -488,9 +488,9 @@ g + geom_jitter(aes(col=Treatments)) +
 ### Correct responses
 
 ```{r, complete}
-h <- round(mean(pilot_data$correct_response, na.rm = TRUE), digits = 1)
+h <- round(mean(df$correct_response, na.rm = TRUE), digits = 1)
   
-pilot_data %>%
+df %>%
   ggplot(aes(y = correct_response, x = Treatments, color=Treatments)) +
   geom_boxplot() +
   geom_jitter(width=0.15) +
@@ -499,8 +499,8 @@ pilot_data %>%
   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
   #geom_text(aes(h, label=h, hjust=-0.1)) +
-  # geom_text(aes(y=mean(pilot_data$n_clicks),
-  #               label=prettyNum(round(mean(pilot_data$n_clicks)),big.mark=","), x=1),
+  # geom_text(aes(y=mean(df$n_clicks),
+  #               label=prettyNum(round(mean(df$n_clicks)),big.mark=","), x=1),
   #           colour='blue' )   +
   theme_gppr() +
   ggsci::scale_color_aaas() + 
@@ -515,9 +515,9 @@ ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/response
 
 ```
 ```{r, heterog}
-h <- round(mean(pilot_data$correct_response, na.rm = TRUE), digits = 1)
+h <- round(mean(df$correct_response, na.rm = TRUE), digits = 1)
   
-pilot_data %>%
+df %>%
   ggplot(aes(y = correct_response, x = Treatments, color = factor(Gender))) +
   geom_boxplot() +
   geom_point(position = position_jitterdodge()) +
@@ -536,7 +536,7 @@ pilot_data %>%
 ```
 
 ```{r}
-pilot_data %>%
+df %>%
   ggplot(aes(n_clicks, correct_response, colour = fct_reorder2(Treatments, n_clicks, correct_response))) +
   geom_point() +
   geom_line() +
@@ -546,7 +546,7 @@ pilot_data %>%
   ylab("Number of Correct Response")
 ```
 ```{r}
-pilot_data %>%
+df %>%
   ggplot(aes(tiempo_sec_1click_nclick, correct_response, colour = fct_reorder2(Treatments, tiempo_sec_1click_nclick, correct_response))) +
   geom_point() +
   geom_line() +
@@ -559,8 +559,8 @@ pilot_data %>%
 ### Self reported measures
 
 ```{r, data}
-dependent <- pilot_data %>%
-  dplyr::select(correct_response, Confidence_1, InfoAbruma2_1, Curiosity_1, InfoUtil_1, tiempo_min_1click_nclick, Treatments, Gender, Pension_Type) %>%
+dependent <- df %>%
+  dplyr::select(correct_response, Confidence_1, Curiosity_1, InfoUtil_1, tiempo_min_1click_nclick, Treatments, Gender, Pension_Type) %>%
   mutate(Treatments = as.factor(Treatments)) %>%
   mutate(Gender = as.factor(Gender)) %>%
    mutate(Pension_Type = as.factor(Pension_Type)) %>%
@@ -809,9 +809,9 @@ ggplot(aes(y = Confidence_1, x = as.factor(Treatments), color = Gender)) +
 ggsave(here::here("Pilots/Superintendencia_de_Pensiones/figures/confidence_het.pdf"))
 ```
 ```{r}
-h_res <- round(mean(dependent$correct_response, na.rm = TRUE), digits = 1)
+h_res <- round(mean(df$correct_response, na.rm = TRUE), digits = 1)
 
-dependent %>%
+df %>%
   dplyr::select(correct_response, Treatments, Pension_Type)  %>%
 ggplot(aes(y = correct_response, x = as.factor(Treatments), color = Pension_Type)) +
   geom_boxplot() +
@@ -832,7 +832,7 @@ ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/response
 
 
 ```{r}
-pilot_data %>%
+df %>%
   group_by(Curiosity_1) %>%                                            # for each question number
   count(Treatments) %>%                                                  # count gender type
   mutate(Prc = round(n/sum(n),2)) %>%            # update variable
@@ -842,7 +842,7 @@ pilot_data %>%
   geom_bar(position = "fill", stat = "identity")+                # add bars
   #geom_text(aes(label=Prc_text), position = position_dodge(width=1), size=4) +
   coord_flip() 
-curiosity_count <- pilot_data %>%
+curiosity_count <- df %>%
   ggplot(aes(Curiosity_1)) +
   geom_bar() +
   facet_wrap(~Treatments)
@@ -851,7 +851,7 @@ curiosity_count <- curiosity_count$data
 ```
 
 ```{r}
-pilot_data %>%
+df %>%
   group_by(Curiosity_1) %>%                                            # for each question number
   count(Treatments) %>%                                                  # count gender type
   mutate(Prc = round(n/sum(n),2)) %>%            # update variable
@@ -902,7 +902,7 @@ pilot_data %>%
 ```{r}
 library(sjPlot)
 library(sjmisc)
-#plot_likert(pilot_data$Curiosity_1)
+#plot_likert(df$Curiosity_1)
 ```
 
 
@@ -941,19 +941,18 @@ pairs(dependent[,1:5],
 #### Linear Models
 
 ```{r}
-#pilot_data$Curiosity_1
+#df$Curiosity_1
 m_respuestas <- lm(correct_response ~ Treatments, 
-                   data = pilot_data)
+                   data = df)
 m_Confidence_1 <- lm(Confidence_1 ~ Treatments, 
-                   data = pilot_data)
-m_InfoAbruma2_1 <- lm(InfoAbruma2_1 ~ Treatments, 
-                   data = pilot_data)
+                   data = df)
 m_n_clicks <- lm(n_clicks ~ Treatments, 
-                   data = pilot_data)
+                   data = df)
 m_Curiosity_1 <- lm(Curiosity_1 ~ Treatments, 
-                   data = pilot_data)
+                   data = df)
 m_tiempo_min_1click_nclick <- lm(tiempo_min_1click_nclick ~ Treatments, 
-                   data = pilot_data)
+                   data = df)
+
 ```
 
 ```{r, results='asis'}
