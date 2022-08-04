@@ -92,6 +92,7 @@ for (i in 1:nrow(tmp)){
 tmp$pb<-as.numeric(gsub('\\D+','',tmp$timevalue))
 
 pilot_data$present_bias<-tmp$pb
+pilot_data$pb_d<-ifelse(pilot_data$present_bias>19999, "alto", "bajo")
 
 
 rm(df1, df2, df, tmp)

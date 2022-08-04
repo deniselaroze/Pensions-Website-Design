@@ -50,20 +50,35 @@ df$Change_Advisor<-ifelse(df$PAdvice=="No" & df$Advisor=="No", "Maintain No",
 
 
 
+df$pb_d<-ifelse(df$present_bias>19999, "alto", "bajo")
+
+
 ###############################
 ########## Data Analysis
 ###############################
 
+
+
+df.pv<-df[df$Pension_Type=="Private",]
+df.pp<-df[df$Pension_Type=="Public",]
+
+df.ns<-df[df$PlanJubi=="No sabe",]
+
+
+
 ####### Balance Tests 
 
+
+
 require(nnet)
-multinom_model <- multinom(Treatments ~ Age + Gender + Educ, data = df)
+multinom_model1 <- multinom(Treatments ~ Age + Gender + Educ, data = df)
 
-multinom_model <- multinom(Treatments ~ Age + Gender + Educ + financial_lit + present_bias, data = df)
+multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit), data = df)
 
-stargazer(multinom_model)
-df$present_bias
 
+stargazer(multinom_model1, multinom_model2)
+
+table(df$present_bias, df$Treatments)
 
 
 ### simple models  
@@ -95,10 +110,6 @@ df$present_bias
 
 #### Changes in preferences regarding pensions
   
-df.pv<-df[df$Pension_Type=="Private",]
-df.pp<-df[df$Pension_Type=="Public",]
-
-df.ns<-df[df$PlanJubi=="No sabe",]
   
 table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
 
@@ -122,34 +133,59 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
               data = df[df$Gender=="M",]) 
   lm_CR_ns <- lm(correct_response ~ Treatments, 
                  data = df.ns) 
-  
-  summary(lm_CR_ns)
-  
-  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M)
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
 
+  
+### Correct Responses with Controls
+  
+  
+  
+  lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+              data = df) 
+  
+  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+                 data = df[df$Pension_Type=="Public",]) 
+  
+  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+                 data = df[df$Pension_Type=="Private",]) 
+  
+  lm_CR_F <- lm(correct_response ~ Treatments + Age  + Educ + pb_d + as.factor(financial_lit), 
+                data = df[df$Gender=="F",]) 
+  
+  lm_CR_M <- lm(correct_response ~ Treatments + Age + Educ + pb_d + as.factor(financial_lit), 
+                data = df[df$Gender=="M",]) 
+  lm_CR_ns <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d , 
+                 data = df.ns) 
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
+  
+  
+  
+  
+  
 ### Facilidad
   
   df$facil<-parse_number(df$Facilidad)
 
   lm_facil <- lm(facil ~ Treatments, 
                 data = df[df$Pension_Type=="Public",]) 
-  summary(lm_facil)
+  stargazer(lm_facil)
 
-### Info ultil /////////// Potencial espacio de heterogeneidad entre públicos y privados
+### Info util para tomar una decisión /////////// Potencial espacio de heterogeneidad entre públicos y privados
   
   
   df$InfoUtil_1<-as.numeric(df$InfoUtil_1)
-  
+  lm_util <- lm(InfoUtil_1 ~ Treatments, 
+                   data = df) 
   lm_util.pp <- lm(InfoUtil_1 ~ Treatments, 
                    data = df[df$Pension_Type=="Public",]) 
   lm_util.pv <- lm(InfoUtil_1 ~ Treatments, 
                    data = df[df$Pension_Type=="Private",]) 
-    stargazer(lm_util.pp, lm_util.pv)
+    stargazer(lm_util, lm_util.pp, lm_util.pv)
   
   
 ### Advisor #### Nulo
   advisor<- glm(as.factor(Advisor) ~ Treatments, data = df, family = "binomial")
-  summary(advisor)
+ stargazer(advisor) ### Puede dar el video, pero se necesitan más datos para tener más seguridad
   
   
   Chang_Adv <- glm(as.factor(Change_Advisor) ~ Treatments, data = df, family = "binomial")
@@ -159,18 +195,19 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
 ### Recomendar### Los perfiles parecen generar rechazo en privados pero gusto en públicos  
   
   df$Recomendar<-as.numeric(df$Recomendar)
-  
-  lm_recomendar.pv <- lm(InfoUtil_1 ~ Treatments, 
+  lm_recomendar<- lm(Recomendar ~ Treatments, 
+                         data = df) 
+  lm_recomendar.pv <- lm(Recomendar ~ Treatments, 
                    data = df[df$Pension_Type=="Private",]) 
-  lm_recomendar.pp <- lm(InfoUtil_1 ~ Treatments, 
+  lm_recomendar.pp <- lm(Recomendar ~ Treatments, 
                    data = df[df$Pension_Type=="Public",]) 
   
-  stargazer(lm_recomendar.pp, lm_recomendar.pv)
+  stargazer(lm_recomendar, lm_recomendar.pp, lm_recomendar.pv)
   
   mean(df$Recomendar, na.rm = T)
   
   
-### Exceso de Confianza
+### Exceso de Confianza // Videos reduce excess confidence
   
  mean(df$Confidence, na.rm=T)
  
