@@ -1,6 +1,6 @@
 #get data
 # individuals as observation units
-path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/online/data/"
+#path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/online/data/"
 
 
 sitios <-
@@ -58,7 +58,9 @@ sitios_complete <- contestar %>%
   mutate(terminaron = ifelse(is.na(terminaron), "no", terminaron))# %>% 
   # select(!matches("^(n|y)_contestar"))
 
-saveRDS(sitios_complete, here::here("online/data/sitios_complete.rds"))
+saveRDS(sitios_complete, paste0(path_datos,"sitios_complete.rds"))
+
+
 
 # Pivot sites for page behavior analysis
 
@@ -180,4 +182,6 @@ sitios_sm <- sitios_pivot %>%
   ), levels = c("Start", "Click Here", "Pension Type", "Compare",  "Steps",  "Instructions",  "Answer", "More Info" )),
   pagina = factor(pagina, levels = c("inicio", "clickaqui", "comparar","pasos", "perfil", "producto", "masinfo", "instrucciones", "contestar", "difmodmix", "gf", "rsh", "rv", "pg", "cu", "c_invalidez", "ctie"))
   )
-saveRDS(sitios_sm, here::here("Pilots/Superintendencia_de_Pensiones/data/sitios_sm.rds"))
+
+saveRDS(sitios_sm, paste0(path_datos, "sitios_sm.rds"))
+

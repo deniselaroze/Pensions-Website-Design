@@ -2,36 +2,11 @@
 
 # Encuesta A, load and transformation
 
-path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/online/data/"
+#path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/online/data/"
 
-encuesta_A <- "encuesta_A.xlsx"
+encuesta_A <- "Encuesta_A.csv"
 
-encuestaA_online <- read_excel(paste0(path_datos, encuesta_A), 
-                               col_types = c("date", "date", "text",
-                                             "text", "text", "text", "text", "date",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text", "text", "text", "text", "text",
-"text"))[-1,] %>% 
+encuestaA_online <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>% 
   mutate(#fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
          sitioderivado = case_when(
          nchar(useridn) == 4  ~ stringi::stri_sub(UID, 8, 8),
@@ -56,7 +31,7 @@ encuestaA_online <- encuestaA_online[,colSums(is.na(encuestaA_online))<nrow(encu
 
 # Encuesta B Privada, load and transformation
 
-encuesta_B_Pri <- "B_Privada.csv"
+encuesta_B_Pri <- "Encuesta_B_Privada.csv"
 
 B_Privada <- read_csv(paste0(path_datos, encuesta_B_Pri)) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
@@ -102,13 +77,18 @@ B_Privada <- read_csv(paste0(path_datos, encuesta_B_Pri)) %>%
          Facilidad,
          Dificultad,
          Dificultad_1_TEXT,
-         total_reward) %>%
+         total_reward,
+         contains("Math"),
+         contains("Q1"),
+         contains("Q2")
+         
+         ) %>%
   rename(MB_Despues = SelectMode.PV)
 B_Privada <- B_Privada[,colSums(is.na(B_Privada))<nrow(B_Privada)]
 
 # Encuesta B Publica, load and transformation
 
-encuesta_B_Pu <- "B_publica.csv"
+encuesta_B_Pu <- "Encuesta_B_publica.csv"
 
 B_Publica <- read_csv(paste0(path_datos, encuesta_B_Pu)) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
@@ -152,12 +132,15 @@ B_Publica <- read_csv(paste0(path_datos, encuesta_B_Pu)) %>%
          Facilidad,
          Dificultad,
          Dificultad_1_TEXT,
-         total_reward)
+         total_reward,
+         contains("Math"),
+         contains("Q1"),
+         contains("Q2"))
 B_Publica <- B_Publica[,colSums(is.na(B_Publica))<nrow(B_Publica)]
 
 # Encuesta C Privada, load and transformation
 
-encuesta_C_Pri <- "C_privada.csv"
+encuesta_C_Pri <- "Encuesta_C_privadas.csv"
 
 C_Privada <- read_csv(paste0(path_datos, encuesta_C_Pri)) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
@@ -201,13 +184,16 @@ C_Privada <- read_csv(paste0(path_datos, encuesta_C_Pri)) %>%
          Recomendar_NPS_GROUP,
          SelectMode.PV,
          SelectMode.under50,
-         total_reward) %>%
+         total_reward,
+         contains("Math"),
+         contains("Q1"),
+         contains("Q2")) %>%
   rename(MB_Despues = SelectMode.PV)
 C_Privada <- C_Privada[,colSums(is.na(C_Privada))<nrow(C_Privada)]
 
 # Encuesta C Publica, load and transformation
 
-encuesta_C_Pu <- "C_publica.csv"
+encuesta_C_Pu <- "Encuesta_C_publicas.csv"
 
 C_Publica <- read_csv(paste0(path_datos, encuesta_C_Pu)) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
@@ -248,7 +234,10 @@ C_Publica <- read_csv(paste0(path_datos, encuesta_C_Pu)) %>%
          SelectMode.PP,
          SelectMode.under50,
          PostuBene,
-         total_reward) %>%
+         total_reward,
+         contains("Math"),
+         contains("Q1"),
+         contains("Q2")) %>%
   rename(MB_Despues = SelectMode.PP)
 C_Publica <- C_Publica[,colSums(is.na(C_Publica))<nrow(C_Publica)]
 
