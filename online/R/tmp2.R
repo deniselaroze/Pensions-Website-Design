@@ -2,6 +2,9 @@
 #### Ideas to test - not clean
 #### author: Denise Laroze
 ################################
+library(stargazer)
+library(MASS)
+#library(naniar)
 
 
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
@@ -14,13 +17,17 @@ path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/
 
 
 
-df <- readRDS(paste0(path_datos, "Pilot_data.rds"))
 #sitios_sm <- readRDS(paste0(path_datos, "sitios_complete.rds"))
 
 
 source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/paquetes.R"))
-#source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
+source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
+#source(paste0(path_github,"Online/R/etl_surveys.R"))
+#source(paste0(path_github,"Online/R/etl_sites.R"))
+#source(paste0(path_github,"Online/R/etl_complete.R"))
 
+
+df <- readRDS(paste0(path_datos, "online_data.rds"))
 
 
 ##############################
@@ -43,79 +50,31 @@ df$Change_Advisor<-ifelse(df$PAdvice=="No" & df$Advisor=="No", "Maintain No",
 
 
 
-### Correct answers for Financial Literacy Questions 
-
-#table(df$QMath1)
-df$QMath1_correct<-ifelse(df$QMath1=="Más de $125.000.000", 1, 0)
-#table(df$QMath1, df$QMath1_correct)
-
-#table(df$QMath2)
-df$QMath2_correct<-ifelse(df$QMath2=="Nunca se terminaría de pagar el crédito", 1, 0)
-#table(df$QMath2, df$QMath2_correct)
-
-#df$Qmath3num<-parse_number(df$Qmath3)
-df$QMath3_correct<-ifelse(df$QMath3 == 5000,1, ifelse(df$QMath3==5, 1, 0))
-#table(df$QMath3, df$QMath3_correct)
-
-
-tmp<-df[, c("QMath1_correct", "QMath2_correct", "QMath3_correct") ]
-
-tmp[is.na(tmp)] <- 0
-tmp$financial_lit<-rowSums(tmp)
-
-
-df$financial_lit<-tmp$financial_lit
-rm(tmp)
-
-
-# Time preferences
-df1<-grep("Q1", names(df), value=TRUE)
-df2<-grep("Q2", names(df), value=TRUE)  
-df_names<-as.factor(c(df1, df2)) 
-tmp<-df[, c(df_names)]
-
-tmp$timevalue<-NA
-for (i in 1:nrow(tmp)){
-  NonNAindex <- which(!is.na(tmp[i,]))
-  last <- max(NonNAindex)
-  tmp$timevalue[i]<-colnames(tmp)[last]
-}
-
-tmp$pb<-as.numeric(gsub('\\D+','',tmp$timevalue))
-
-df$present_bias<-tmp$pb
-
-
-rm(df1, df2, df_names, tmp)
-
-
-
-
 ###############################
 ########## Data Analysis
 ###############################
 
+####### Balance Tests 
 
+require(nnet)
+multinom_model <- multinom(Treatments ~ Age + Gender + Educ, data = df)
 
+multinom_model <- multinom(Treatments ~ Age + Gender + Educ + financial_lit + present_bias, data = df)
 
+stargazer(multinom_model)
+df$present_bias
 
 
 
 ### simple models  
 
-df$OptOut2 = ifelse(df$terminaron == "si" & df$contesta == "B" , "In", "Out")
-
-table(df$OptOut, df$OptOut2)
-
-View(df[, c("terminaron", "contesta", "OptOut", "OptOut2")])
-
-# Opt Out
-  opt_out<- glm(as.factor(OptOut2) ~ Treatments, data = df, family = "binomial")
+##### Opt Out
+  opt_out<- glm(as.factor(OptOut) ~ Treatments, data = df, family = "binomial")
   
-    opt_out.pp<- glm(as.factor(OptOut2) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
+    opt_out.pp<- glm(as.factor(OptOut) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
   
   
-    opt_out.pv<- glm(as.factor(OptOut2) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
+    opt_out.pv<- glm(as.factor(OptOut) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
   stargazer(opt_out, opt_out.pp, opt_out.pv)  
   
 
@@ -138,6 +97,8 @@ View(df[, c("terminaron", "contesta", "OptOut", "OptOut2")])
   
 df.pv<-df[df$Pension_Type=="Private",]
 df.pp<-df[df$Pension_Type=="Public",]
+
+df.ns<-df[df$PlanJubi=="No sabe",]
   
 table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
 
@@ -159,6 +120,10 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
   
   lm_CR_M <- lm(correct_response ~ Treatments, 
               data = df[df$Gender=="M",]) 
+  lm_CR_ns <- lm(correct_response ~ Treatments, 
+                 data = df.ns) 
+  
+  summary(lm_CR_ns)
   
   stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M)
 

@@ -11,10 +11,6 @@ pilot_data <- sitios_complete %>%
            website.x == "6" ~ "VideoPerfil",
            website.x == "7" ~ "Baseline",
            website.x == "8" ~ "Baseline"), levels = c("Baseline", "Perfil", "Video", "VideoPerfil")),
-         OptOut = case_when(
-           terminaron == "si" & contesta == "B" ~ "In",
-           TRUE ~ "Out"
-         ),
          Pension_Type = factor(case_when(
            website.x == "1" ~ "Public",
            website.x == "2" ~ "Public",
@@ -26,6 +22,8 @@ pilot_data <- sitios_complete %>%
            website.x == "7" ~ "Private"), levels = c("Public", "Private"))) %>% 
          #online = ifelse(fecha.x.x == "2022-06-08", 1, 0)) 
   arrange(useridn)
+
+pilot_data$OptOut = ifelse(pilot_data$terminaron == "si" & pilot_data$contesta == "B" , "In", "Out")
 
 #breaks <- hour(hm("00:00", "6:00", "12:00", "18:00", "23:59"))
 # labels for the breaks
