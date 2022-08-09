@@ -8,26 +8,31 @@ library(MASS)
 
 
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
-path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
+#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
+path_datos <- "C:/Users/Profesor/Dropbox/Sitios web/Datos Estudio Online/"
+
 # If you don´t use Rprojects functionality setwd
 #setwd("C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/")
 #path_github <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/Pilots/Superintendencia_de_Pensiones"
 
-path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+path_github <- "C:/Users/Profesor/Documents/GitHub/Pensions-Website-Design/"
 
 
 
 #sitios_sm <- readRDS(paste0(path_datos, "sitios_complete.rds"))
 
 
-source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/paquetes.R"))
-source(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/R/funciones.R"))
+source(paste0(path_github,"Online/R/paquetes.R"))
+source(paste0(path_github,"Online/R/funciones.R"))
 #source(paste0(path_github,"Online/R/etl_surveys.R"))
 #source(paste0(path_github,"Online/R/etl_sites.R"))
 #source(paste0(path_github,"Online/R/etl_complete.R"))
 
 
 df <- readRDS(paste0(path_datos, "online_data.rds"))
+View(is.na(df))
+
 
 
 ##############################
@@ -229,6 +234,317 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
 #########################
 ### Gráficos
 #######################
+ # Parameters
+ theme_gppr <- function(){ 
+   font <- "Georgia"   #assign font family up front
+   
+   ggthemes::theme_economist_white() %+replace%    #replace elements we want to change
+     
+     theme(
+       legend.position = "bottom",
+       #grid elements
+       panel.grid.major = element_blank(),    #strip major gridlines
+       panel.grid.minor = element_blank(),    #strip minor gridlines
+       
+       #since theme_minimal() already strips axis lines, 
+       #we don't need to do that again
+       
+       #text elements
+       plot.title = element_text(             #title
+         family = font,            #set font family
+         size = 20,                #set font size
+         face = 'bold',            #bold typeface
+         hjust = 0,                #left align
+         vjust = 2),               #raise slightly
+       
+       plot.subtitle = element_text(          #subtitle
+         family = font,            #font family
+         size = 14),               #font size
+       
+       plot.caption = element_text(           #caption
+         family = font,            #font family
+         size = 9,                 #font size
+         hjust = 1),               #right align
+       
+       # axis.title = element_text(             #axis titles
+       #              family = font,            #font family
+       #              size = 10),               #font size
+       # 
+       # axis.text = element_text(              #axis text
+       #              family = font,            #axis famuly
+       #              size = 10),                #font size
+       
+       #axis.text.x = element_text(            #margin for axis text
+       # margin=margin(5, b = 10)),
+       #axis.title.x = element_text(size=12),
+       axis.title.y = element_text(size=12, angle = 90, vjust = +3)
+       
+       #since the legend often requires manual tweaking 
+       #based on plot content, don't define it here
+     )
+ }
+ my_comparisons <- list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Perfil", "VideoPerfil"), c("Baseline", "VideoPerfil") )
+ df.g<-df[!is.na(df$correct_response),]
+
+ #### Opt Out
+ df$OO.n<-as.numeric(as.factor(df$OptOut))-1
+ mean<-mean(as.numeric(df$OO.n), na.rm=T)
+ 
+ proporciones_oo <- df %>%
+   dplyr::select(Treatments, OO.n) %>%
+   na.omit() %>%
+   group_by(Treatments) %>% 
+   summarise(prop = sum(OO.n ==1)/n()) %>%  
+   na.omit() 
+ #proporciones
+ 
+ 
+ proporciones_oo %>%
+   ggplot(aes(x=Treatments, y=prop, fill = Treatments)) +
+   geom_bar(stat="identity") +
+   theme_gppr() +
+   ggsci::scale_fill_aaas() +
+   theme(axis.title.x=element_blank(), axis.text.x=element_blank()) +
+   geom_hline(aes(yintercept = mean), linetype = 2, color = "gray") +
+   geom_text(aes(y=0.55, label=paste0("0.5"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   ylab("Opt Out of responding questions")
+ 
+ ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
+ 
+ 
+ ### Usefulness of the information
+ 
+ h <- round(mean(as.numeric(df.g$InfoUtil_1), na.rm = TRUE), digits = 1)
+ 
+ df.g %>%
+   dplyr::select(InfoUtil_1, Treatments)  %>%
+   ggplot(aes(y = as.numeric(InfoUtil_1), x = as.factor(Treatments))) +
+   geom_boxplot() +
+   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,16)) +
+   theme_gppr() +
+   scale_colour_brewer(type = "seq", palette = "Dark2")+ 
+   labs(x ="Treatments", y = "Level of usefulness", title = "")  +
+   theme(axis.title.y = element_text(vjust = +3),
+         axis.ticks.x = element_blank(),
+         plot.title = element_text(vjust = -1, size = 12)) +
+   ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                              label = "p.signif", method = "wilcox.test")
+ 
+ ggsave(paste0(path_github,"online/Graphs/usefulness.pdf"))
+ 
+ ##### Usefulness Private/Public
+ h_res <- round(mean(as.numeric(df.g$InfoUtil_1), na.rm = TRUE), digits = 1)
+ 
+ df.g %>%
+   dplyr::select(InfoUtil_1, Treatments, Pension_Type)  %>%
+   ggplot(aes(y = as.numeric(InfoUtil_1), x = as.factor(Treatments), color = Pension_Type)) +
+   geom_boxplot() +
+   geom_point(position = position_jitterdodge()) +
+   geom_hline(aes(yintercept = h_res), linetype = 2, color = "gray") +
+   geom_text(aes(y=h_res+0.5, label=paste0("Mean ", prettyNum(h_res,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   theme_gppr() +
+   scale_colour_brewer(type = "seq", palette = "Dark2")+ 
+   labs(x ="Treatments", y = "Level of usefulness", title = "")  +
+   theme(axis.title.y = element_text(vjust = +3),
+         axis.ticks.x = element_blank(),
+         plot.title = element_text(vjust = -1, size = 12)) +
+   stat_compare_means(aes(group = Pension_Type), label = "p.signif")
+ 
+ ggsave(paste0(path_github,"online/Graphs/usefulness_het_pensiontype.pdf"))
+ 
+ 
+ 
+ ### Correct Responses
+
+ h <- round(mean(df.g$correct_response, na.rm = TRUE), digits = 1)
+ 
+ df.g %>%
+   dplyr::select(correct_response, Treatments)  %>%
+   ggplot(aes(y = correct_response, x = as.factor(Treatments))) +
+   geom_boxplot() +
+   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   theme_gppr() +
+   scale_colour_brewer(type = "seq", palette = "Dark2")+ 
+   labs(x ="Treatments", y = "Num. Correct Response", title = "")  +
+   theme(axis.title.y = element_text(vjust = +3),
+         axis.ticks.x = element_blank(),
+         plot.title = element_text(vjust = -1, size = 12)) +
+   ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                              label = "p.signif", method = "wilcox.test")
+ 
+ ggsave(paste0(path_github,"online/Graphs/responses.pdf"))
+ 
+ 
+ 
+ ### Correct responses Gender Het
+ h <- round(mean(df.g$correct_response, na.rm = TRUE), digits = 1)
+
+ df.g %>%
+   ggplot(aes(y = correct_response, x = Treatments, color = factor(Gender))) +
+   geom_boxplot() +
+   geom_point(position = position_jitterdodge()) +
+   ylab("Num. Correct Responses") +
+   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
+   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   theme_gppr() +
+   ggsci::scale_color_jco() + 
+   stat_compare_means(aes(group = Gender), label = "p.signif")+
+   theme(axis.text.x=element_blank(),
+         axis.title.y = element_text(vjust = +3),
+         plot.title = element_text(vjust = -1, size = 12),
+         axis.ticks.x = element_blank(),
+         axis.title.x = element_blank()) +
+   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12))
+ ggsave(paste0(path_github,"online/Graphs/responses_het_gender.pdf"))
+ 
+ ### Correct Responses Heterogeneity Public/Private
+ 
+ h_res <- round(mean(df.g$correct_response, na.rm = TRUE), digits = 1)
+ 
+ df.g %>%
+   dplyr::select(correct_response, Treatments, Pension_Type)  %>%
+   ggplot(aes(y = correct_response, x = as.factor(Treatments), color = Pension_Type)) +
+   geom_boxplot() +
+   geom_point(position = position_jitterdodge()) +
+   geom_hline(aes(yintercept = h_res), linetype = 2, color = "gray") +
+   geom_text(aes(y=h_res+0.5, label=paste0("Mean ", prettyNum(h_res,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   theme_gppr() +
+   scale_colour_brewer(type = "seq", palette = "Dark2")+ 
+   labs(x ="Treatments", y = "Num. Correct Response", title = "")  +
+   theme(axis.title.y = element_text(vjust = +3),
+         axis.ticks.x = element_blank(),
+         plot.title = element_text(vjust = -1, size = 12)) +
+   stat_compare_means(aes(group = Pension_Type), label = "p.signif")
+ ggsave(paste0(path_github,"online/Graphs/responses_het_pensiontype.pdf"))
+ 
+ 
+#### Self reported measures   
+ 
+ ##########################################################
+ 
+ ######
+ h_cu <- round(mean(dependent$Curiosity_1, na.rm = TRUE), digits = 1)
+ h_co <- round(mean(dependent$Confidence_1, na.rm = TRUE), digits = 1)
+ h_a <- round(mean(dependent$InfoAbruma2_1, na.rm = TRUE), digits = 1)
+ cu <- dependent %>%
+   mutate_if(is.factor,as.character) %>%
+   mutate(Treatments = as.factor(Treatments)) %>%
+   mutate_if(is.character,as.numeric) %>%
+   ggplot(aes(y = Curiosity_1, x = as.factor(Treatments), color = Treatments)) +
+   geom_boxplot() +
+   geom_jitter() +
+   geom_hline(aes(yintercept = h_cu), linetype = 2, color = "gray") +
+   geom_text(aes(y=h_cu+0.5, label=paste0("Mean ", prettyNum(h_cu,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   theme_gppr() +
+   ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                              label = "p.signif", method = "wilcox.test") +
+   ggsci::scale_color_aaas() +
+   ggsci::scale_fill_aaas() +
+   labs(x ="", y = "", title = "Curiosity")  +
+   theme(axis.text.x=element_blank(),
+         axis.title.y = element_text(vjust = +6),
+         axis.ticks.x = element_blank(),
+         plot.title = element_text(vjust = -1, size = 12))
+ co <- dependent %>%
+   mutate_if(is.factor,as.character) %>%
+   mutate(Treatments = as.factor(Treatments)) %>%
+   mutate_if(is.character,as.numeric) %>%
+   ggplot(aes(y = Confidence_1, x = as.factor(Treatments), color = Treatments)) +
+   geom_boxplot() +
+   geom_jitter() +
+   geom_hline(aes(yintercept = h_co), linetype = 2, color = "gray") +
+   geom_text(aes(y=h_co+0.5, label=paste0("Mean ", prettyNum(h_co,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   theme_gppr() +
+   ggsci::scale_color_aaas() +
+   ggsci::scale_fill_aaas() +
+   ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                              label = "p.signif", method = "wilcox.test")+
+   labs(x ="", y = "", title = "Confidence")  +
+   theme(axis.text.x=element_blank(),
+         axis.title.y = element_text(vjust = +6),
+         plot.title = element_text(vjust = -1, size = 12),
+         axis.ticks.x = element_blank())
+ abru <- dependent %>%
+   mutate_if(is.factor,as.character) %>%
+   mutate(Treatments = as.factor(Treatments)) %>%
+   mutate_if(is.character,as.numeric) %>%
+   ggplot(aes(y = InfoAbruma2_1, x = as.factor(Treatments), color = Treatments)) +
+   geom_boxplot() +
+   geom_jitter() +
+   geom_hline(aes(yintercept = h_a), linetype = 2, color = "gray") +
+   geom_text(aes(y=h_a+0.5, label=paste0("Mean ", prettyNum(h_a,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   theme_gppr() +
+   ggsci::scale_color_aaas() +
+   ggsci::scale_fill_aaas() +
+   labs(x ="", y = "Too much information", title = "")  +
+   ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                              label = "p.signif", method = "wilcox.test")+
+   theme(axis.text.x=element_blank(),
+         axis.title.y = element_text(vjust = +3),
+         plot.title = element_text(vjust = -1, size = 12),
+         axis.ticks.x = element_blank())
+ 
+ ggarrange(cu, co,  abru, common.legend = TRUE, legend = "bottom", ncol = 3)
+ ```
+ 
+ ```{r, utility}
+ symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 0.1, 1), 
+                    symbols = c("****", "***", "**", "*",".", "ns"))
+ mis_comparaciones <- list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Perfil", "VideoPerfil"), c("Baseline", "VideoPerfil") )
+ h_u <- round(mean(dependent$InfoUtil_1, na.rm = TRUE), digits = 1)
+ dependent %>%
+   mutate_if(is.factor,as.character) %>%
+   mutate(Treatments = as.factor(Treatments)) %>%
+   mutate_if(is.character,as.numeric) %>%
+   ggplot(aes(y = InfoUtil_1, x = as.factor(Treatments), color = Treatments)) +
+   geom_boxplot() +
+   geom_jitter() +
+   geom_hline(aes(yintercept = h_u), linetype = 2, color = "gray") +
+   geom_text(aes(y=h_u+0.5, label=paste0("Mean ", prettyNum(h_a,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1)  +
+   theme_gppr() +
+   ggsci::scale_color_aaas() +
+   ggsci::scale_fill_aaas() +
+   labs(x ="", y = "Utility", title = "")  +
+   ggpubr::stat_compare_means(comparisons = my_comparisons, 
+                              label = "p.signif", method = "wilcox.test", 
+                              hide.ns = TRUE) +
+   theme(axis.text.x=element_blank(),
+         axis.title.y = element_text(vjust = +3),
+         plot.title = element_text(vjust = -1, size = 12),
+         axis.ticks.x = element_blank()) +
+   coord_cartesian(ylim = c(2,15))
+ ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/utility.pdf"))
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
  symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 0.1, 1), 
