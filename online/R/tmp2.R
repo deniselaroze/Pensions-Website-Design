@@ -428,35 +428,11 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
  
  ##########################################################
  
- ######
- h_cu <- round(mean(dependent$Curiosity_1, na.rm = TRUE), digits = 1)
- h_co <- round(mean(dependent$Confidence_1, na.rm = TRUE), digits = 1)
- h_a <- round(mean(dependent$InfoAbruma2_1, na.rm = TRUE), digits = 1)
- cu <- dependent %>%
-   mutate_if(is.factor,as.character) %>%
-   mutate(Treatments = as.factor(Treatments)) %>%
-   mutate_if(is.character,as.numeric) %>%
-   ggplot(aes(y = Curiosity_1, x = as.factor(Treatments), color = Treatments)) +
-   geom_boxplot() +
-   geom_jitter() +
-   geom_hline(aes(yintercept = h_cu), linetype = 2, color = "gray") +
-   geom_text(aes(y=h_cu+0.5, label=paste0("Mean ", prettyNum(h_cu,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
-   theme_gppr() +
-   ggpubr::stat_compare_means(comparisons = my_comparisons, 
-                              label = "p.signif", method = "wilcox.test") +
-   ggsci::scale_color_aaas() +
-   ggsci::scale_fill_aaas() +
-   labs(x ="", y = "", title = "Curiosity")  +
-   theme(axis.text.x=element_blank(),
-         axis.title.y = element_text(vjust = +6),
-         axis.ticks.x = element_blank(),
-         plot.title = element_text(vjust = -1, size = 12))
- co <- dependent %>%
-   mutate_if(is.factor,as.character) %>%
-   mutate(Treatments = as.factor(Treatments)) %>%
-   mutate_if(is.character,as.numeric) %>%
-   ggplot(aes(y = Confidence_1, x = as.factor(Treatments), color = Treatments)) +
+ ###### Confidence
+ h_co <- round(mean(as.numeric(df.g$Confidence), na.rm = TRUE), digits = 1)
+ 
+ co <- df.g %>%
+   ggplot(aes(y = as.numeric(df.g$Confidence), x = as.factor(Treatments), color = Treatments)) +
    geom_boxplot() +
    geom_jitter() +
    geom_hline(aes(yintercept = h_co), linetype = 2, color = "gray") +
@@ -472,186 +448,32 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
          axis.title.y = element_text(vjust = +6),
          plot.title = element_text(vjust = -1, size = 12),
          axis.ticks.x = element_blank())
- abru <- dependent %>%
-   mutate_if(is.factor,as.character) %>%
-   mutate(Treatments = as.factor(Treatments)) %>%
-   mutate_if(is.character,as.numeric) %>%
-   ggplot(aes(y = InfoAbruma2_1, x = as.factor(Treatments), color = Treatments)) +
+ 
+ ###### overconfidence
+ h_oco <- round(mean(df.g$overconfidence, na.rm = TRUE), digits = 1)
+ 
+ df.g %>%
+   ggplot(aes(y = overconfidence, x = as.factor(Treatments), color = Treatments)) +
    geom_boxplot() +
    geom_jitter() +
-   geom_hline(aes(yintercept = h_a), linetype = 2, color = "gray") +
-   geom_text(aes(y=h_a+0.5, label=paste0("Mean ", prettyNum(h_a,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   geom_hline(aes(yintercept = 0), linetype = 2, color = "gray") +
+   geom_text(aes(y=h_co+0.5, label=paste0("Mean ", prettyNum(h_co,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(limits = c(-1,2)) +
    theme_gppr() +
    ggsci::scale_color_aaas() +
    ggsci::scale_fill_aaas() +
-   labs(x ="", y = "Too much information", title = "")  +
    ggpubr::stat_compare_means(comparisons = my_comparisons, 
                               label = "p.signif", method = "wilcox.test")+
+   labs(x ="", y = "", title = "Over confidence")  +
    theme(axis.text.x=element_blank(),
-         axis.title.y = element_text(vjust = +3),
+         axis.title.y = element_text(vjust = +6),
          plot.title = element_text(vjust = -1, size = 12),
          axis.ticks.x = element_blank())
+
+  ggsave(paste0(path_github,"online/Graphs/overconfidence.pdf"))
  
- ggarrange(cu, co,  abru, common.legend = TRUE, legend = "bottom", ncol = 3)
- ```
- 
- ```{r, utility}
- symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 0.1, 1), 
-                    symbols = c("****", "***", "**", "*",".", "ns"))
- mis_comparaciones <- list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Perfil", "VideoPerfil"), c("Baseline", "VideoPerfil") )
- h_u <- round(mean(dependent$InfoUtil_1, na.rm = TRUE), digits = 1)
- dependent %>%
-   mutate_if(is.factor,as.character) %>%
-   mutate(Treatments = as.factor(Treatments)) %>%
-   mutate_if(is.character,as.numeric) %>%
-   ggplot(aes(y = InfoUtil_1, x = as.factor(Treatments), color = Treatments)) +
-   geom_boxplot() +
-   geom_jitter() +
-   geom_hline(aes(yintercept = h_u), linetype = 2, color = "gray") +
-   geom_text(aes(y=h_u+0.5, label=paste0("Mean ", prettyNum(h_a,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1)  +
-   theme_gppr() +
-   ggsci::scale_color_aaas() +
-   ggsci::scale_fill_aaas() +
-   labs(x ="", y = "Utility", title = "")  +
-   ggpubr::stat_compare_means(comparisons = my_comparisons, 
-                              label = "p.signif", method = "wilcox.test", 
-                              hide.ns = TRUE) +
-   theme(axis.text.x=element_blank(),
-         axis.title.y = element_text(vjust = +3),
-         plot.title = element_text(vjust = -1, size = 12),
-         axis.ticks.x = element_blank()) +
-   coord_cartesian(ylim = c(2,15))
- ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/utility.pdf"))
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 0.1, 1), 
-                     symbols = c("****", "***", "**", "*",".", "ns"))
-  mis_comparaciones <- list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Perfil", "VideoPerfil"), c("Baseline", "VideoPerfil") )
-  h_u <- round(mean(df$Recomendar, na.rm = TRUE), digits = 1)
-    mutate_if(is.factor,as.character) %>%
-    mutate(Treatments = as.factor(Treatments)) %>%
-    mutate_if(is.character,as.numeric) %>%
-    ggplot(aes(y = Recomendar, x = as.factor(Treatments), color = Treatments)) +
-    geom_boxplot() +
-    geom_jitter() +
-    geom_hline(aes(yintercept = h_u), linetype = 2, color = "gray") +
-    geom_text(aes(y=h_u+0.5, label=paste0("Mean ", prettyNum(h_a,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1)  +
-    theme_gppr() +
-    ggsci::scale_color_aaas() +
-    ggsci::scale_fill_aaas() +
-    labs(x ="", y = "Recomendar", title = "")  +
-    ggpubr::stat_compare_means(comparisons = my_comparisons, 
-                               label = "p.signif", method = "wilcox.test", 
-                               hide.ns = TRUE) +
-    theme(axis.text.x=element_blank(),
-          axis.title.y = element_text(vjust = +3),
-          plot.title = element_text(vjust = -1, size = 12),
-          axis.ticks.x = element_blank()) +
-    coord_cartesian(ylim = c(2,15))
-  ggsave(paste0(path_github,"Pilots/Superintendencia_de_Pensiones/figures/utility.pdf"))
   
+  #over confidence gender
   
-#### Correct Response Graph by Pension Type  
- h <- round(mean(df$correct_response, na.rm = TRUE), digits = 1)
- 
- df %>%
-   ggplot(aes(y = correct_response, x = Treatments, color=Treatments)) +
-   geom_boxplot() +
-   geom_jitter(width=0.15) +
-   #xlab("Treatments") +
-   ylab("Correct Responses") +
-   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
-   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   facet_wrap(~ as.factor(Pension_Type))
- 
- #### Correct Response Graph by Gender  
- h <- round(mean(df$correct_response, na.rm = TRUE), digits = 1)
- 
- df %>%
-   ggplot(aes(y = correct_response, x = Treatments, color=Treatments)) +
-   geom_boxplot() +
-   geom_jitter(width=0.15) +
-   #xlab("Treatments") +
-   ylab("Correct Responses") +
-   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
-   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   facet_wrap(~ as.factor(Gender))
- 
- 
- 
- #### Recomendar Graph by Pension Type
- h <- round(mean(df$Recomendar, na.rm = TRUE), digits = 1)
- 
- df %>%
-   ggplot(aes(y = Recomendar, x = Treatments, color=Treatments)) +
-   geom_boxplot() +
-   geom_jitter(width=0.15) +
-   #xlab("Treatments") +
-   ylab("Recomendar") +
-   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
-   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   facet_wrap(~ as.factor(Pension_Type))
- 
-
- #### Exceso de confianza y Pension_type
- h <- round(mean(df$overconfidence, na.rm = TRUE), digits = 1)
- 
- df %>%
-   ggplot(aes(y = overconfidence, x = Treatments, color=Treatments)) +
-   geom_boxplot() +
-   geom_jitter(width=0.15) +
-   #xlab("Treatments") +
-   ylab("Exceso de confianza") +
-   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
-   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   facet_wrap(~ as.factor(Pension_Type))
- 
- 
- #### Exceso de confianza y género
- h <- round(mean(df$overconfidence, na.rm = TRUE), digits = 1)
- 
- df %>%
-   ggplot(aes(y = overconfidence, x = Treatments, color=Treatments)) +
-   geom_boxplot() +
-   geom_jitter(width=0.15) +
-   #xlab("Treatments") +
-   ylab("Exceso de confianza") +
-   geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
-   geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   facet_wrap(~ as.factor(Gender))
- 
- 
- 
-   
-   #geom_text(aes(h, label=h, hjust=-0.1)) +
-   # geom_text(aes(y=mean(df$n_clicks),
-   #               label=prettyNum(round(mean(df$n_clicks)),big.mark=","), x=1),
-   #           colour='blue' )   +
-   #theme_gppr() +
-
+  # Promoter
   
-
-
