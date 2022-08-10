@@ -31,16 +31,18 @@ source(paste0(path_github,"Online/R/funciones.R"))
 
 
 df <- readRDS(paste0(path_datos, "online_data.rds"))
-View(is.na(df))
+
 
 
 
 ##############################
-###########3 Data Management
+########### Data Management
 ##############################
 #Overconfidence
 df$Confidence<-as.numeric(df$Confidence_1)
-df$overconfidence<- df$Confidence/10 - df$correct_response/7
+df$overconfidence<- (df$Confidence/10) / (df$correct_response/7)
+
+View(df[, c("correct_response", "Confidence", "overconfidence")])
 
 
 #Change opinion about advisor
@@ -56,6 +58,29 @@ df$Change_Advisor<-ifelse(df$PAdvice=="No" & df$Advisor=="No", "Maintain No",
 
 
 df$pb_d<-ifelse(df$present_bias>19999, "alto", "bajo")
+
+
+### Alternative Financial Literacy
+### Correct answers for Finantial Literacy Questions 
+
+#table(pilot_data$QMath1)
+df$QMath1b_correct<-ifelse(df$QMath1=="Más de $125.000.000", 1, 0)
+#table(pilot_data$QMath1, pilot_data$QMath1_correct)
+
+#table(pilot_data$QMath2)
+df$QMath2b_correct<-ifelse(df$QMath2=="Nunca se terminaría de pagar el crédito", 1, 0)
+#table(pilot_data$QMath2, pilot_data$QMath2_correct)
+
+tmp<-df[, c("QMath1b_correct", "QMath2b_correct") ]
+
+tmp[is.na(tmp)] <- 0
+tmp$financial_lit_b<-rowSums(tmp)
+
+
+df$financial_lit_b<-tmp$financial_lit_b
+rm(tmp)
+
+
 
 
 ###############################
@@ -78,7 +103,7 @@ df.ns<-df[df$PlanJubi=="No sabe",]
 require(nnet)
 multinom_model1 <- multinom(Treatments ~ Age + Gender + Educ, data = df)
 
-multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit), data = df)
+multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), data = df)
 
 
 stargazer(multinom_model1, multinom_model2)
@@ -113,31 +138,27 @@ table(df$present_bias, df$Treatments)
                      sd = sd(correct_response, na.rm=TRUE))
   
 
-#### Changes in preferences regarding pensions
-  
-  
-table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
 
   
-  
-  
   ### Correct Response      
-  lm_CR <- lm(correct_response ~ Treatments, 
+  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
                  data = df) 
   
-  lm_CR_pv <- lm(correct_response ~ Treatments, 
+  lm_CR_pv <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Pension_Type=="Public",]) 
   
-  lm_CR_pp <- lm(correct_response ~ Treatments, 
+  lm_CR_pp <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Pension_Type=="Private",]) 
   
-  lm_CR_F <- lm(correct_response ~ Treatments, 
+  lm_CR_F <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Gender=="F",]) 
   
-  lm_CR_M <- lm(correct_response ~ Treatments, 
+  lm_CR_M <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Gender=="M",]) 
-  lm_CR_ns <- lm(correct_response ~ Treatments, 
+  
+  lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
                  data = df.ns) 
+  
   stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
 
   
@@ -148,10 +169,10 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
   lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit), 
               data = df) 
   
-  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
                  data = df[df$Pension_Type=="Public",]) 
   
-  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
                  data = df[df$Pension_Type=="Private",]) 
   
   lm_CR_F <- lm(correct_response ~ Treatments + Age  + Educ + pb_d + as.factor(financial_lit), 
@@ -161,7 +182,7 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
                 data = df[df$Gender=="M",]) 
   lm_CR_ns <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d , 
                  data = df.ns) 
-  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
+  stargazer(lm_CR, lm_CR_pp, lm_CR_pv, lm_CR_F, lm_CR_M, lm_CR_ns)
   
   
   
@@ -285,6 +306,9 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
  }
  my_comparisons <- list( c("Baseline", "Perfil"), c("Perfil", "Video"), c("Video", "VideoPerfil"), c("Video", "Baseline"), c("Perfil", "VideoPerfil"), c("Baseline", "VideoPerfil") )
  df.g<-df[!is.na(df$correct_response),]
+ df.g$Gender<-ifelse(df.g$Gender=="F", "Female", "Male")
+ 
+ 
 
  #### Opt Out
  df$OO.n<-as.numeric(as.factor(df$OptOut))-1
@@ -306,7 +330,7 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
    ggsci::scale_fill_aaas() +
    theme(axis.title.x=element_blank(), axis.text.x=element_blank()) +
    geom_hline(aes(yintercept = mean), linetype = 2, color = "gray") +
-   geom_text(aes(y=0.55, label=paste0("0.5"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   scale_y_continuous(limits = c(0,1)) +
    ylab("Opt Out of responding questions")
  
  ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
@@ -318,17 +342,18 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
  
  df.g %>%
    dplyr::select(InfoUtil_1, Treatments)  %>%
-   ggplot(aes(y = as.numeric(InfoUtil_1), x = as.factor(Treatments))) +
+   ggplot(aes(y = as.numeric(InfoUtil_1), x = as.factor(Treatments), color=Treatments)) +
    geom_boxplot() +
    geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
    geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
    scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,16)) +
    theme_gppr() +
    scale_colour_brewer(type = "seq", palette = "Dark2")+ 
-   labs(x ="Treatments", y = "Level of usefulness", title = "")  +
+   labs(x ="", y = "Level of usefulness", title = "")  +
    theme(axis.title.y = element_text(vjust = +3),
          axis.ticks.x = element_blank(),
-         plot.title = element_text(vjust = -1, size = 12)) +
+         plot.title = element_text(vjust = -1, size = 12),
+         legend.position="none") +
    ggpubr::stat_compare_means(comparisons = my_comparisons, 
                               label = "p.signif", method = "wilcox.test")
  
@@ -341,13 +366,12 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
    dplyr::select(InfoUtil_1, Treatments, Pension_Type)  %>%
    ggplot(aes(y = as.numeric(InfoUtil_1), x = as.factor(Treatments), color = Pension_Type)) +
    geom_boxplot() +
-   geom_point(position = position_jitterdodge()) +
    geom_hline(aes(yintercept = h_res), linetype = 2, color = "gray") +
    geom_text(aes(y=h_res+0.5, label=paste0("Mean ", prettyNum(h_res,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
    scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
    theme_gppr() +
-   scale_colour_brewer(type = "seq", palette = "Dark2")+ 
-   labs(x ="Treatments", y = "Level of usefulness", title = "")  +
+   scale_colour_brewer(type = "seq", palette = "Dark2", name = "Type of Pension")+ 
+   labs(x ="", y = "Level of usefulness", title = "")  +
    theme(axis.title.y = element_text(vjust = +3),
          axis.ticks.x = element_blank(),
          plot.title = element_text(vjust = -1, size = 12)) +
@@ -363,17 +387,18 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
  
  df.g %>%
    dplyr::select(correct_response, Treatments)  %>%
-   ggplot(aes(y = correct_response, x = as.factor(Treatments))) +
+   ggplot(aes(y = correct_response, x = as.factor(Treatments), color=Treatments)) +
    geom_boxplot() +
    geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
    geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   scale_y_continuous(breaks = seq(0, 7, 1), limits = c(0,12)) +
    theme_gppr() +
    scale_colour_brewer(type = "seq", palette = "Dark2")+ 
-   labs(x ="Treatments", y = "Num. Correct Response", title = "")  +
+   labs(x ="", y = "Num. Correct Response", title = "")  +
    theme(axis.title.y = element_text(vjust = +3),
          axis.ticks.x = element_blank(),
-         plot.title = element_text(vjust = -1, size = 12)) +
+         plot.title = element_text(vjust = -1, size = 12),
+         legend.position="none") +
    ggpubr::stat_compare_means(comparisons = my_comparisons, 
                               label = "p.signif", method = "wilcox.test")
  
@@ -385,21 +410,20 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
  h <- round(mean(df.g$correct_response, na.rm = TRUE), digits = 1)
 
  df.g %>%
-   ggplot(aes(y = correct_response, x = Treatments, color = factor(Gender))) +
+   ggplot(aes(y = correct_response, x = Treatments, color = Gender)) +
    geom_boxplot() +
-   geom_point(position = position_jitterdodge()) +
    ylab("Num. Correct Responses") +
    geom_hline(aes(yintercept = h), linetype = 2, color = "gray") +
    geom_text(aes(y=h+0.5, label=paste0("Mean ", prettyNum(h,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
    theme_gppr() +
    ggsci::scale_color_jco() + 
    stat_compare_means(aes(group = Gender), label = "p.signif")+
-   theme(axis.text.x=element_blank(),
-         axis.title.y = element_text(vjust = +3),
+   theme(axis.title.y = element_text(vjust = +3),
          plot.title = element_text(vjust = -1, size = 12),
-         axis.ticks.x = element_blank(),
-         axis.title.x = element_blank()) +
-   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12))
+         #axis.ticks.x = element_blank(),
+         #axis.title.x = element_blank()
+         ) +
+   scale_y_continuous(breaks = seq(0, 7, 1), limits = c(0,8))
  ggsave(paste0(path_github,"online/Graphs/responses_het_gender.pdf"))
  
  ### Correct Responses Heterogeneity Public/Private
@@ -410,13 +434,12 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
    dplyr::select(correct_response, Treatments, Pension_Type)  %>%
    ggplot(aes(y = correct_response, x = as.factor(Treatments), color = Pension_Type)) +
    geom_boxplot() +
-   geom_point(position = position_jitterdodge()) +
    geom_hline(aes(yintercept = h_res), linetype = 2, color = "gray") +
    geom_text(aes(y=h_res+0.5, label=paste0("Mean ", prettyNum(h_res,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+   scale_y_continuous(breaks = seq(0, 7, 1), limits = c(0,8)) +
    theme_gppr() +
-   scale_colour_brewer(type = "seq", palette = "Dark2")+ 
-   labs(x ="Treatments", y = "Num. Correct Response", title = "")  +
+   scale_colour_brewer(type = "seq", palette = "Dark2", name = "Type of Pension")+ 
+   labs(x ="", y = "Num. Correct Response", title = "")  +
    theme(axis.title.y = element_text(vjust = +3),
          axis.ticks.x = element_blank(),
          plot.title = element_text(vjust = -1, size = 12)) +
@@ -431,10 +454,9 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
  ###### Confidence
  h_co <- round(mean(as.numeric(df.g$Confidence), na.rm = TRUE), digits = 1)
  
- co <- df.g %>%
+ df.g %>%
    ggplot(aes(y = as.numeric(df.g$Confidence), x = as.factor(Treatments), color = Treatments)) +
    geom_boxplot() +
-   geom_jitter() +
    geom_hline(aes(yintercept = h_co), linetype = 2, color = "gray") +
    geom_text(aes(y=h_co+0.5, label=paste0("Mean ", prettyNum(h_co,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
    scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
@@ -450,30 +472,43 @@ table(df.pv$PlanJubi, df.pv$MB_Despues) ### Not clear how to interpret this
          axis.ticks.x = element_blank())
  
  ###### overconfidence
- h_oco <- round(mean(df.g$overconfidence, na.rm = TRUE), digits = 1)
- 
+
  df.g %>%
    ggplot(aes(y = overconfidence, x = as.factor(Treatments), color = Treatments)) +
    geom_boxplot() +
-   geom_jitter() +
    geom_hline(aes(yintercept = 0), linetype = 2, color = "gray") +
-   geom_text(aes(y=h_co+0.5, label=paste0("Mean ", prettyNum(h_co,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   scale_y_continuous(limits = c(-1,2)) +
+   #scale_y_continuous(limits = c(0,0.2)) +
    theme_gppr() +
    ggsci::scale_color_aaas() +
    ggsci::scale_fill_aaas() +
    ggpubr::stat_compare_means(comparisons = my_comparisons, 
                               label = "p.signif", method = "wilcox.test")+
-   labs(x ="", y = "", title = "Over confidence")  +
-   theme(axis.text.x=element_blank(),
-         axis.title.y = element_text(vjust = +6),
-         plot.title = element_text(vjust = -1, size = 12),
+   labs(x ="", y = "Overconfidence", title = "")  + 
+   theme(legend.position="none",
+         #axis.title.y = element_text(vjust = +6),
+         #plot.title = element_text(vjust = -1, size = 12),
          axis.ticks.x = element_blank())
 
   ggsave(paste0(path_github,"online/Graphs/overconfidence.pdf"))
  
   
   #over confidence gender
+  df.g %>%
+    ggplot(aes(y = overconfidence, x = Treatments, color = Gender)) +
+    geom_boxplot() +
+    #geom_point(position = position_jitterdodge()) +
+    ylab("Overconfidence") + xlab("") +
+    geom_hline(aes(yintercept = 0), linetype = 2, color = "gray") +
+    theme_gppr() +
+    ggsci::scale_color_jco() + 
+    stat_compare_means(aes(group = Gender), label = "p.signif")+
+    theme(#axis.text.x=element_blank(),
+          axis.title.y = element_text(vjust = +3),
+          plot.title = element_text(vjust = -1, size = 12),
+          axis.ticks.x = element_blank(),
+          axis.title.x = element_blank()) #+
+    #scale_y_continuous(limits = c(0,0.15))
+  ggsave(paste0(path_github,"online/Graphs/overconfidence_het_gender.pdf"))
   
-  # Promoter
+  #Promoter
   
