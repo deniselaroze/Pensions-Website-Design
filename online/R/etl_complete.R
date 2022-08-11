@@ -51,24 +51,28 @@ pilot_data$Change_Advisor<-ifelse(pilot_data$PAdvice=="No" & pilot_data$Advisor=
 
 
 
-### Correct answers for Finantial Literacy Questions 
+### Correct answers for Financial Literacy Questions 
 
 #table(pilot_data$QMath1)
-pilot_data$QMath1_correct<-ifelse(pilot_data$QMath1=="Más de $125.000.000", 1, 0)
+pilot_data$QMath1_correct<-ifelse(pilot_data$QMath1=="Más de $125.000.000", 1, 
+                                  ifelse(is.na(pilot_data$QMath1), NA, 0))
 #table(pilot_data$QMath1, pilot_data$QMath1_correct)
 
 #table(pilot_data$QMath2)
-pilot_data$QMath2_correct<-ifelse(pilot_data$QMath2=="Nunca se terminaría de pagar el crédito", 1, 0)
+pilot_data$QMath2_correct<-ifelse(pilot_data$QMath2=="Nunca se terminaría de pagar el crédito", 1, 
+                                  ifelse(is.na(pilot_data$QMath1), NA, 0))
 #table(pilot_data$QMath2, pilot_data$QMath2_correct)
 
 #pilot_data$Qmath3num<-parse_number(pilot_data$Qmath3)
-pilot_data$QMath3_correct<-ifelse(pilot_data$QMath3 == 5000,1, ifelse(pilot_data$QMath3==5, 1, 0))
+pilot_data$QMath3_correct<-ifelse(pilot_data$QMath3 == 5000,1, 
+                                  ifelse(pilot_data$QMath3==5, 1,
+                                         ifelse(is.na(pilot_data$QMath1), NA, 0)))
 #table(pilot_data$QMath3, pilot_data$QMath3_correct)
 
 
 tmp<-pilot_data[, c("QMath1_correct", "QMath2_correct", "QMath3_correct") ]
 
-tmp[is.na(tmp)] <- 0
+#tmp[is.na(tmp)] <- 0
 tmp$financial_lit<-rowSums(tmp)
 
 

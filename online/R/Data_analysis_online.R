@@ -6,17 +6,16 @@ library(stargazer)
 library(MASS)
 #library(naniar)
 
-
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
-#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
-path_datos <- "C:/Users/Profesor/Dropbox/Sitios web/Datos Estudio Online/"
+path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
+#path_datos <- "C:/Users/Profesor/Dropbox/Sitios web/Datos Estudio Online/"
 
 # If you don´t use Rprojects functionality setwd
 #setwd("C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/")
 #path_github <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/Pilots/Superintendencia_de_Pensiones"
 
-#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
-path_github <- "C:/Users/Profesor/Documents/GitHub/Pensions-Website-Design/"
+path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+#path_github <- "C:/Users/Profesor/Documents/GitHub/Pensions-Website-Design/"
 
 
 
@@ -64,16 +63,17 @@ df$pb_d<-ifelse(df$present_bias>19999, "alto", "bajo")
 ### Correct answers for Finantial Literacy Questions 
 
 #table(pilot_data$QMath1)
-df$QMath1b_correct<-ifelse(df$QMath1=="Más de $125.000.000", 1, 0)
+df$QMath1b_correct<-ifelse(df$QMath1=="Más de $125.000.000",  1, 
+                           ifelse(is.na(df$QMath1), NA, 0))
 #table(pilot_data$QMath1, pilot_data$QMath1_correct)
 
 #table(pilot_data$QMath2)
-df$QMath2b_correct<-ifelse(df$QMath2=="Nunca se terminaría de pagar el crédito", 1, 0)
+df$QMath2b_correct<-ifelse(df$QMath2=="Nunca se terminaría de pagar el crédito", 1, 
+                           ifelse(is.na(df$QMath1), NA, 0))
 #table(pilot_data$QMath2, pilot_data$QMath2_correct)
 
 tmp<-df[, c("QMath1b_correct", "QMath2b_correct") ]
 
-tmp[is.na(tmp)] <- 0
 tmp$financial_lit_b<-rowSums(tmp)
 
 
@@ -103,12 +103,11 @@ df.ns<-df[df$PlanJubi=="No sabe",]
 require(nnet)
 multinom_model1 <- multinom(Treatments ~ Age + Gender + Educ, data = df)
 
-multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), data = df)
+multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit), data = df)
 
 
 stargazer(multinom_model1, multinom_model2)
 
-table(df$present_bias, df$Treatments)
 
 
 ### simple models  
@@ -141,32 +140,42 @@ table(df$present_bias, df$Treatments)
 
   
   ### Correct Response      
-  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
+  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit) , 
                  data = df) 
   
-  lm_CR_pv <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
+  lm_CR_pv <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
               data = df[df$Pension_Type=="Public",]) 
   
-  lm_CR_pp <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
+  lm_CR_pp <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
               data = df[df$Pension_Type=="Private",]) 
   
-  lm_CR_F <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
+  lm_CR_F <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
               data = df[df$Gender=="F",]) 
   
-  lm_CR_M <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
+  lm_CR_M <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
               data = df[df$Gender=="M",]) 
   
-  lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
+  lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
                  data = df.ns) 
   
   stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
 
   
-### Correct Responses with Controls
+  
+  ### testing financial literacy measure // there are statistical differences, keep larger model
+  
+  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit) , 
+              data = df) 
+  lm_CR2 <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
+              data = df) 
+  
+  anova( lm_CR,lm_CR2 )
   
   
   
-  lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+### Correct Responses with other controls
+  
+    lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit), 
               data = df) 
   
   lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
