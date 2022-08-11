@@ -339,9 +339,10 @@ p <- df %>%
    geom_errorbar(aes(ymin=conf.low, ymax = conf.high)) +
    theme_gppr() +
    ggsci::scale_fill_aaas() +
+   scale_y_continuous(breaks = seq(0, 1, 0.2), limits = c(0,1)) +
    theme(axis.title.x=element_blank(), axis.text.x=element_blank()) +
-   geom_hline(aes(yintercept = 0.8), linetype = 2, color = "gray") +
-   geom_text(aes(y=0.85, label=paste0("0.8"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   geom_hline(aes(yintercept = 0.2), linetype = 2, color = "gray") +
+   geom_text(aes(y=0.2, label=paste0("0.2"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
    ylab("Opt Out")
  
  ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
