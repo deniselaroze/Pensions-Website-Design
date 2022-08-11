@@ -62,15 +62,15 @@ df$pb_d<-ifelse(df$present_bias>19999, "alto", "bajo")
 ### Alternative Financial Literacy
 ### Correct answers for Finantial Literacy Questions 
 
-#table(pilot_data$QMath1)
+#table(DF$QMath1)
 df$QMath1b_correct<-ifelse(df$QMath1=="Más de $125.000.000",  1, 
                            ifelse(is.na(df$QMath1), NA, 0))
-#table(pilot_data$QMath1, pilot_data$QMath1_correct)
+#table(DF$QMath1, DF$QMath1_correct)
 
-#table(pilot_data$QMath2)
+#table(DF$QMath2)
 df$QMath2b_correct<-ifelse(df$QMath2=="Nunca se terminaría de pagar el crédito", 1, 
                            ifelse(is.na(df$QMath1), NA, 0))
-#table(pilot_data$QMath2, pilot_data$QMath2_correct)
+#table(DF$QMath2, DF$QMath2_correct)
 
 tmp<-df[, c("QMath1b_correct", "QMath2b_correct") ]
 
@@ -262,7 +262,7 @@ stargazer(multinom_model1, multinom_model2)
  
   
 #########################
-### Gráficos
+### Graphs
 #######################
  # Parameters
  theme_gppr <- function(){ 
@@ -320,27 +320,29 @@ stargazer(multinom_model1, multinom_model2)
  
 
  #### Opt Out
- df$OO.n<-as.numeric(as.factor(df$OptOut))-1
- mean<-mean(as.numeric(df$OO.n), na.rm=T)
+ library(broom)
  
- proporciones_oo <- df %>%
-   dplyr::select(Treatments, OO.n) %>%
-   na.omit() %>%
+p <- df %>%
    group_by(Treatments) %>% 
-   summarise(prop = sum(OO.n ==1)/n()) %>%  
-   na.omit() 
- #proporciones
+   summarise(out = sum(OptOut =="Out", na.rm=T),
+             n = n()) %>%
+   rowwise() %>%
+   mutate(tst = list(broom::tidy(prop.test(out, n, conf.level = 0.95)))) %>%
+   tidyr::unnest(tst)
+ 
+ prop_test<-p[-5,]
  
  
- proporciones_oo %>%
-   ggplot(aes(x=Treatments, y=prop, fill = Treatments)) +
+ prop_test %>%  
+   ggplot(aes(x=Treatments, y=estimate, fill = Treatments)) +
    geom_bar(stat="identity") +
+   geom_errorbar(aes(ymin=conf.low, ymax = conf.high)) +
    theme_gppr() +
    ggsci::scale_fill_aaas() +
    theme(axis.title.x=element_blank(), axis.text.x=element_blank()) +
-   geom_hline(aes(yintercept = mean), linetype = 2, color = "gray") +
-   scale_y_continuous(limits = c(0,1)) +
-   ylab("Opt Out of responding questions")
+   geom_hline(aes(yintercept = 0.8), linetype = 2, color = "gray") +
+   geom_text(aes(y=0.85, label=paste0("0.8"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+   ylab("Opt Out")
  
  ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
  
