@@ -4,6 +4,8 @@
 ################################
 library(stargazer)
 library(MASS)
+library(broom)
+library(ggpubr)
 #library(naniar)
 
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
@@ -320,8 +322,6 @@ stargazer(multinom_model1, multinom_model2)
  
 
  #### Opt Out
- library(broom)
- 
 p <- df %>%
    group_by(Treatments) %>% 
    summarise(out = sum(OptOut =="Out", na.rm=T),
