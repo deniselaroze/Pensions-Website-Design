@@ -39,6 +39,30 @@ table(df$financial_lit)
 
 
 ####################33
+library(broom)
+
+prop_test <- df %>%
+  group_by(Treatments) %>% 
+  summarise(out = sum(OptOut =="Out", na.rm=T),
+            n = n())  %>%
+  rowwise() %>%
+  mutate(tst = list(broom::tidy(prop.test(out, n, conf.level = 0.95)))) %>%
+  tidyr::unnest(tst)
+
+prop_test %>%  
+  ggplot(aes(x=Treatments, y=estimate, fill = Treatments)) +
+  geom_bar(stat="identity") +
+  geom_errorbar(aes(ymin=conf.low, ymax = conf.high), width=0.1, alpha=0.9, size=.1) +
+  theme_gppr() +
+  ggsci::scale_fill_aaas() +
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank()) +
+  geom_hline(aes(yintercept = 0.8), linetype = 2, color = "gray") +
+  geom_text(aes(y=0.85, label=paste0("0.8"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+  ylab("Opt Out")
+
+
+
+
 
 
 

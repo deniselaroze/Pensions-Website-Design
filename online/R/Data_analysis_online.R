@@ -103,7 +103,7 @@ df.ns<-df[df$PlanJubi=="No sabe",]
 require(nnet)
 multinom_model1 <- multinom(Treatments ~ Age + Gender + Educ, data = df)
 
-multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit), data = df)
+multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), data = df)
 
 
 stargazer(multinom_model1, multinom_model2)
@@ -140,32 +140,36 @@ stargazer(multinom_model1, multinom_model2)
 
   
   ### Correct Response      
-  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit) , 
+  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
                  data = df) 
   
-  lm_CR_pv <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
+  lm_CR_pv <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Pension_Type=="Public",]) 
   
-  lm_CR_pp <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
+  lm_CR_pp <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Pension_Type=="Private",]) 
   
-  lm_CR_F <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
+  lm_CR_F <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Gender=="F",]) 
   
-  lm_CR_M <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
+  lm_CR_M <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Gender=="M",]) 
   
-  lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit), 
+  lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
                  data = df.ns) 
   
   stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
 
   
   
-  ### testing financial literacy measure // there are statistical differences, keep larger model
+  ### testing financial literacy measure / no difference between the models, keep smaller one
   
   lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit) , 
               data = df) 
+  
+  df$financial_lit_b<-ifelse(df$financial_lit==3, 2, df$financial_lit)
+  View(df[c("financial_lit", "financial_lit_b")])
+  
   lm_CR2 <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
               data = df) 
   
@@ -175,19 +179,19 @@ stargazer(multinom_model1, multinom_model2)
   
 ### Correct Responses with other controls
   
-    lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+    lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
               data = df) 
   
-  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
                  data = df[df$Pension_Type=="Public",]) 
   
-  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit), 
+  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
                  data = df[df$Pension_Type=="Private",]) 
   
-  lm_CR_F <- lm(correct_response ~ Treatments + Age  + Educ + pb_d + as.factor(financial_lit), 
+  lm_CR_F <- lm(correct_response ~ Treatments + Age  + Educ + pb_d + as.factor(financial_lit_b), 
                 data = df[df$Gender=="F",]) 
   
-  lm_CR_M <- lm(correct_response ~ Treatments + Age + Educ + pb_d + as.factor(financial_lit), 
+  lm_CR_M <- lm(correct_response ~ Treatments + Age + Educ + pb_d + as.factor(financial_lit_b), 
                 data = df[df$Gender=="M",]) 
   lm_CR_ns <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d , 
                  data = df.ns) 
