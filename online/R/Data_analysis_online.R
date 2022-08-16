@@ -344,14 +344,58 @@ p <- df %>%
    theme_gppr() +
    ggsci::scale_fill_aaas() +
    scale_y_continuous(breaks = seq(0, 1, 0.2), limits = c(0,1)) +
-   theme(axis.title.x=element_blank(), axis.text.x=element_blank()) +
+   theme(axis.title.x=element_blank()) +
    geom_hline(aes(yintercept = 0.2), linetype = 2, color = "gray") +
    geom_text(aes(y=0.2, label=paste0("0.2"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
    ylab("Opt Out")
+  ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
  
- ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
  
- 
+  #### Opt out pension type
+  
+  p <- df %>%
+    group_by(Treatments, Pension_Type) %>% 
+    summarise(out = sum(OptOut =="Out", na.rm=T),
+              n = n()) %>%
+    rowwise() %>%
+    mutate(tst = list(broom::tidy(prop.test(out, n, conf.level = 0.95)))) %>%
+    tidyr::unnest(tst)
+  
+  prop_test<-p[-9,]
+  
+  
+  prop_test %>%  
+    ggplot(aes(x=Treatments, y=estimate, color = Pension_Type, fill =Pension_Type)) +
+    geom_bar(stat="identity", position= "dodge2") +
+    geom_errorbar(aes(ymin=conf.low, ymax = conf.high ,  position="dodge2")) +
+    theme_gppr() +
+    ggsci::scale_fill_aaas() +
+    scale_y_continuous(breaks = seq(0, 1, 0.2), limits = c(0,1)) +
+    theme(axis.title.x=element_blank(),) +
+    geom_hline(aes(yintercept = 0.2), linetype = 2, color = "gray") +
+    geom_text(aes(y=0.2, label=paste0("0.2"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+    ylab("Opt Out") 
+  
+  #ggsave(paste0(path_github,"online/Graphs/OptOut_pension_type.pdf"))
+  
+  
+  ggplot(aes(y = as.numeric(InfoUtil_1), x = as.factor(Treatments), color = Pension_Type)) +
+    geom_boxplot() +
+    geom_hline(aes(yintercept = h_res), linetype = 2, color = "gray") +
+    geom_text(aes(y=h_res+0.5, label=paste0("Mean ", prettyNum(h_res,big.mark=",")), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
+    scale_y_continuous(breaks = seq(0, 10, 2), limits = c(0,12)) +
+    theme_gppr() +
+    scale_colour_brewer(type = "seq", palette = "Dark2", name = "Type of Pension")+ 
+    labs(x ="", y = "Level of usefulness", title = "")  +
+    theme(axis.title.y = element_text(vjust = +3),
+          axis.ticks.x = element_blank(),
+          plot.title = element_text(vjust = -1, size = 12)) +
+    stat_compare_means(aes(group = Pension_Type), label = "p.signif")
+  
+  
+  
+  
+  
  ### Usefulness of the information
  
  h <- round(mean(as.numeric(df.g$InfoUtil_1), na.rm = TRUE), digits = 1)
@@ -495,8 +539,7 @@ p <- df %>%
    geom_hline(aes(yintercept = 0), linetype = 2, color = "gray") +
    #scale_y_continuous(limits = c(0,0.2)) +
    theme_gppr() +
-   ggsci::scale_color_aaas() +
-   ggsci::scale_fill_aaas() +
+   scale_colour_brewer(type = "seq", palette = "Dark2")+ 
    ggpubr::stat_compare_means(comparisons = my_comparisons, 
                               label = "p.signif", method = "wilcox.test")+
    labs(x ="", y = "Overconfidence", title = "")  + 
