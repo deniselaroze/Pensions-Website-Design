@@ -85,16 +85,42 @@ rm(tmp)
 
 
 
-###############################
-########## Data Analysis
-###############################
+############################
+###### Descriptive Statistics
+##################################
 
+# subgroups
+
+df.f<-df[!is.na(df$correct_response),]
 
 
 df.pv<-df[df$Pension_Type=="Private",]
 df.pp<-df[df$Pension_Type=="Public",]
 
 df.ns<-df[df$PlanJubi=="No sabe",]
+
+
+
+
+
+# summarry statistics
+
+
+
+
+prop.table(table(df.f$genero))
+prop.table(table(df.f$Educ))
+summary(2022-as.numeric(df.f$Birth))
+
+table(df.f$Pension_Type)
+
+
+
+###############################
+########## Data Analysis
+###############################
+
+
 
 
 
