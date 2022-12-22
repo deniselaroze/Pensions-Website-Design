@@ -9,14 +9,11 @@ library(ggpubr)
 #library(naniar)
 
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
-path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
+path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
 #path_datos <- "C:/Users/Profesor/Dropbox/Sitios web/Datos Estudio Online/"
 
 # If you don´t use Rprojects functionality setwd
-#setwd("C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/")
-#path_github <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/Pilots/Superintendencia_de_Pensiones"
-
-path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+path_github <- "C:/Users/Usach/OneDrive - usach.cl/Documents/GitHub/Pensions-Website-Design/"
 #path_github <- "C:/Users/Profesor/Documents/GitHub/Pensions-Website-Design/"
 
 
@@ -24,16 +21,14 @@ path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/
 #sitios_sm <- readRDS(paste0(path_datos, "sitios_complete.rds"))
 
 
-source(paste0(path_github,"Online/R/paquetes.R"))
-source(paste0(path_github,"Online/R/funciones.R"))
+source(paste0(path_github,"online/R/paquetes.R"))
+source(paste0(path_github,"online/R/funciones.R"))
 #source(paste0(path_github,"Online/R/etl_surveys.R"))
 #source(paste0(path_github,"Online/R/etl_sites.R"))
 #source(paste0(path_github,"Online/R/etl_complete.R"))
 
 
 df <- readRDS(paste0(path_datos, "online_data.rds"))
-
-
 
 
 ##############################
@@ -43,7 +38,7 @@ df <- readRDS(paste0(path_datos, "online_data.rds"))
 df$Confidence<-as.numeric(df$Confidence_1)
 df$overconfidence<- (df$Confidence/10) / (df$correct_response/7)
 
-View(df[, c("correct_response", "Confidence", "overconfidence")])
+#View(df[, c("correct_response", "Confidence", "overconfidence")])
 
 
 #Change opinion about advisor
@@ -88,7 +83,6 @@ rm(tmp)
 ############################
 ###### Descriptive Statistics
 ##################################
-
 # subgroups
 
 df.f<-df[!is.na(df$correct_response),]
@@ -101,11 +95,19 @@ df.ns<-df[df$PlanJubi=="No sabe",]
 
 
 
+### Correct responses
+prop.table(table(cr$ncomp))
+
+names(cr)
 
 
-# summarry statistics
+###
+
+# summary statistics
 
 
+prop.table(table(df.f$financial_lit_b))
+prop.table(table(df.f$HSist))
 
 
 prop.table(table(df.f$genero))
