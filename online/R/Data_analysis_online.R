@@ -9,12 +9,15 @@ library(ggpubr)
 #library(naniar)
 
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
-path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
+#path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
 #path_datos <- "C:/Users/Profesor/Dropbox/Sitios web/Datos Estudio Online/"
+path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
+
 
 # If you don´t use Rprojects functionality setwd
-path_github <- "C:/Users/Usach/OneDrive - usach.cl/Documents/GitHub/Pensions-Website-Design/"
+#path_github <- "C:/Users/Usach/OneDrive - usach.cl/Documents/GitHub/Pensions-Website-Design/"
 #path_github <- "C:/Users/Profesor/Documents/GitHub/Pensions-Website-Design/"
+path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
 
 
 
@@ -96,10 +99,21 @@ df.ns<-df[df$PlanJubi=="No sabe",]
 
 
 ### Correct responses
-prop.table(table(cr$ncomp))
+prop.table(table(encuestas$obliga))
+prop.table(table(encuestas$inicio))
+prop.table(table(encuestas$elegir))
+prop.table(table(encuestas$sirve.scmp))
+prop.table(table(encuestas$scmp.twice))
+prop.table(table(encuestas$asesor))
+prop.table(table(encuestas$propiedad))
 
-names(cr)
-
+prop.table(table(encuestas$ncomp1))
+prop.table(table(encuestas$ncomp2))
+prop.table(table(encuestas$ncomp3))
+prop.table(table(encuestas$ncomp4))
+prop.table(table(encuestas$ncomp5))
+prop.table(table(encuestas$ncomp6))
+prop.table(table(encuestas$ncomp7))
 
 ###
 

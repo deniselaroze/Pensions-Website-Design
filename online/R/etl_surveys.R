@@ -4,6 +4,10 @@
 
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/online/data/"
 
+##############################
+#### Merge Procesar encuestas
+##############################
+
 encuesta_A <- "Encuesta_A.csv"
 
 encuestaA_online <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>% 
@@ -242,6 +246,13 @@ C_Publica <- read_csv(paste0(path_datos, encuesta_C_Pu)) %>%
 C_Publica <- C_Publica[,colSums(is.na(C_Publica))<nrow(C_Publica)]
 
 
+
+###########################
+#### Data Management
+###########################
+
+
+
 # Encuesta B Privada, computo de respuestas correctas
 
 B_Privada <- B_Privada %>%
@@ -270,15 +281,36 @@ B_Privada <- B_Privada %>%
   )
 
 
+
 ncomp<- B_Privada %>% select(contains("ncomp"))
-B_Privada$correct_response <-rowSums(ncomp,na.rm = T)
+obliga<-B_Privada[ c("ncomp1", "ncomp8", "ncomp15")]
+inicio<-B_Privada[ c("ncomp2", "ncomp9", "ncomp16")]
+elegir<-B_Privada[ c("ncomp3", "ncomp10", "ncomp17")]
+sirve.scomp<-B_Privada[ c("ncomp4", "ncomp11", "ncomp18")]
+scomp2<-B_Privada[ c("ncomp5", "ncomp12", "ncomp19")]
+asesor<-B_Privada[ c("ncomp6", "ncomp13", "ncomp20")]
+propiedad<-B_Privada[ c("ncomp7", "ncomp14", "ncomp21")]
 
 B_Privada <- B_Privada %>%
   mutate(
-    correct_response = rowSums(ncomp, na.rm = T)
-  ) %>%
+    correct_response = rowSums(ncomp, na.rm = T),
+    obliga =rowSums(obliga, na.rm = TRUE ),
+    inicio =rowSums(inicio, na.rm = TRUE ),
+    elegir =rowSums(elegir, na.rm = TRUE ),
+    sirve.scmp =rowSums(sirve.scomp, na.rm = TRUE ),
+    scmp.twice =rowSums(scomp2, na.rm = TRUE ),
+    asesor =rowSums(asesor, na.rm = TRUE ),
+    propiedad =rowSums(propiedad, na.rm = TRUE ),
+    
+  )
+
+View(B_Privada[, c("sirvescomp", "scomptwice")])
+
+B_Privada <- B_Privada %>%
   select(everything(), -contains("comp"))
 rm(ncomp)
+
+
 
 
 # Encuesta B Publica, computo de respuestas correctas
@@ -299,8 +331,8 @@ ncomp<- B_Publica %>% select(contains("ncomp"))
 B_Publica <- B_Publica %>%
   mutate(
     correct_response = rowSums(ncomp, na.rm = T)
-  ) %>%
-  select(everything(), -contains("comp"))
+  ) 
+
 rm(ncomp)
 
 
@@ -318,4 +350,4 @@ encuestas <- encuestaA_online %>%
 encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
 
 
-saveRDS(encuestas, paste0(path_datos, "encuestas_clean.rds"))
+saveRDS(encuestas, paste0(path_datos, "encuestas_clean2.rds"))
