@@ -20,7 +20,10 @@ sitios <- delete.na(sitios, N)
 # Transform and create variables
 sitios2 <- sitios %>%
   mutate(useridn = as.numeric(gsub("-", "" , substr(userid, 1,4))),
-         sitio= stringi::stri_sub(userid, -1),
+         sitio= ifelse (nchar(userid)>27, str_sub(userid, start = -16L, end = -16L) , 
+                        ifelse ( nchar(userid)==27, str_sub(userid, start = -15L, end = -15L), 
+                                 ifelse(nchar(userid)==26, str_sub(userid, start = -14L, end = -14L), 
+                                        str_sub(userid, start = -2L, end = -2L)))),
          fecha = lubridate::as_date(`Created date`, format = "%Y-%m-%d"),
          created_date = lubridate::as_datetime(`Created date`, "%Y-%m-%dT%H:%M:%SZ"),
          updated_date = lubridate::as_datetime(`Updated date`, "%Y-%m-%dT%H:%M:%SZ")) %>%
@@ -42,28 +45,28 @@ contestar <- sitios2 %>%
   select(-name) %>% 
   distinct()
 
-contestar <- delete.na(contestar, 1)
+contestar<-contestar[duplicated(contestar$useridn), ]
 
 contestar <- contestar %>%  #dplyr::select(useridn, fecha, y_contestar, n_contestar) %>%
   mutate(contesta = case_when(
+    is.na(n_contestar) & is.na(y_contestar) ~ "NF",  
     is.na(y_contestar)  ~ "C",
     is.na(n_contestar)  ~ "B",
-    TRUE ~ "B/C"
-  ),
-  terminaron = "si") %>%
+    TRUE ~ "B/C")  )%>%
   group_by(useridn) 
+  
+
+  #terminaron = ifelse() "si") %>%
 
 sitios_complete <- contestar %>%
-  full_join(sitios2, by="useridn") %>%
-  mutate(terminaron = ifelse(is.na(terminaron), "no", terminaron))# %>% 
-  # select(!matches("^(n|y)_contestar"))
+  full_join(sitios2, by="useridn") 
 
 saveRDS(sitios_complete, paste0(path_datos,"sitios_complete.rds"))
 
 
-
-# Pivot sites for page behavior analysis
-
+########################################## 
+# Pivot sites for page behavior analysis ### There are mistakes
+####################################################
 sitios_pivot <- sitios2 %>%
   dplyr::select(-`Created date`, -`Updated date`) %>%
   pivot_longer(cols = !c(userid, useridn, fecha, sitio, created_date, updated_date,

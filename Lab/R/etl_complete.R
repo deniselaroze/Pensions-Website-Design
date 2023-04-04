@@ -23,7 +23,7 @@ data <- sitios_complete %>%
          #online = ifelse(fecha.x.x == "2022-06-08", 1, 0)) 
   arrange(useridn)
 
-data$OptOut = ifelse(data$terminaron == "si" & data$contesta == "B" , "In", "Out")
+data$OptOut = data$contesta
 
 #breaks <- hour(hm("00:00", "6:00", "12:00", "18:00", "23:59"))
 # labels for the breaks
