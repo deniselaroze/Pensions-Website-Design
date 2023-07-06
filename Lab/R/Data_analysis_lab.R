@@ -6,6 +6,8 @@ library(stargazer)
 library(MASS)
 library(broom)
 library(ggpubr)
+library(nnet)
+
 #library(naniar)
 
 
@@ -13,14 +15,13 @@ rm(list=ls())
 
 
 #path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
-#path_datos <- "C:/Users/Profesor/Dropbox/Sitios web/Datos Estudio Online/"
-path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
 
 
 # If you don´t use Rprojects functionality setwd
-#path_github <- "C:/Users/Usach/OneDrive - usach.cl/Documents/GitHub/Pensions-Website-Design/"
-#path_github <- "C:/Users/Profesor/Documents/GitHub/Pensions-Website-Design/"
-path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
 
 
 
@@ -36,7 +37,6 @@ source(paste0(path_github,"online/R/funciones.R"))
 
 df <- readRDS(paste0(path_datos, "lab_data.rds"))
 
-
 ##############################
 ########### Data Management
 ##############################
@@ -49,12 +49,12 @@ df$overconfidence<- (df$Confidence/10) / (df$correct_response/7)
 
 #Change opinion about advisor
 df$Change_Advisor<-ifelse(df$PAdvice=="No" & df$Advisor=="No", "Maintain No", 
-                                  ifelse (df$PAdvice=="No" & df$Advisor=="Sí", "> advisor",
-                                          ifelse(df$PAdvice=="Sí" & df$Advisor=="Sí", "Maintain Yes",
-                                                 ifelse(df$PAdvice=="Sí" & df$Advisor=="No", "< advisor",
-                                                        ifelse(df$PAdvice=="No lo ha pensado" & df$Advisor=="Sí", "> advisor", 
-                                                               ifelse(df$PAdvice=="No lo ha pensado" & df$Advisor=="No", "< advisor", "Error"
-                                                               ))))))
+                          ifelse (df$PAdvice=="No" & df$Advisor=="Sí", "> advisor",
+                                  ifelse(df$PAdvice=="Sí" & df$Advisor=="Sí", "Maintain Yes",
+                                         ifelse(df$PAdvice=="Sí" & df$Advisor=="No", "< advisor",
+                                                ifelse(df$PAdvice=="No lo ha pensado" & df$Advisor=="Sí", "> advisor", 
+                                                       ifelse(df$PAdvice=="No lo ha pensado" & df$Advisor=="No", "< advisor", "Error"
+                                                       ))))))
 
 
 
@@ -83,7 +83,13 @@ tmp$financial_lit_b<-rowSums(tmp)
 df$financial_lit_b<-tmp$financial_lit_b
 rm(tmp)
 
+# Income level proxy though health care provider
+table(df$HSist)
+df$private_health<-ifelse( df$HSist == "ISAPRE" | df$HSist == "FF.AA. y el Orden", "Private healthcare", "Public Health or other")
 
+df$private_health <-factor(df$private_health, levels = c("Public Health or other", "Private healthcare"))
+
+table(df$HSist, df$private_health)
 
 
 ############################
@@ -93,10 +99,9 @@ rm(tmp)
 
 df.f<-df[!is.na(df$correct_response),]
 
-
 df.pv<-df[df$Pension_Type=="Private",]
 df.pp<-df[df$Pension_Type=="Public",]
-
+df.ns<-df[df$PlanJubi=="No sabe",]
 
 
 ### Correct responses
@@ -138,61 +143,48 @@ table(df.f$Pension_Type)
 ###############################
 
 
-
-
-
 ####### Balance Tests 
+multinom_model1 <- multinom(Treatments ~ Age + Gender +  private_health + pb_d + financial_lit_b, data = df)
+
+multinom_model2 <- multinom(Treatments ~ Age + Gender +  private_health  + pb_d + as.factor(financial_lit_b), data = df)
 
 
+stargazer(multinom_model2)
 
-require(nnet)
-multinom_model1 <- multinom(Treatments ~ Age + Gender , data = df)
-
-multinom_model2 <- multinom(Treatments ~ Age + Gender + pb_d + as.factor(financial_lit_b), data = df)
-
-
-stargazer(multinom_model1, multinom_model2)
-
-
+stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_lab.tex"), type="latex",
+          covariate.labels = c("Age", "Male","Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:balance_lab",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics  - balance test", no.space=TRUE)
 
 ### simple models on answering incentivised questions  or not 
 
   #### Opt out --- Profile treatment reduces the likelihood of choosing to answer the incentivised questions. Independently of the definition of opt out
 
-  df$answered<-ifelse(df$contesta== "B" | df$contesta =="B/C", 1, ifelse(df$contesta=="C",0, NA))
-  df$answered<-ifelse(df$contesta== "B" | df$contesta =="B/C", 1, 0)
+table(df$OptC, df$contesta)
 
-  opt_out<- glm(as.factor(answered) ~ Treatments, data = df, family = "binomial")
-  opt_out.pp<- glm(as.factor(answered) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
-  opt_out.pv<- glm(as.factor(answered) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
+
+  df$OptC<-ifelse(df$contesta== "B" | df$contesta =="B/C", 0, ifelse(df$contesta=="C",1, NA))
+#  df$answered<-ifelse(df$contesta== "B" | df$contesta =="B/C", 0, 1)
+
+  opt_out<- glm(as.factor(OptC) ~ Treatments, data = df, family = "binomial")
+  opt_out.pp<- glm(as.factor(OptC) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
+  opt_out.pv<- glm(as.factor(OptC) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
   stargazer(opt_out, opt_out.pp, opt_out.pv)  
   
   
   #### other possible explanatory variables -- null results
-  opt_out<- glm(as.factor(answered) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data = df, family = "binomial")
-  opt_out.pp<- glm(as.factor(answered) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data = df[df$Pension_Type=="Public",], family = "binomial")
-  opt_out.pv<- glm(as.factor(answered) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data =df[df$Pension_Type=="Private",], family = "binomial")
+  opt_out<- glm(as.factor(OptC) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data = df, family = "binomial")
+  opt_out.pp<- glm(as.factor(OptC) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data = df[df$Pension_Type=="Public",], family = "binomial")
+  opt_out.pv<- glm(as.factor(OptC) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data =df[df$Pension_Type=="Private",], family = "binomial")
   stargazer(opt_out, opt_out.pp, opt_out.pv)  
 
   ### Conceptually - Attrition is not correlated with treatments    
-  
-  
-# Correct responses on treatment effects 
-  df %>%
-  group_by(Treatments) %>%
-    dplyr::summarize(Mean = mean(correct_response, na.rm=TRUE),
-                     sd = sd(correct_response, na.rm=TRUE))
-  
-  df %>%
-    group_by(Treatments, Pension_Type) %>%
-    dplyr::summarize(Mean = mean(correct_response, na.rm=TRUE),
-                     sd = sd(correct_response, na.rm=TRUE))
-  
 
+####### Table Out out and Correct Response Lab   
 
-#########################  
-  ### Correct Response   
-#########################  
+  opt_out1<- glm(as.factor(OptC) ~ Treatments, data = df, family = "binomial")
   
   lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
                  data = df) 
@@ -208,12 +200,17 @@ stargazer(multinom_model1, multinom_model2)
   
   lm_CR_M <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Gender=="M",]) 
+  #lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit_b),  data = df.ns) #Only has 30 observations
+ stargazer(lm_CR_ns)
+  
  
-  
-  summary(lm_CR_pv)
-  
-  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M)
-
+  stargazer(opt_out1, lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_lab.tex"), type="latex",
+            covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            dep.var.labels = c("Dummy Finish Tutorial", "Number of correct responses"), # keep.stat=c("n", "ll"),
+            dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            label="tbl:Main_results_correct_response",
+            title = "Column 1 presents a logit model on completing the tutorial. Columns 2-7 are linear OLS models on the number
+            of correct responses, for different sub-groups of the sample", no.space=TRUE)
   
 
   ### testing financial literacy measure / no difference between the models, keep smaller one
@@ -251,8 +248,29 @@ stargazer(multinom_model1, multinom_model2)
   
   stargazer(lm_CR, lm_CR_pp, lm_CR_pv, lm_CR_F, lm_CR_M, lm_CR_ns)
   
+
+  ###############################################
+  ### H4 - Self-reported measures of the tutorial  
+  ###############################################
   
-  
+  #Estimate NPS by treatment
+  library(marketr)
+ 
+ nps_question<-as.numeric(df.f$Recomendar)
+ nps_group<-df.f$Treatments
+ nps_date<-as.Date("2023-07-06")
+ d <- data.frame(nps_question, nps_date, nps_group)
+
+ tbl<-nps_calc(d, nps_group)
+ 
+ xt<-xtable(tbl)
+ print(xt, type="latex", file=paste0(path_github,"Lab/Outputs/nps_table_lab.tex"), 
+       floating=FALSE, include.rownames=FALSE)
+ 
+  #NPS by treatment regression
+ nps<-lm(as.numeric(Recomendar) ~ Treatments, df.f)
+  summary(nps)
+
   
   ####################################
   ### Financial literacy Heterogeneity
@@ -673,10 +691,10 @@ stargazer(multinom_model1, multinom_model2)
  
  
 
- #### answered
+ #### OptC
 p <- df %>%
    group_by(Treatments) %>% 
-   summarise(out = sum(answered =="1", na.rm=T),
+   summarise(out = sum(OptC =="1", na.rm=T),
              n = n()) %>%
    rowwise() %>%
    mutate(tst = list(broom::tidy(prop.test(out, n, conf.level = 0.95)))) %>%
@@ -695,8 +713,8 @@ p <- df %>%
    theme(axis.title.x=element_blank()) +
    geom_hline(aes(yintercept = 0.2), linetype = 2, color = "gray") +
    geom_text(aes(y=0.2, label=paste0("0.2"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   ylab("Answered B")
-  ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
+   ylab("Didn't answer comprehension questions" )
+  ggsave(paste0(path_github,"online/Graphs/OptOut_lab.pdf"))
  
  
   #### Opt out pension type

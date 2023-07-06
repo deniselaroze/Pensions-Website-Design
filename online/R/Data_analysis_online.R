@@ -7,7 +7,10 @@ library(MASS)
 library(broom)
 library(ggpubr)
 #library(naniar)
+library(nnet)
 
+
+rm(list=ls())
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
 #path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
 path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Estudio Online/"
@@ -80,7 +83,13 @@ tmp$financial_lit_b<-rowSums(tmp)
 df$financial_lit_b<-tmp$financial_lit_b
 rm(tmp)
 
+# Income level proxy though health care provider
+table(df$HSist)
+df$private_health<-ifelse( df$HSist == "ISAPRE" | df$HSist == "FF.AA. y el Orden", "Private healthcare", "Public Health or other")
 
+df$private_health <-factor(df$private_health, levels = c("Public Health or other", "Private healthcare"))
+
+table(df$HSist, df$private_health)
 
 
 ############################
@@ -99,6 +108,9 @@ df.ns<-df[df$PlanJubi=="No sabe",]
 
 
 ### Correct responses
+
+encuestas <- readRDS(paste0(path_datos, "encuestas_clean2.rds"))
+
 prop.table(table(encuestas$obliga))
 prop.table(table(encuestas$inicio))
 prop.table(table(encuestas$elegir))
@@ -136,34 +148,36 @@ table(df.f$Pension_Type)
 ########## Data Analysis
 ###############################
 
-
-
-
-
 ####### Balance Tests 
+multinom_model1 <- multinom(Treatments ~ Age + Gender + Educ + private_health + pb_d + financial_lit_b, data = df)
+
+multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + private_health  + pb_d + as.factor(financial_lit_b), data = df)
 
 
+stargazer(multinom_model2)
 
-require(nnet)
-multinom_model1 <- multinom(Treatments ~ Age + Gender + Educ, data = df)
-
-multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), data = df)
-
-
-stargazer(multinom_model1, multinom_model2)
-
+stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance.tex"), type="latex",
+          covariate.labels = c("Age", "Male", "Education: High School", "University or technical college", 
+                               "Postgraduate degree", "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:balance",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics  - balance test", no.space=TRUE)
 
 
 ### simple models  
 
 ##### Opt Out
-  opt_out<- glm(as.factor(OptOut) ~ Treatments, data = df, family = "binomial")
+  opt_out1<- glm(as.factor(OptOut) ~ Treatments + as.factor(financial_lit_b), data = df, family = "binomial")
   
-    opt_out.pp<- glm(as.factor(OptOut) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
+  ### Out out robustness tests ---- Missing review on just C
+  opt_out2<- glm(as.factor(OptOut) ~ Treatments + Age + Gender + Educ + private_health  + pb_d + as.factor(financial_lit_b), data = df, family = "binomial")
+  #opt_out3<- glm(as.factor(OptOut) ~ Treatments, data = df, family = "binomial")
+  #opt_out4<- glm(as.factor(OptOut) ~ Treatments Age + Gender + Educ + private_health  + pb_d + as.factor(financial_lit_b), data = df, family = "binomial")
+  opt_out.pp<- glm(as.factor(OptOut) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
+  opt_out.pv<- glm(as.factor(OptOut) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
   
-  
-    opt_out.pv<- glm(as.factor(OptOut) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
-  stargazer(opt_out, opt_out.pp, opt_out.pv)  
+  stargazer(opt_out1, opt_out2)  
   
 
 #### Conceptually - Attrition is not correlated with treatments    
@@ -181,7 +195,11 @@ stargazer(multinom_model1, multinom_model2)
                      sd = sd(correct_response, na.rm=TRUE))
   
 
-
+##################################################3
+  ###### Table Opt out and correct responses online
+###################################################  
+  ##### Opt Out
+  opt_out1<- glm(as.factor(OptOut) ~ Treatments + as.factor(financial_lit_b), data = df, family = "binomial")
   
   ### Correct Response      
   lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
@@ -202,8 +220,15 @@ stargazer(multinom_model1, multinom_model2)
   lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
                  data = df.ns) 
   
-  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
+  stargazer(opt_out1, lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
 
+  stargazer(opt_out1, lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns, out=paste0(path_github,"online/Outputs/main_results_correct_response.tex"), type="latex",
+            covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            dep.var.labels = c("Dummy Finish Tutorial", "Number of correct responses"), # keep.stat=c("n", "ll"),
+            dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            label="tbl:Main_results_correct_response",
+            title = "Column 1 presents a logit model on completing the tutorial. Columns 2-7 are linear OLS models on the number
+            of correct responses, for different sub-groups of the sample", no.space=TRUE)
   
   
   ### testing financial literacy measure / no difference between the models, keep smaller one
@@ -240,6 +265,30 @@ stargazer(multinom_model1, multinom_model2)
   lm_CR_ns <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d , 
                  data = df.ns) 
   stargazer(lm_CR, lm_CR_pp, lm_CR_pv, lm_CR_F, lm_CR_M, lm_CR_ns)
+  
+
+  ###############################################
+  ### H4 - Self-reported measures of the tutorial  
+  ###############################################
+  
+  #Estimate NPS by treatment
+  library(marketr)
+  library(xtable)
+  
+  nps_question<-as.numeric(df.f$Recomendar)
+  nps_group<-df.f$Treatments
+  nps_date<-as.Date("2023-07-06")
+  d <- data.frame(nps_question, nps_date, nps_group)
+  tbl<-nps_calc(d, nps_group)
+  
+  xt<-xtable(tbl)
+  print(xt, type="latex", file=paste0(path_github,"online/Outputs/nps_table.tex"), 
+        floating=FALSE, include.rownames=FALSE)
+  
+  
+  #NPS by treatment regression
+  nps<-lm(as.numeric(Recomendar) ~ Treatments, df.f)
+  summary(nps)
   
   
   
@@ -339,7 +388,7 @@ stargazer(multinom_model1, multinom_model2)
   FL_het <- ggarrange(effectsPlot, modePlot,
                       ncol = 1, nrow = 2, heights = c(2,2))
   FL_het
-  ggsave(FL_het, filename = "Graphs/Correct_Response_het_financial_lit_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(FL_het, filename = "Outputs/Correct_Response_het_financial_lit_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
   
@@ -438,7 +487,7 @@ stargazer(multinom_model1, multinom_model2)
                        ncol = 1, nrow = 2, heights = c(2,2))
   Gen_het
   
-  ggsave(Gen_het, filename = "Graphs/Correct_Response_het_gender_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(Gen_het, filename = "Outputs/Correct_Response_het_gender_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
   
@@ -538,7 +587,7 @@ stargazer(multinom_model1, multinom_model2)
                        ncol = 1, nrow = 2, heights = c(2,2))
   Priv_het
   
-  ggsave(Priv_het, filename = "Graphs/Correct_Response_het_pensiontype_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(Priv_het, filename = "Outputs/Correct_Response_het_pensiontype_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
     
@@ -697,7 +746,7 @@ p <- df %>%
    geom_hline(aes(yintercept = 0.2), linetype = 2, color = "gray") +
    geom_text(aes(y=0.2, label=paste0("0.2"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
    ylab("Opt Out")
-  ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
+  ggsave(paste0(path_github,"online/Outputs/OptOut.pdf"))
  
  
   #### Opt out pension type
@@ -725,7 +774,7 @@ p <- df %>%
     geom_text(aes(y=0.2, label=paste0("0.2"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
     ylab("Opt Out") 
   
-  #ggsave(paste0(path_github,"online/Graphs/OptOut_pension_type.pdf"))
+  #ggsave(paste0(path_github,"online/Outputs/OptOut_pension_type.pdf"))
   
   
   ggplot(aes(y = as.numeric(InfoUtil_1), x = as.factor(Treatments), color = Pension_Type)) +
@@ -766,7 +815,7 @@ p <- df %>%
    ggpubr::stat_compare_means(comparisons = my_comparisons, 
                               label = "p.signif", method = "wilcox.test")
  
- ggsave(paste0(path_github,"online/Graphs/usefulness.pdf"))
+ ggsave(paste0(path_github,"online/Outputs/usefulness.pdf"))
  
  ##### Usefulness Private/Public
  h_res <- round(mean(as.numeric(df.g$InfoUtil_1), na.rm = TRUE), digits = 1)
@@ -786,7 +835,7 @@ p <- df %>%
          plot.title = element_text(vjust = -1, size = 12)) +
    stat_compare_means(aes(group = Pension_Type), label = "p.signif")
  
- ggsave(paste0(path_github,"online/Graphs/usefulness_het_pensiontype.pdf"))
+ ggsave(paste0(path_github,"online/Outputs/usefulness_het_pensiontype.pdf"))
  
  
  
@@ -811,7 +860,7 @@ p <- df %>%
    ggpubr::stat_compare_means(comparisons = my_comparisons, 
                               label = "p.signif", method = "wilcox.test")
  
- ggsave(paste0(path_github,"online/Graphs/responses.pdf"))
+ ggsave(paste0(path_github,"online/Outputs/responses.pdf"))
  
  
  
@@ -833,7 +882,7 @@ p <- df %>%
          #axis.title.x = element_blank()
          ) +
    scale_y_continuous(breaks = seq(0, 7, 1), limits = c(0,8))
- ggsave(paste0(path_github,"online/Graphs/responses_het_gender.pdf"))
+ ggsave(paste0(path_github,"online/Outputs/responses_het_gender.pdf"))
  
  ### Correct Responses Heterogeneity Public/Private
  
@@ -853,7 +902,7 @@ p <- df %>%
          axis.ticks.x = element_blank(),
          plot.title = element_text(vjust = -1, size = 12)) +
    stat_compare_means(aes(group = Pension_Type), label = "p.signif")
- ggsave(paste0(path_github,"online/Graphs/responses_het_pensiontype.pdf"))
+ ggsave(paste0(path_github,"online/Outputs/responses_het_pensiontype.pdf"))
  
  
 #### Self reported measures   
@@ -897,7 +946,7 @@ p <- df %>%
          #plot.title = element_text(vjust = -1, size = 12),
          axis.ticks.x = element_blank())
 
-  ggsave(paste0(path_github,"online/Graphs/overconfidence.pdf"))
+  ggsave(paste0(path_github,"online/Outputs/overconfidence.pdf"))
  
   
   #over confidence gender
@@ -916,7 +965,7 @@ p <- df %>%
           axis.ticks.x = element_blank(),
           axis.title.x = element_blank()) #+
     #scale_y_continuous(limits = c(0,0.15))
-  ggsave(paste0(path_github,"online/Graphs/overconfidence_het_gender.pdf"))
+  ggsave(paste0(path_github,"online/Outputs/overconfidence_het_gender.pdf"))
   
   #Promoter
   
