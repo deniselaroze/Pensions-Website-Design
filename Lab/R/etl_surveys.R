@@ -2,7 +2,8 @@
 
 # Encuesta A, load and transformation
 
-#path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/online/data/"
+path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+
 
 ##############################
 #### Merge Procesar encuestas

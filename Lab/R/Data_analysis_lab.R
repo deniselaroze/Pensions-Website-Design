@@ -7,29 +7,28 @@ library(MASS)
 library(broom)
 library(ggpubr)
 library(nnet)
-
-#library(naniar)
+library(naniar)
 
 
 rm(list=ls())
 
 
 #path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
-path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
-#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+#path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
 
 
 # If you don´t use Rprojects functionality setwd
-#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
-path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
+path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+#path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
 
 
 
 #sitios_sm <- readRDS(paste0(path_datos, "sitios_complete.rds"))
 
 
-source(paste0(path_github,"online/R/paquetes.R"))
-source(paste0(path_github,"online/R/funciones.R"))
+#source(paste0(path_github,"online/R/paquetes.R"))
+#source(paste0(path_github,"online/R/funciones.R"))
 #source(paste0(path_github,"Online/R/etl_surveys.R"))
 #source(paste0(path_github,"Online/R/etl_sites.R"))
 #source(paste0(path_github,"Online/R/etl_complete.R"))
@@ -158,7 +157,7 @@ stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_lab.tex")
           label="tbl:balance_lab",
           title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics  - balance test", no.space=TRUE)
 
-### simple models on answering incentivised questions  or not 
+####### simple models on answering incentivised questions  or not 
 
   #### Opt out --- Profile treatment reduces the likelihood of choosing to answer the incentivised questions. Independently of the definition of opt out
 
@@ -181,9 +180,9 @@ table(df$OptC, df$contesta)
   stargazer(opt_out, opt_out.pp, opt_out.pv)  
 
   ### Conceptually - Attrition is not correlated with treatments    
-
-####### Table Out out and Correct Response Lab   
-
+#################################################
+####### Table Opt out and Correct Response Lab   
+##################################################
   opt_out1<- glm(as.factor(OptC) ~ Treatments, data = df, family = "binomial")
   
   lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
@@ -204,7 +203,7 @@ table(df$OptC, df$contesta)
  stargazer(lm_CR_ns)
   
  
-  stargazer(opt_out1, lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_lab.tex"), type="latex",
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_lab.tex"), type="latex",
             covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
             dep.var.labels = c("Dummy Finish Tutorial", "Number of correct responses"), # keep.stat=c("n", "ll"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
