@@ -6,21 +6,21 @@ library(stargazer)
 library(MASS)
 library(broom)
 library(ggpubr)
-#library(naniar)
+library(naniar)
 library(nnet)
 
 
 rm(list=ls())
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
 #path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
-path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Estudio Online/"
-#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
+#path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Estudio Online/"
+path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
 
 
 # If you don´t use Rprojects functionality setwd
 #path_github <- "C:/Users/Usach/OneDrive - usach.cl/Documents/GitHub/Pensions-Website-Design/"
-path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
-#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+#path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
+path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
 
 
 
@@ -92,8 +92,26 @@ df$private_health <-factor(df$private_health, levels = c("Public Health or other
 table(df$HSist, df$private_health)
 
 
+
+df$Profile<-ifelse(df$Treatments %in% c("Perfil", "VideoPerfil"), "Profile", "Product")
+#table(df$Treatments, df$Profile)
+#df$Profile <- ordered(df$Profile, levels = c("Profile", "Product"))
+#levels(df$Profile)
+df$Profile<-as.factor(df$Profile)
+df<- within(df, Profile <- relevel(Profile, ref = "Product"))
+
+
+
+df$Video<-ifelse(df$Treatments %in% c("Video", "VideoPerfil"), "Video", "Text")
+table(df$Treatments, df$Video)
+
+df$Profile_Video<-ifelse(df$Treatments=="VideoPerfil", "Profile_Video", "Other")
+#table(df$Treatments, df$Profile_Video)
+
+
+
 ############################
-###### Descriptive Statistics
+###### Subsets of data
 ##################################
 # subgroups
 
@@ -105,6 +123,9 @@ df.pp<-df[df$Pension_Type=="Public",]
 
 df.ns<-df[df$PlanJubi=="No sabe",]
 
+############################
+###### Descriptive Statistics
+##################################
 
 
 ### Correct responses
@@ -199,37 +220,46 @@ stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance.tex"),
   ###### Table Opt out and correct responses online
 ###################################################  
   ##### Opt Out
-  opt_out1<- glm(as.factor(OptOut) ~ Treatments + as.factor(financial_lit_b), data = df, family = "binomial")
+  opt_out1<- glm(as.factor(OptOut) ~  Profile + Video + Profile_Video  + as.factor(financial_lit_b), data = df, family = "binomial")
   
   ### Correct Response      
-  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
-                 data = df) 
+  lm_CR <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b) , 
+              data = df) 
   
-  lm_CR_pv <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
-              data = df[df$Pension_Type=="Public",]) 
+  lm_CR_pv <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                 data = df[df$Pension_Type=="Public",]) 
   
-  lm_CR_pp <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
-              data = df[df$Pension_Type=="Private",]) 
+  lm_CR_pp <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                 data = df[df$Pension_Type=="Private",]) 
   
-  lm_CR_F <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
-              data = df[df$Gender=="F",]) 
+  lm_CR_F <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                data = df[df$Gender=="F",]) 
   
-  lm_CR_M <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
-              data = df[df$Gender=="M",]) 
+  lm_CR_M <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                data = df[df$Gender=="M",]) 
   
-  lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
-                 data = df.ns) 
+  lm_CR_ns <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                 data = df[df$PlanJubi=="No sabe",]) 
   
   stargazer(opt_out1, lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
-
+  
   stargazer(opt_out1, lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns, out=paste0(path_github,"online/Outputs/main_results_correct_response.tex"), type="latex",
             covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-            dep.var.labels = c("Dummy Finish Tutorial", "Number of correct responses"), # keep.stat=c("n", "ll"),
+            dep.var.labels = c("Finish Tutorial", "Number of correct responses"), # keep.stat=c("n", "ll"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
             label="tbl:Main_results_correct_response",
-            title = "Column 1 presents a logit model on completing the tutorial. Columns 2-7 are linear OLS models on the number
+            title = "Column 1 presents a logit model on completing the tutorial. Columns 2-7 are OLS models on the number
             of correct responses, for different sub-groups of the sample", no.space=TRUE)
   
+  
+  
+  
+  
+  
+  
+  
+  
+    
   
   ### testing financial literacy measure / no difference between the models, keep smaller one
   
