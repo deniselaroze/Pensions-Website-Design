@@ -251,15 +251,7 @@ stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance.tex"),
             title = "Column 1 presents a logit model on completing the tutorial. Columns 2-7 are OLS models on the number
             of correct responses, for different sub-groups of the sample", no.space=TRUE)
   
-  
-  
-  
-  
-  
-  
-  
-  
-    
+
   
   ### testing financial literacy measure / no difference between the models, keep smaller one
   
