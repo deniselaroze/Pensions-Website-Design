@@ -8,7 +8,7 @@
 #### Merge Procesar encuestas
 ##############################
 
-encuesta_A <- "Encuesta_A.csv"
+encuesta_A <- "Encuesta_A_anonimo.csv"
 
 encuestaA_online <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>% 
   mutate(#fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
@@ -350,4 +350,4 @@ encuestas <- encuestaA_online %>%
 encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
 
 
-saveRDS(encuestas, paste0(path_datos, "encuestas_clean2.rds"))
+saveRDS(encuestas, paste0(path_datos, "encuestas_clean.rds"))

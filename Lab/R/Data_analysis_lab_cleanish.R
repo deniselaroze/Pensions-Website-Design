@@ -6,35 +6,35 @@ library(stargazer)
 library(MASS)
 library(broom)
 library(ggpubr)
-#library(naniar)
+library(nnet)
+library(naniar)
 
-#path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
-path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
-#path_datos <- "C:/Users/Profesor/Dropbox/Sitios web/Datos Estudio Online/"
+
+rm(list=ls())
+
+
+#path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
+#path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+
 
 # If you don´t use Rprojects functionality setwd
-#setwd("C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/")
-#path_github <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/Pilots/Superintendencia_de_Pensiones"
-
 path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
-#path_github <- "C:/Users/Profesor/Documents/GitHub/Pensions-Website-Design/"
+#path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
 
 
 
 #sitios_sm <- readRDS(paste0(path_datos, "sitios_complete.rds"))
 
 
-source(paste0(path_github,"Online/R/paquetes.R"))
-source(paste0(path_github,"Online/R/funciones.R"))
+#source(paste0(path_github,"online/R/paquetes.R"))
+#source(paste0(path_github,"online/R/funciones.R"))
 #source(paste0(path_github,"Online/R/etl_surveys.R"))
 #source(paste0(path_github,"Online/R/etl_sites.R"))
 #source(paste0(path_github,"Online/R/etl_complete.R"))
 
 
-df <- readRDS(paste0(path_datos, "online_data.rds"))
-
-
-
+df <- readRDS(paste0(path_datos, "lab_data.rds"))
 
 ##############################
 ########### Data Management
@@ -43,17 +43,17 @@ df <- readRDS(paste0(path_datos, "online_data.rds"))
 df$Confidence<-as.numeric(df$Confidence_1)
 df$overconfidence<- (df$Confidence/10) / (df$correct_response/7)
 
-View(df[, c("correct_response", "Confidence", "overconfidence")])
+#View(df[, c("correct_response", "Confidence", "overconfidence")])
 
 
 #Change opinion about advisor
 df$Change_Advisor<-ifelse(df$PAdvice=="No" & df$Advisor=="No", "Maintain No", 
-                                  ifelse (df$PAdvice=="No" & df$Advisor=="Sí", "> advisor",
-                                          ifelse(df$PAdvice=="Sí" & df$Advisor=="Sí", "Maintain Yes",
-                                                 ifelse(df$PAdvice=="Sí" & df$Advisor=="No", "< advisor",
-                                                        ifelse(df$PAdvice=="No lo ha pensado" & df$Advisor=="Sí", "> advisor", 
-                                                               ifelse(df$PAdvice=="No lo ha pensado" & df$Advisor=="No", "< advisor", "Error"
-                                                               ))))))
+                          ifelse (df$PAdvice=="No" & df$Advisor=="Sí", "> advisor",
+                                  ifelse(df$PAdvice=="Sí" & df$Advisor=="Sí", "Maintain Yes",
+                                         ifelse(df$PAdvice=="Sí" & df$Advisor=="No", "< advisor",
+                                                ifelse(df$PAdvice=="No lo ha pensado" & df$Advisor=="Sí", "> advisor", 
+                                                       ifelse(df$PAdvice=="No lo ha pensado" & df$Advisor=="No", "< advisor", "Error"
+                                                       ))))))
 
 
 
@@ -82,30 +82,51 @@ tmp$financial_lit_b<-rowSums(tmp)
 df$financial_lit_b<-tmp$financial_lit_b
 rm(tmp)
 
+# Income level proxy though health care provider
+table(df$HSist)
+df$private_health<-ifelse( df$HSist == "ISAPRE" | df$HSist == "FF.AA. y el Orden", "Private healthcare", "Public Health or other")
 
+df$private_health <-factor(df$private_health, levels = c("Public Health or other", "Private healthcare"))
+
+table(df$HSist, df$private_health)
 
 
 ############################
 ###### Descriptive Statistics
 ##################################
-
 # subgroups
 
 df.f<-df[!is.na(df$correct_response),]
 
-
 df.pv<-df[df$Pension_Type=="Private",]
 df.pp<-df[df$Pension_Type=="Public",]
-
 df.ns<-df[df$PlanJubi=="No sabe",]
 
 
+### Correct responses
+prop.table(table(df.f$obliga))
+prop.table(table(df.f$inicio))
+prop.table(table(df.f$elegir))
+prop.table(table(df.f$sirve.scmp))
+prop.table(table(df.f$scmp.twice))
+prop.table(table(df.f$asesor))
+prop.table(table(df.f$propiedad))
+
+prop.table(table(df.f$ncomp1))
+prop.table(table(df.f$ncomp2))
+prop.table(table(df.f$ncomp3))
+prop.table(table(df.f$ncomp4))
+prop.table(table(df.f$ncomp5))
+prop.table(table(df.f$ncomp6))
+prop.table(table(df.f$ncomp7))
+
+###
+
+# summary statistics
 
 
-
-# summarry statistics
-
-
+prop.table(table(df.f$financial_lit_b))
+prop.table(table(df.f$HSist))
 
 
 prop.table(table(df.f$genero))
@@ -121,53 +142,49 @@ table(df.f$Pension_Type)
 ###############################
 
 
-
-
-
 ####### Balance Tests 
+multinom_model1 <- multinom(Treatments ~ Age + Gender +  private_health + pb_d + financial_lit_b, data = df)
+
+multinom_model2 <- multinom(Treatments ~ Age + Gender +  private_health  + pb_d + as.factor(financial_lit_b), data = df)
 
 
+stargazer(multinom_model2)
 
-require(nnet)
-multinom_model1 <- multinom(Treatments ~ Age + Gender + Educ, data = df)
+stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_lab.tex"), type="latex",
+          covariate.labels = c("Age", "Male","Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:balance_lab",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics  - balance test", no.space=TRUE)
 
-multinom_model2 <- multinom(Treatments ~ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), data = df)
+####### simple models on answering incentivised questions  or not 
+
+  #### Opt out --- Profile treatment reduces the likelihood of choosing to answer the incentivised questions. Independently of the definition of opt out
+
+table(df$OptC, df$contesta)
 
 
-stargazer(multinom_model1, multinom_model2)
+  df$OptC<-ifelse(df$contesta== "B" | df$contesta =="B/C", 0, ifelse(df$contesta=="C",1, NA))
+#  df$answered<-ifelse(df$contesta== "B" | df$contesta =="B/C", 0, 1)
 
-
-
-### simple models  
-
-##### Opt Out
-  opt_out<- glm(as.factor(OptOut) ~ Treatments, data = df, family = "binomial")
-  
-    opt_out.pp<- glm(as.factor(OptOut) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
-  
-  
-    opt_out.pv<- glm(as.factor(OptOut) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
+  opt_out<- glm(as.factor(OptC) ~ Treatments, data = df, family = "binomial")
+  opt_out.pp<- glm(as.factor(OptC) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
+  opt_out.pv<- glm(as.factor(OptC) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
   stargazer(opt_out, opt_out.pp, opt_out.pv)  
   
+  
+  #### other possible explanatory variables -- null results
+  opt_out<- glm(as.factor(OptC) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data = df, family = "binomial")
+  opt_out.pp<- glm(as.factor(OptC) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data = df[df$Pension_Type=="Public",], family = "binomial")
+  opt_out.pv<- glm(as.factor(OptC) ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), data =df[df$Pension_Type=="Private",], family = "binomial")
+  stargazer(opt_out, opt_out.pp, opt_out.pv)  
 
-#### Conceptually - Attrition is not correlated with treatments    
+  ### Conceptually - Attrition is not correlated with treatments    
+#################################################
+####### Table Opt out and Correct Response Lab   
+##################################################
+  opt_out1<- glm(as.factor(OptC) ~ Treatments, data = df, family = "binomial")
   
-  
-# Correct responses on treatment effects 
-  df %>%
-  group_by(Treatments) %>%
-    dplyr::summarize(Mean = mean(correct_response, na.rm=TRUE),
-                     sd = sd(correct_response, na.rm=TRUE))
-  
-  df %>%
-    group_by(Treatments, Pension_Type) %>%
-    dplyr::summarize(Mean = mean(correct_response, na.rm=TRUE),
-                     sd = sd(correct_response, na.rm=TRUE))
-  
-
-
-  
-  ### Correct Response      
   lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
                  data = df) 
   
@@ -182,14 +199,19 @@ stargazer(multinom_model1, multinom_model2)
   
   lm_CR_M <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
               data = df[df$Gender=="M",]) 
+  #lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit_b),  data = df.ns) #Only has 30 observations
+ stargazer(lm_CR_ns)
   
-  lm_CR_ns <- lm(correct_response ~ Treatments + as.factor(financial_lit_b), 
-                 data = df.ns) 
+ 
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_lab.tex"), type="latex",
+            covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            dep.var.labels = c("Dummy Finish Tutorial", "Number of correct responses"), # keep.stat=c("n", "ll"),
+            dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            label="tbl:Main_results_correct_response",
+            title = "Column 1 presents a logit model on completing the tutorial. Columns 2-7 are linear OLS models on the number
+            of correct responses, for different sub-groups of the sample", no.space=TRUE)
   
-  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
 
-  
-  
   ### testing financial literacy measure / no difference between the models, keep smaller one
   
   lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit) , 
@@ -207,27 +229,344 @@ stargazer(multinom_model1, multinom_model2)
   
 ### Correct Responses with other controls
   
-    lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
-              data = df) 
+    lm_CR <- lm(correct_response ~ Treatments+ Age + Gender  + pb_d + as.factor(financial_lit_b), 
+              data = df.f) 
   
-  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
+  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), 
                  data = df[df$Pension_Type=="Public",]) 
   
-  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
+  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + pb_d + as.factor(financial_lit_b), 
                  data = df[df$Pension_Type=="Private",]) 
   
-  lm_CR_F <- lm(correct_response ~ Treatments + Age  + Educ + pb_d + as.factor(financial_lit_b), 
+  lm_CR_F <- lm(correct_response ~ Treatments + Age  + pb_d + as.factor(financial_lit_b), 
                 data = df[df$Gender=="F",]) 
   
-  lm_CR_M <- lm(correct_response ~ Treatments + Age + Educ + pb_d + as.factor(financial_lit_b), 
+  lm_CR_M <- lm(correct_response ~ Treatments + Age  + pb_d + as.factor(financial_lit_b), 
                 data = df[df$Gender=="M",]) 
-  lm_CR_ns <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d , 
-                 data = df.ns) 
+
+  
   stargazer(lm_CR, lm_CR_pp, lm_CR_pv, lm_CR_F, lm_CR_M, lm_CR_ns)
   
+
+  ###############################################
+  ### H4 - Self-reported measures of the tutorial  
+  ###############################################
+  
+  #Estimate NPS by treatment
+  library(marketr)
+ 
+ nps_question<-as.numeric(df.f$Recomendar)
+ nps_group<-df.f$Treatments
+ nps_date<-as.Date("2023-07-06")
+ d <- data.frame(nps_question, nps_date, nps_group)
+
+ tbl<-nps_calc(d, nps_group)
+ 
+ xt<-xtable(tbl)
+ print(xt, type="latex", file=paste0(path_github,"Lab/Outputs/nps_table_lab.tex"), 
+       floating=FALSE, include.rownames=FALSE)
+ 
+  #NPS by treatment regression
+ nps<-lm(as.numeric(Recomendar) ~ Treatments, df.f)
+  summary(nps)
+
+  
+  ####################################
+  ### Financial literacy Heterogeneity
+  ####################################
+  
+  library(BayesTree)
+  set.seed(89536)
+  
+  # Data set up including calculating ability rank
+  df.b <- df.f
+  
+  
+  #set up  - devide into 1 treatment group and 0 control
+  df.b$treat <- df.b$Treatments
+  risk.vars<-c("Baseline" ,     "Perfil")
+  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
+  
+  
+  # Define model variables incl. outcome as column 1
+  vars <- c("correct_response", "treat.het", "financial_lit_b" )
+  
+  
+  df.b <- df.b[,vars]
+  df.b <- df.b[complete.cases(df.b),]
+  
+  # Separate outcome and training data
+  y <- df.b$correct_response
+  train <- df.b[,-1]
+  
+  # Gen. test data where those treated become untreated, for use in calculating ITT
+  test <- train
+  test$treat.het <- ifelse(test$treat.het == 1,0,ifelse(test$treat.het == 0,1,NA))
+  
+  # Run BART for predicted values of observed and synthetic observations
+  bart.out <- bart(x.train = train, y.train = y, x.test = test)
+  
+  # Recover CATE estimates and format into dataframe
+  # Logic: Take predictions for those actually treated and minus counterfactual
+  #        Then take counterfactually treated and deduct prediction for those actually in control
+  CATE <- c(bart.out$yhat.train.mean[train$treat.het == 1] - bart.out$yhat.test.mean[test$treat.het == 0],
+            bart.out$yhat.test.mean[test$treat.het == 1] - bart.out$yhat.train.mean[train$treat.het == 0])
+  
+  CATE_df <- data.frame(CATE = CATE)
+  covars <- rbind(train[train$treat.het == 1,2], test[test$treat.het==1,2])
+  
+  CATE_df <- cbind(CATE_df,covars)
+  CATE_df <- CATE_df[order(CATE_df$CATE),]
+  CATE_df$id <- c(1:length(CATE))
+  
+  # Descriptive results reported in main text:
+  mean(CATE_df$CATE)
+  summary(CATE_df$CATE)
+  
+  # Proportion of CATEs that are negative:
+  sum(CATE_df$CATE < 0)/nrow(CATE_df)
+  sum(CATE_df$CATE < mean(CATE_df$CATE))/nrow(CATE_df)
+  
+  # FL 0 participant: prop. below mean
+  sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$financial_lit_b == 0 )/sum(CATE_df$financial_lit_b == 0)
+  
+  
+  # FL 1 participant: prop. below mean
+  sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$financial_lit_b == 1 )/sum(CATE_df$financial_lit_b == 1)
+  
+  # FL2 participant: prop. below 
+  sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$financial_lit_b == 2 )/sum(CATE_df$financial_lit_b == 2)
   
   
   
+  # CATE Heterogeneity plot
+  hist <- CATE_df
+  
+  effectsPlot <- ggplot(hist, aes(x=id, y = CATE)) +
+    geom_line() +
+    geom_hline(yintercept= 0, linetype="dashed", color="red") +
+    geom_hline(yintercept = mean(hist$CATE), color = "blue") +
+    labs(x="Individual",y = "CATE") +
+    theme_minimal() +
+    scale_x_continuous(limits = c(0,nrow(train)))
+  #ggsave(effectsPlot, filename= "test.pdf")
+  # Mode histogram 
+  
+  modePlot <- ggplot(hist, aes(x=id, fill=factor(financial_lit_b))) +
+    geom_histogram(binwidth = 60,position="stack") +
+    theme(legend.position="bottom") +
+    labs(y = "Count", x = "Individual")+
+   # scale_x_continuous(limits = c(0,nrow(train))) + 
+    scale_fill_discrete(name = "", labels = c("Low Fin. Lit", "Mid. Fin. Lit.", "High. Fin. Lit."))
+  #scale_fill_manual(name="Mode", values=colours) +
+  modePlot
+  
+  # Combine all plots into one chart
+  FL_het <- ggarrange(effectsPlot, modePlot,
+                      ncol = 1, nrow = 2, heights = c(2,2))
+  FL_het
+  ggsave(FL_het, filename = "Correct_Response_het_financial_lit.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  
+  
+  
+  ####################################
+  ### Gender Heterogeneity
+  ####################################
+  library(BayesTree)
+  set.seed(89536)
+  
+  # Data set up including calculating ability rank
+  df.b <- df.f
+  
+  
+  #set up  - devide into 1 treatment group and 0 control
+  df.b$treat <- df.b$Treatments
+  risk.vars<-c("Baseline" ,     "Perfil")
+  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
+  df.b$gender <- ifelse(df.b$Gender == "F",1,0)
+  
+  # Define model variables incl. outcome as column 1
+  vars <- c("correct_response", "treat.het", "gender" )
+  
+  
+  
+  df.b <- df.b[,vars]
+  df.b <- df.b[complete.cases(df.b),]
+  
+  # Separate outcome and training data
+  y <- df.b$correct_response
+  train <- df.b[,-1]
+  
+  # Gen. test data where those treated become untreated, for use in calculating ITT
+  test <- train
+  test$treat.het <- ifelse(test$treat.het == 1,0,ifelse(test$treat.het == 0,1,NA))
+  
+  # Run BART for predicted values of observed and synthetic observations
+  bart.out <- bart(x.train = train, y.train = y, x.test = test)
+  
+  
+  # Recover CATE estimates and format into dataframe
+  # Logic: Take predictions for those actually treated and minus counterfactual
+  #        Then take counterfactually treated and deduct prediction for those actually in control
+  CATE <- c(bart.out$yhat.train.mean[train$treat.het == 1] - bart.out$yhat.test.mean[test$treat.het == 0],
+            bart.out$yhat.test.mean[test$treat.het == 1] - bart.out$yhat.train.mean[train$treat.het == 0])
+  
+  CATE_df <- data.frame(CATE = CATE)
+  covars <- rbind(train[train$treat.het == 1,2], test[test$treat.het==1,2])
+  
+  CATE_df <- cbind(CATE_df,covars)
+  CATE_df <- CATE_df[order(CATE_df$CATE),]
+  CATE_df$id <- c(1:length(CATE))
+  
+  # Descriptive results reported in main text:
+  mean(CATE_df$CATE)
+  summary(CATE_df$CATE)
+  
+  # Proportion of CATEs that are negative:
+  sum(CATE_df$CATE < 0)/nrow(CATE_df)
+  sum(CATE_df$CATE < mean(CATE_df$CATE))/nrow(CATE_df)
+  
+  # Female participant: prop. below mean
+  sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$gender == 1 )/sum(CATE_df$gender == 1)
+  
+  
+  # Male participant: prop. below mean
+  sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$gender == 0 )/sum(CATE_df$gender == 0)
+  
+  
+  
+  # CATE Heterogeneity plot
+  hist <- CATE_df
+  
+  effectsPlot <- ggplot(hist, aes(x=id, y = CATE)) +
+    geom_line() +
+    geom_hline(yintercept= 0, linetype="dashed", color="red") +
+    geom_hline(yintercept = mean(hist$CATE), color = "blue") +
+    labs(x="Individual",y = "CATE") +
+    theme_minimal() +
+    scale_x_continuous(limits = c(0,nrow(train)))
+  #ggsave(effectsPlot, filename= "test.pdf")
+  # Mode histogram 
+  
+  modePlot <- ggplot(hist, aes(x=id, fill=factor(gender))) +
+    geom_histogram(binwidth = 60,position="stack") +
+    theme(legend.position="bottom") +
+    labs(y = "Count", x = "Individual")+
+    scale_x_continuous(limits = c(0,nrow(train))) + 
+    scale_fill_discrete(name = "", )
+  #scale_fill_manual(name="Mode", values=colours) +
+  modePlot
+  
+  # Combine all plots into one chart
+  Gen_het <- ggarrange(effectsPlot, modePlot,
+                       ncol = 1, nrow = 2, heights = c(2,2))
+  Gen_het
+  
+  ggsave(FL_het, filename = "Correct_Response_het_gender.pdf", path=fig.path, device = "pdf", height = 8, width = 6, dpi = 300)
+  
+  
+
+  ####################################
+  ### Pension type Heterogeneity 
+  ####################################
+  library(BayesTree)
+  set.seed(89536)
+  
+  # Data set up including calculating ability rank
+  df.b <- df.f
+  
+  
+  #set up  - devide into 1 treatment group and 0 control
+  df.b$treat <- df.b$Treatments
+  risk.vars<-c("Baseline" ,     "Perfil")
+  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
+  df.b$gender <- ifelse(df.b$Gender == "F",1,0)
+  df.b$private <- ifelse(df.b$Pension_Type == "Private",1,0) 
+  # Define model variables incl. outcome as column 1
+  vars <- c("correct_response", "treat.het", "private" )
+  
+  
+  
+  df.b <- df.b[,vars]
+  df.b <- df.b[complete.cases(df.b),]
+  
+  # Separate outcome and training data
+  y <- df.b$correct_response
+  train <- df.b[,-1]
+  
+  # Gen. test data where those treated become untreated, for use in calculating ITT
+  test <- train
+  test$treat.het <- ifelse(test$treat.het == 1,0,ifelse(test$treat.het == 0,1,NA))
+  
+  # Run BART for predicted values of observed and synthetic observations
+  bart.out <- bart(x.train = train, y.train = y, x.test = test)
+  
+  
+  # Recover CATE estimates and format into dataframe
+  # Logic: Take predictions for those actually treated and minus counterfactual
+  #        Then take counterfactually treated and deduct prediction for those actually in control
+  CATE <- c(bart.out$yhat.train.mean[train$treat.het == 1] - bart.out$yhat.test.mean[test$treat.het == 0],
+            bart.out$yhat.test.mean[test$treat.het == 1] - bart.out$yhat.train.mean[train$treat.het == 0])
+  
+  CATE_df <- data.frame(CATE = CATE)
+  covars <- rbind(train[train$treat.het == 1,2], test[test$treat.het==1,2])
+  
+  CATE_df <- cbind(CATE_df,covars)
+  CATE_df <- CATE_df[order(CATE_df$CATE),]
+  CATE_df$id <- c(1:length(CATE))
+  
+  # Descriptive results reported in main text:
+  mean(CATE_df$CATE)
+  summary(CATE_df$CATE)
+  
+  # Proportion of CATEs that are negative:
+  sum(CATE_df$CATE < 0)/nrow(CATE_df)
+  sum(CATE_df$CATE < mean(CATE_df$CATE))/nrow(CATE_df)
+  
+  # Female participant: prop. below mean
+  sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$private == 1 )/sum(CATE_df$private == 1)
+  
+  
+  # Male participant: prop. below mean
+  sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$private == 0 )/sum(CATE_df$private == 0)
+  
+  
+  
+  # CATE Heterogeneity plot
+  hist <- CATE_df
+  
+  effectsPlot <- ggplot(hist, aes(x=id, y = CATE)) +
+    geom_line() +
+    geom_hline(yintercept= 0, linetype="dashed", color="red") +
+    geom_hline(yintercept = mean(hist$CATE), color = "blue") +
+    labs(x="Individual",y = "CATE") +
+    theme_minimal() +
+    scale_x_continuous(limits = c(0,nrow(train)))
+  #ggsave(effectsPlot, filename= "test.pdf")
+  # Mode histogram 
+  
+  modePlot <- ggplot(hist, aes(x=id, fill=factor(private))) +
+    geom_histogram(binwidth = 60,position="stack") +
+    theme(legend.position="bottom") +
+    labs(y = "Count", x = "Individual")+
+    scale_x_continuous(limits = c(0,nrow(train))) + 
+    scale_fill_discrete(name = "", )
+  #scale_fill_manual(name="Mode", values=colours) +
+  modePlot
+  
+  # Combine all plots into one chart
+  Gen_het <- ggarrange(effectsPlot, modePlot,
+                       ncol = 1, nrow = 2, heights = c(2,2))
+  Gen_het
+  
+  ggsave(FL_het, filename = "Correct_Response_het_pensiontype.pdf", path=fig.path, device = "pdf", height = 8, width = 6, dpi = 300)
+  
+  
+    
+  
+############################################################
+#### other Dependent variables of pre-registered interest  
+#############################################################  
   
 ### Facilidad
   
@@ -351,10 +690,10 @@ stargazer(multinom_model1, multinom_model2)
  
  
 
- #### Opt Out
+ #### OptC
 p <- df %>%
    group_by(Treatments) %>% 
-   summarise(out = sum(OptOut =="Out", na.rm=T),
+   summarise(out = sum(OptC =="1", na.rm=T),
              n = n()) %>%
    rowwise() %>%
    mutate(tst = list(broom::tidy(prop.test(out, n, conf.level = 0.95)))) %>%
@@ -373,15 +712,15 @@ p <- df %>%
    theme(axis.title.x=element_blank()) +
    geom_hline(aes(yintercept = 0.2), linetype = 2, color = "gray") +
    geom_text(aes(y=0.2, label=paste0("0.2"), x=0.1), colour='gray', hjust=-0.1 , vjust = 1) +
-   ylab("Opt Out")
-  ggsave(paste0(path_github,"online/Graphs/OptOut.pdf"))
+   ylab("Didn't answer comprehension questions" )
+  ggsave(paste0(path_github,"online/Graphs/OptOut_lab.pdf"))
  
  
   #### Opt out pension type
   
   p <- df %>%
     group_by(Treatments, Pension_Type) %>% 
-    summarise(out = sum(OptOut =="Out", na.rm=T),
+    summarise(out = sum(answered =="answered", na.rm=T),
               n = n()) %>%
     rowwise() %>%
     mutate(tst = list(broom::tidy(prop.test(out, n, conf.level = 0.95)))) %>%
@@ -596,4 +935,13 @@ p <- df %>%
   ggsave(paste0(path_github,"online/Graphs/overconfidence_het_gender.pdf"))
   
   #Promoter
+  
+  
+  #################### Heterogeneity tests #########################
+  
+  
+  
+  
+  
+  
   
