@@ -16,20 +16,17 @@ encuestaA_online <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>%
          nchar(useridn) == 4  ~ stringi::stri_sub(UID, 8, 8),
          nchar(useridn) == 3  ~ stringi::stri_sub(UID, 7, 7)),
          useridn = as.numeric(useridn)) %>%
-  filter(is.na(useridn)==FALSE) %>%
-  group_by(useridn) %>% 
-  filter(Progress==max(Progress)) %>%
+  filter(Tram_jubilacion=="No") %>% # excluded because they are already retired
+  filter(is.na(EpistemicC_1)==FALSE) %>% # excluded because of age
+  filter(is.na(UID)==FALSE) %>% ## Error in treatment assignment 
+#  filter(is.na(EPension_PuvsPri)==FALSE) %>%
+#  group_by(useridn) %>% 5
+ # filter(Progress==max(Progress)) %>%
   ungroup() %>%
   select(-Status,
-         -IPAddress,
          -RecordedDate,
          -ResponseId,
-         -RecipientLastName,
-         -RecipientFirstName,
-         -RecipientEmail,
          -ExternalReference,
-         -LocationLatitude,
-         -LocationLongitude,
          -UserLanguage) %>% distinct()
 encuestaA_online <- encuestaA_online[,colSums(is.na(encuestaA_online))<nrow(encuestaA_online)]
 
