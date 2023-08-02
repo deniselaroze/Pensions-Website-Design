@@ -2,7 +2,7 @@
 
 # Encuesta A, load and transformation
 
-path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
 
 
 ##############################
@@ -350,4 +350,4 @@ encuestas <- encuestaA_lab %>%
 encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
 
 
-saveRDS(encuestas, paste0(path_datos, "encuestas_clean_tmp.rds"))
+saveRDS(encuestas, paste0(path_datos, "encuestas_clean.rds"))
