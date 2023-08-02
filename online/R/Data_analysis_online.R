@@ -13,14 +13,14 @@ library(nnet)
 rm(list=ls())
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
 #path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
-#path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Estudio Online/"
-path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
+path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Estudio Online/"
+#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
 
 
 # If you don´t use Rprojects functionality setwd
 #path_github <- "C:/Users/Usach/OneDrive - usach.cl/Documents/GitHub/Pensions-Website-Design/"
-#path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
-path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
+#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
 
 
 

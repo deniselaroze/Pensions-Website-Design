@@ -24,9 +24,9 @@ sitios2 <- sitios %>%
                         ifelse ( nchar(userid)==27, str_sub(userid, start = -15L, end = -15L), 
                                  ifelse(nchar(userid)==26, str_sub(userid, start = -14L, end = -14L), 
                                         str_sub(userid, start = -2L, end = -2L)))),
-         fecha = lubridate::as_date(`Created date`, format = "%Y-%m-%d"),
-         #created_date = lubridate::as_datetime(`Created date`, "%Y-%m-%dT%H:%M:%SZ"),
-         updated_date = lubridate::as_datetime(`Updated date`, "%Y-%m-%dT%H:%M:%SZ")) %>%
+         fecha = lubridate::as_date(`Created Date`, format = "%Y-%m-%d"),
+         created_date = lubridate::as_datetime(`Created Date`, "%Y-%m-%dT%H:%M:%SZ"),
+         updated_date = lubridate::as_datetime(`Updated Date`, "%Y-%m-%dT%H:%M:%SZ")) %>%
   mutate(
     tiempo_sec_1click_nclick = as.numeric(difftime(updated_date, created_date, units="secs")),
     tiempo_min_1click_nclick = as.numeric(difftime(updated_date, created_date, units="secs"))/60)  %>%
@@ -38,7 +38,7 @@ sitios2 <- sitios %>%
   mutate(n_clicks = dim(.)[2]-na_count-11)
 
 # intermediate data for answer variable
-contestar <- sitios %>%
+contestar <- sitios2 %>%
   select(useridn, fecha, matches("^(n|y)_contestar"))  %>%
   pivot_longer(cols=c(y_contestar.p1, y_contestar.p2, y_contestar.p3, y_contestar.p4, y_contestar.p5, y_contestar.p6, y_contestar.p7, y_contestar.p8), values_to = "y_contestar") %>% select(-name) %>% distinct() %>%
   pivot_longer(cols=c(n_contestar.p1, n_contestar.p2, n_contestar.p3, n_contestar.p4, n_contestar.p7, n_contestar.p8), values_to = "n_contestar") %>% 
