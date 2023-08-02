@@ -2,8 +2,7 @@
 
 # Encuesta A, load and transformation
 
-#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
-
+#path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/online/data/"
 
 ##############################
 #### Merge Procesar encuestas
@@ -11,7 +10,7 @@
 
 encuesta_A <- "Encuesta_A.csv"
 
-encuestaA_lab <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>% 
+encuestaA_online <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>% 
   mutate(#fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d"),
          sitioderivado = case_when(
          nchar(useridn) == 4  ~ stringi::stri_sub(UID, 8, 8),
@@ -32,13 +31,13 @@ encuestaA_lab <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>%
          -LocationLatitude,
          -LocationLongitude,
          -UserLanguage) %>% distinct()
-encuestaA_lab <- encuestaA_lab[,colSums(is.na(encuestaA_lab))<nrow(encuestaA_lab)]
+encuestaA_online <- encuestaA_online[,colSums(is.na(encuestaA_online))<nrow(encuestaA_online)]
 
 # Encuesta B Privada, load and transformation
 
 encuesta_B_Pri <- "Encuesta_B_Privada.csv"
 
-B_Privada <- read_csv(paste0(path_datos, encuesta_B_Pri))[-1:-2,]%>% 
+B_Privada <- read_csv(paste0(path_datos, encuesta_B_Pri)) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
   mutate(EndDate = lubridate::ymd_hms(EndDate),
          StartDate = lubridate::ymd_hms(StartDate),
@@ -53,10 +52,11 @@ B_Privada <- read_csv(paste0(path_datos, encuesta_B_Pri))[-1:-2,]%>%
   group_by(uemail) %>% 
   filter(StartDate==min(StartDate)) %>%
   ungroup() %>%
-  #mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
-  #                              ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
-  #filter(perfilfiltrar != "filtrar") %>%
-  select(EndDate,
+  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
+                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
+  filter(perfilfiltrar != "filtrar") %>%
+  select(-perfilfiltrar,
+         EndDate,
          StartDate,
          encuesta,
          contains("Comp"),
@@ -94,7 +94,7 @@ B_Privada <- B_Privada[,colSums(is.na(B_Privada))<nrow(B_Privada)]
 
 encuesta_B_Pu <- "Encuesta_B_publica.csv"
 
-B_Publica <- read_csv(paste0(path_datos, encuesta_B_Pu))[-1:-2,]%>% 
+B_Publica <- read_csv(paste0(path_datos, encuesta_B_Pu)) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
   mutate(EndDate = lubridate::ymd_hms(EndDate),
          StartDate = lubridate::ymd_hms(StartDate),
@@ -109,9 +109,9 @@ B_Publica <- read_csv(paste0(path_datos, encuesta_B_Pu))[-1:-2,]%>%
   group_by(uemail) %>% 
   filter(StartDate==min(StartDate)) %>%
   ungroup() %>%
-  #mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
-  #                              ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
-  #filter(perfilfiltrar != "filtrar") %>%
+  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
+                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
+  filter(perfilfiltrar != "filtrar") %>%
   select(EndDate,
          StartDate,
          encuesta,
@@ -144,9 +144,9 @@ B_Publica <- B_Publica[,colSums(is.na(B_Publica))<nrow(B_Publica)]
 
 # Encuesta C Privada, load and transformation
 
-encuesta_C_Pri <- "Encuesta_C_Privada.csv"
+encuesta_C_Pri <- "Encuesta_C_privadas.csv"
 
-C_Privada <- read_csv(paste0(path_datos, encuesta_C_Pri))[-1:-2,] %>% 
+C_Privada <- read_csv(paste0(path_datos, encuesta_C_Pri)) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
   mutate(EndDate = lubridate::ymd_hms(EndDate),
          StartDate = lubridate::ymd_hms(StartDate),
@@ -162,9 +162,9 @@ C_Privada <- read_csv(paste0(path_datos, encuesta_C_Pri))[-1:-2,] %>%
   group_by(uemail) %>% 
   filter(StartDate==min(StartDate)) %>%
   ungroup() %>%
-  #mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
-  #                              ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
-  #filter(perfilfiltrar != "filtrar") %>%
+  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
+                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
+  filter(perfilfiltrar != "filtrar") %>%
   select(fecha,
          EndDate,
          StartDate,
@@ -197,9 +197,9 @@ C_Privada <- C_Privada[,colSums(is.na(C_Privada))<nrow(C_Privada)]
 
 # Encuesta C Publica, load and transformation
 
-encuesta_C_Pu <- "Encuesta_C_Publica.csv"
+encuesta_C_Pu <- "Encuesta_C_publicas.csv"
 
-C_Publica <- read_csv(paste0(path_datos, encuesta_C_Pu))[-1:-2,] %>% 
+C_Publica <- read_csv(paste0(path_datos, encuesta_C_Pu)) %>% 
   mutate(fecha = lubridate::as_date(EndDate, format = "%Y-%m-%d")) %>%
   mutate(EndDate = lubridate::ymd_hms(EndDate),
          StartDate = lubridate::ymd_hms(StartDate),
@@ -340,14 +340,14 @@ rm(ncomp)
 segundas_encuestas <- bind_rows(B_Privada, B_Publica,
                                 C_Publica, C_Privada) %>%
   group_by(uemail) %>% 
-  filter(StartDate==min(StartDate)) %>%
+  #filter(StartDate==min(StartDate)) %>%
   ungroup()
 
 # Merge total encuestas A, B y C
-encuestas <- encuestaA_lab %>%
+encuestas <- encuestaA_online %>%
   left_join(segundas_encuestas, by = c("useridn" = "uemail"))  %>%
   mutate(second = ifelse(is.na(encuesta)==TRUE, "sin segunda encuesta", encuesta))
 encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
 
 
-saveRDS(encuestas, paste0(path_datos, "encuestas_clean.rds"))
+saveRDS(encuestas, paste0(path_datos, "encuestas_clean2.rds"))

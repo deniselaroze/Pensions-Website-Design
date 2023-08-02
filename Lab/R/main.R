@@ -10,13 +10,14 @@ rm(list=ls())
 
 ## Set directory
 # change your path
-#path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
-path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
-# If you don´t use Rprojects functionality setwd
-#setwd("C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/")
-#path_github <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/Pilots/Superintendencia_de_Pensiones"
+#path_datos <- "C:/Users/Usach/Dropbox/Sitios web/Datos Estudio Online/"
+path_datos <- "C:/Users/Denise/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
+#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Encuestas y sitios/"
 
-path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+
+# If you don´t use Rprojects functionality setwd
+#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+path_github <- "C:/Users/Denise/Documents/GitHub/Pensions-Website-Design/"
 
 
 

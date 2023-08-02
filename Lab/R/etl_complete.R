@@ -1,3 +1,5 @@
+sitios_complete <- load(paste0(path_datos, "sitios_complete.rds"))
+
 data <- sitios_complete %>%
   right_join(encuestas, by = "useridn") %>%
   filter(useridn >99) %>%
