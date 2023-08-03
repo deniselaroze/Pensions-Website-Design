@@ -37,30 +37,35 @@ path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/
 df <- readRDS(paste0(path_datos, "online_data.rds"))
 df.f<-df[!is.na(df$correct_response),]
 
-encuestas <- readRDS(paste0(path_datos, "encuestas_clean.rds"))
+df.en <- readRDS(paste0(path_datos, "encuestas_clean.rds"))
 
 
 ############################
 ###### Descriptive Statistics
 ##################################
+#Attrition after being assigned to treatment
+
+table(df$attrition) ### Referenced in the manuscript page NNNNNN
+
+table(df$encuesta)
 
 
 ### Correct responses
-prop.table(table(encuestas$obliga))
-prop.table(table(encuestas$inicio))
-prop.table(table(encuestas$elegir))
-prop.table(table(encuestas$sirve.scmp))
-prop.table(table(encuestas$scmp.twice))
-prop.table(table(encuestas$asesor))
-prop.table(table(encuestas$propiedad))
+prop.table(table(df.en$obliga))
+prop.table(table(df.en$inicio))
+prop.table(table(df.en$elegir))
+prop.table(table(df.en$sirve.scmp))
+prop.table(table(df.en$scmp.twice))
+prop.table(table(df.en$asesor))
+prop.table(table(df.en$propiedad))
 
-prop.table(table(encuestas$ncomp1))
-prop.table(table(encuestas$ncomp2))
-prop.table(table(encuestas$ncomp3))
-prop.table(table(encuestas$ncomp4))
-prop.table(table(encuestas$ncomp5))
-prop.table(table(encuestas$ncomp6))
-prop.table(table(encuestas$ncomp7))
+prop.table(table(df.en$ncomp1))
+prop.table(table(df.en$ncomp2))
+prop.table(table(df.en$ncomp3))
+prop.table(table(df.en$ncomp4))
+prop.table(table(df.en$ncomp5))
+prop.table(table(df.en$ncomp6))
+prop.table(table(df.en$ncomp7))
 
 ###
 
@@ -104,17 +109,34 @@ summary(df$total_reward[df$Pension_Type=="Public"])
 ########## Data Analysis
 ###############################
 
-####### Balance Tests full online sample Page NNNNNN
 
-multinom_model1 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health + pb_d + financial_lit_b, data = df)
+######################################################
+####### Balance Tests full online sample Page NNNNNN
+########################################################
+
+
+multinom_model1 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health, data = df)
+summary(multinom_model1)
+stargazer(multinom_model1, out=paste0(path_github,"online/Outputs/balance_assignment.tex"), type="latex",
+          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
+                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:balance_online",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the online sample - balance test", no.space=TRUE)
+
+
+
+
+
 
 multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + pb_d + as.factor(financial_lit_b), data = df)
 
 
-stargazer(multinom_model2)
+stargazer(multinom_model1, multinom_model2)
 
 stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "Education: High School", "University or technical college", 
+          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
                                "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
@@ -145,7 +167,7 @@ multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_healt
 stargazer(multinom_model2)
 
 stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_private.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "Education: High School", "University or technical college", 
+          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
                                "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
@@ -159,43 +181,35 @@ stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_privat
 
 
 ##########################
-### simple models  
+### Attrition models   
 ##########################
-##### Opt Out
-  opt_out1<- glm(as.factor(OptOut) ~ Treatments + as.factor(financial_lit_b), data = df, family = "binomial")
-  
-  ### Out out robustness tests ---- Missing review on just C
-  opt_out2<- glm(as.factor(OptOut) ~ Treatments + Age + Gender + Educ + private_health  + pb_d + as.factor(financial_lit_b), data = df, family = "binomial")
-  #opt_out3<- glm(as.factor(OptOut) ~ Treatments, data = df, family = "binomial")
-  #opt_out4<- glm(as.factor(OptOut) ~ Treatments Age + Gender + Educ + private_health  + pb_d + as.factor(financial_lit_b), data = df, family = "binomial")
-  opt_out.pp<- glm(as.factor(OptOut) ~ Treatments, data = df[df$Pension_Type=="Public",], family = "binomial")
-  opt_out.pv<- glm(as.factor(OptOut) ~ Treatments, data =df[df$Pension_Type=="Private",], family = "binomial")
-  
-  stargazer(opt_out1, opt_out2)  
-  
 
-#### Conceptually - Attrition is not correlated with treatments    
-  
-  
-# Correct responses on treatment effects 
-  df %>%
-  group_by(Treatments) %>%
-    dplyr::summarize(Mean = mean(correct_response, na.rm=TRUE),
-                     sd = sd(correct_response, na.rm=TRUE))
-  
-  df %>%
-    group_by(Treatments, Pension_Type) %>%
-    dplyr::summarize(Mean = mean(correct_response, na.rm=TRUE),
-                     sd = sd(correct_response, na.rm=TRUE))
-  
+lw<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
+lw2<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
+
+eff<-glm(as.factor(effort) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
+eff2<-glm(as.factor(effort) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
+
+stargazer(lw, lw2, eff, eff2)
+
+# Attrition is not correlated with treatments    
+
+stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.tex"), type="latex",
+          covariate.labels = c("Profile", "Video", "Video and Profile", "Age", "Male", "High School", "University or technical college", 
+                               "Private healthcare", "Constant"), 
+          dep.var.labels = c("Finish Tutorial", "Selct Comp Q."), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:Main_results_correct_response",
+          title = "Columns 1 and 2 present logit models on the likelihood of completing the tutorial vs droping out at the website stage. Columns 3-4 are logit models on whether a 
+          person chose to respond to the comprehension questions or not", no.space=TRUE)
+
+
 
 ##################################################3
-  ###### Table Opt out and correct responses online
+###### Correct responses online
 ###################################################  
-  ##### Opt Out
-  opt_out1<- glm(as.factor(OptOut) ~  Profile + Video + Profile_Video  + as.factor(financial_lit_b), data = df, family = "binomial")
   
-  ### Correct Response      
+### Correct Response      
   lm_CR <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b) , 
               data = df) 
   
@@ -214,18 +228,43 @@ stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_privat
   lm_CR_ns <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
                  data = df[df$PlanJubi=="No sabe",]) 
   
-  stargazer(opt_out1, lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
   
-  stargazer(opt_out1, lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns, out=paste0(path_github,"online/Outputs/main_results_correct_response.tex"), type="latex",
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns, out=paste0(path_github,"online/Outputs/main_results_correct_response.tex"), type="latex",
             covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-            dep.var.labels = c("Finish Tutorial", "Number of correct responses"), # keep.stat=c("n", "ll"),
+            dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
             label="tbl:Main_results_correct_response",
-            title = "Column 1 presents a logit model on completing the tutorial. Columns 2-7 are OLS models on the number
-            of correct responses, for different sub-groups of the sample", no.space=TRUE)
+            title = "The table presents OLS models on the number of correct responses, for different sub-groups of the sample", no.space=TRUE)
   
   
+# Correct response no controls  Appendix table
+  lm_CR <- lm(correct_response ~ Profile + Video + Profile_Video , 
+              data = df) 
   
+  lm_CR_pv <- lm(correct_response ~ Profile + Video + Profile_Video , 
+                 data = df[df$Pension_Type=="Public",]) 
+  
+  lm_CR_pp <- lm(correct_response ~ Profile + Video + Profile_Video , 
+                 data = df[df$Pension_Type=="Private",]) 
+  
+  lm_CR_F <- lm(correct_response ~ Profile + Video + Profile_Video , 
+                data = df[df$Gender=="F",]) 
+  
+  lm_CR_M <- lm(correct_response ~ Profile + Video + Profile_Video , 
+                data = df[df$Gender=="M",]) 
+  
+  lm_CR_ns <- lm(correct_response ~ Profile + Video + Profile_Video , 
+                 data = df[df$PlanJubi=="No sabe",]) 
+  
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
+  
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns, out=paste0(path_github,"online/Outputs/main_results_correct_response_no_controls.tex"), type="latex",
+            covariate.labels = c("Profile", "Video", "Video and Profile", "Constant"), 
+            dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
+            dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            label="tbl:Main_results_CR_no_control",
+            title = "The table presents OLS models on the number of correct responses, for different sub-groups of the sample", no.space=TRUE)
   
   
   

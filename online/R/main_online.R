@@ -14,9 +14,7 @@ path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
 
 path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
 
-
-
-# create folders if doesn´t exists
+# create folders if does´t exists
 
 #ifelse(!dir.exists(file.path(path_github, "R")), 
 #       dir.create(file.path(path_github, "R")), FALSE)

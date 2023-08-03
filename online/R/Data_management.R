@@ -43,6 +43,12 @@ online_data$Profile_Video<-ifelse(online_data$Treatments=="VideoPerfil", "Profil
 
 
 
+##### Attrition measures
+
+df$effort<-ifelse(df$encuesta=="B_Privada" | df$encuesta=="B_Publica", "Comp_questions", "No_effort")
+
+
+##### Other control variables of interest
 #Change opinion about advisor
 online_data$Change_Advisor<-ifelse(online_data$PAdvice=="No" & online_data$Advisor=="No", "Maintain No", 
                                   ifelse (online_data$PAdvice=="No" & online_data$Advisor=="Sí", "> advisor",
