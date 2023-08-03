@@ -1,3 +1,9 @@
+##################################
+### Main data management code
+##################################
+
+
+rm(list=ls())
 ## Set directory
 # change your path
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/"
@@ -21,11 +27,9 @@ source(paste0(path_github,"online/R/paquetes.R"))
 source(paste0(path_github,"online/R/funciones.R"))
 ## ETL
 # import, transform and save data surveys
-source(paste0(path_github,"online/R/etl_surveys.R"))
+source(paste0(path_github,"online/R/Merge_datasets.R"))
 # import, transform and save site data
-source(paste0(path_github,"online/R/etl_sites.R"))
+source(paste0(path_github,"online/R/Data_management.R"))
 # complete join (surveys + sites)
-source(paste0(path_github,"online/R/etl_complete.R"))
-# if you don´t use  Rprojects functionality setwd inside the Rmd
 
 ### Run "Data_analysis_online.R"

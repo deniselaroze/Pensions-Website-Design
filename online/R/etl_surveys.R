@@ -5,7 +5,7 @@
 #path_datos <- "C:/Users/Usuario/Documents/INVESTIGACION/MiInvestigacion/Pensions-Website-Design/online/data/"
 
 ##############################
-#### Merge Procesar encuestas
+#### Data cleaning first stage of the data collection
 ##############################
 
 encuesta_A <- "Encuesta_A_anonimo.csv"
@@ -16,9 +16,10 @@ encuestaA_online <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>%
          nchar(useridn) == 4  ~ stringi::stri_sub(UID, 8, 8),
          nchar(useridn) == 3  ~ stringi::stri_sub(UID, 7, 7)),
          useridn = as.numeric(useridn)) %>%
-  filter(Tram_jubilacion=="No") %>% # excluded because they are already retired
-  filter(is.na(EpistemicC_1)==FALSE) %>% # excluded because of age
-  filter(is.na(UID)==FALSE) %>% ## Error in treatment assignment 
+  filter(QRead=="Sí, he leído y entendido las reglas. Chile, 2022") %>% # 2 people drop out because they don't give consent
+  filter(Tram_jubilacion=="No") %>% # 292 people are excluded because they are already retired, 1 person drops out early 
+  filter(is.na(EpistemicC_1)==FALSE) %>% # 38 people are excluded because they declare their age to be under 50
+  filter(is.na(UID)==FALSE) %>% ## 1 person leaves in the instructions to the experimental section 
 #  filter(is.na(EPension_PuvsPri)==FALSE) %>%
 #  group_by(useridn) %>% 5
  # filter(Progress==max(Progress)) %>%
@@ -30,6 +31,15 @@ encuestaA_online <- read_csv(paste0(path_datos, encuesta_A))[-1,] %>%
          -UserLanguage) %>% distinct()
 encuestaA_online <- encuestaA_online[,colSums(is.na(encuestaA_online))<nrow(encuestaA_online)]
 
+
+saveRDS(encuestaA_online, paste0(path_datos, "encuesta_A_clean.rds"))
+
+
+
+
+###############################################################################
+# Merge and transformation of the third stage of data collection - post website
+###############################################################################
 # Encuesta B Privada, load and transformation
 
 encuesta_B_Pri <- "Encuesta_B_Privada.csv"
@@ -43,16 +53,16 @@ B_Privada <- read_csv(paste0(path_datos, encuesta_B_Pri)) %>%
          total_reward = as.numeric(total_reward)) %>%
   #dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27" | fecha == "2022-06-08" | fecha == "2022-06-07") %>%
   filter(is.na(uemail)==FALSE) %>%
-  group_by(uemail) %>% 
-  filter(Progress==max(Progress)) %>%
-  ungroup() %>%
-  group_by(uemail) %>% 
-  filter(StartDate==min(StartDate)) %>%
-  ungroup() %>%
-  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
-                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
-  filter(perfilfiltrar != "filtrar") %>%
-  select(-perfilfiltrar,
+#  group_by(uemail) %>% #### selecting the option with the most progress
+#  filter(Progress==max(Progress)) %>%
+#  ungroup() %>%
+#  group_by(uemail) %>% 
+#  filter(StartDate==min(StartDate)) %>% ### and first observation of the one with the most progress
+#  ungroup() %>%
+#  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
+#                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
+#  filter(perfilfiltrar != "filtrar") %>%
+  select(#-perfilfiltrar,
          EndDate,
          StartDate,
          encuesta,
@@ -100,15 +110,15 @@ B_Publica <- read_csv(paste0(path_datos, encuesta_B_Pu)) %>%
          total_reward = as.numeric(total_reward))  %>%
   #dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27" | fecha == "2022-06-08" | fecha == "2022-06-07") %>%
   filter(is.na(uemail)==FALSE) %>%
-  group_by(uemail) %>% 
-  filter(Progress==max(Progress)) %>%
-  ungroup() %>%
-  group_by(uemail) %>% 
-  filter(StartDate==min(StartDate)) %>%
-  ungroup() %>%
-  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
-                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
-  filter(perfilfiltrar != "filtrar") %>%
+#  group_by(uemail) %>% 
+#  filter(Progress==max(Progress)) %>%
+#  ungroup() %>%
+#  group_by(uemail) %>% 
+#  filter(StartDate==min(StartDate)) %>%
+#  ungroup() %>%
+#  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
+#                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
+#  filter(perfilfiltrar != "filtrar") %>%
   select(EndDate,
          StartDate,
          encuesta,
@@ -153,15 +163,15 @@ C_Privada <- read_csv(paste0(path_datos, encuesta_C_Pri)) %>%
          ) %>%
   #dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27" | fecha == "2022-06-08" | fecha == "2022-06-07") %>%
   filter(is.na(uemail)==FALSE) %>%
-  group_by(uemail) %>% 
-  filter(Progress==max(Progress)) %>%
-  ungroup() %>%
-  group_by(uemail) %>% 
-  filter(StartDate==min(StartDate)) %>%
-  ungroup() %>%
-  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
-                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
-  filter(perfilfiltrar != "filtrar") %>%
+#  group_by(uemail) %>% 
+#  filter(Progress==max(Progress)) %>%
+#  ungroup() %>%
+#  group_by(uemail) %>% 
+#  filter(StartDate==min(StartDate)) %>%
+#  ungroup() %>%
+#  mutate(perfilfiltrar = ifelse(is.na(perfil), "no_filtrar", 
+#                                ifelse(perfil==0, "no_filtrar", "filtrar"))) %>%
+#  filter(perfilfiltrar != "filtrar") %>%
   select(fecha,
          EndDate,
          StartDate,
@@ -206,12 +216,12 @@ C_Publica <- read_csv(paste0(path_datos, encuesta_C_Pu)) %>%
          ) %>%
   #dplyr::filter(fecha  == "2022-05-20" | fecha  == "2022-05-27" | fecha == "2022-06-08" | fecha == "2022-06-07") %>%
   filter(is.na(uemail)==FALSE) %>%
-  group_by(uemail) %>% 
-  filter(Progress==max(Progress)) %>%
-  ungroup() %>%
-  group_by(uemail) %>% 
-  filter(StartDate==min(StartDate)) %>%
-  ungroup() %>%
+#  group_by(uemail) %>% 
+#  filter(Progress==max(Progress)) %>%
+#  ungroup() %>%
+#  group_by(uemail) %>% 
+#  filter(StartDate==min(StartDate)) %>%
+#  ungroup() %>%
   select(fecha,
          EndDate,
          StartDate,
@@ -333,18 +343,43 @@ B_Publica <- B_Publica %>%
 rm(ncomp)
 
 
-# Merge encuestas B y C
+
+
+##########################
+# Merge surveys B y C
+###########################
+
+
 segundas_encuestas <- bind_rows(B_Privada, B_Publica,
-                                C_Publica, C_Privada) %>%
-  group_by(uemail) %>% 
-  filter(StartDate==min(StartDate)) %>%
-  ungroup()
+                                C_Publica, C_Privada)
 
-# Merge total encuestas A, B y C
+
 encuestas <- encuestaA_online %>%
-  left_join(segundas_encuestas, by = c("useridn" = "uemail"))  %>%
-  mutate(second = ifelse(is.na(encuesta)==TRUE, "sin segunda encuesta", encuesta))
-encuestas <- encuestas[,colSums(is.na(encuestas))<nrow(encuestas)]
+  left_join(segundas_encuestas, by = c("UID" = "UID")) %>%
+  mutate(attrition= ifelse(is.na(StartDate.y), "Left website", "Returned to survey"),
+         dup=duplicated(UID)
+         ) 
 
+
+dups<-c(encuestas[encuestas$dup==T, "UID" ])
+dp<-dups[[1]]
+
+
+en<- encuestas[!encuestas$UID %in% dp, ]
+
+dups<- encuestas[encuestas$UID %in% dp, ]
+
+dps<-dups %>%
+  group_by(UID) %>% #### selecting the option with the most progress
+  filter(Progress.y==max(Progress.y)) %>%
+  ungroup() %>%
+  group_by(UID) %>% 
+  filter(StartDate.y==min(StartDate.y)) %>% ### and first observation of the one with the most progress
+  ungroup() 
+
+rbind
+
+encuestas<-rbind(en, dps)
+rm(en, dps)
 
 saveRDS(encuestas, paste0(path_datos, "encuestas_clean.rds"))
