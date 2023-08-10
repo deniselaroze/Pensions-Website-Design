@@ -40,74 +40,82 @@ df.f<-df[!is.na(df$correct_response),]
 df.en <- readRDS(paste0(path_datos, "encuestas_clean.rds"))
 
 
-############################
-###### Descriptive Statistics
-##################################
-#Attrition after being assigned to treatment
 
+##########################
+### Attrition   
+##########################
+
+
+#Descriptive statistics
 table(df$attrition) ### Referenced in the manuscript page NNNNNN
+prop.table(table(as.numeric(as.factor(df$attrition[df$Treatments=="Baseline"]))))
+prop.table(table(as.numeric(as.factor(df$attrition[df$Treatments=="Perfil"]))))
+prop.table(table(as.numeric(as.factor(df$attrition[df$Treatments=="Video"]))))
+prop.table(table(as.numeric(as.factor(df$attrition[df$Treatments=="VideoPerfil"]))))
 
-table(df$encuesta)
+
+table(df$encuesta) ### Of those that responded the questionnaire, what options they took B = effort, C = no effort 
 
 
-### Correct responses
-prop.table(table(df.en$obliga))
-prop.table(table(df.en$inicio))
-prop.table(table(df.en$elegir))
-prop.table(table(df.en$sirve.scmp))
-prop.table(table(df.en$scmp.twice))
-prop.table(table(df.en$asesor))
-prop.table(table(df.en$propiedad))
 
-prop.table(table(df.en$ncomp1))
-prop.table(table(df.en$ncomp2))
-prop.table(table(df.en$ncomp3))
-prop.table(table(df.en$ncomp4))
-prop.table(table(df.en$ncomp5))
-prop.table(table(df.en$ncomp6))
-prop.table(table(df.en$ncomp7))
+# model estimations
+lw<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
+lw2<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
 
-###
+eff<-glm(as.factor(effort) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
+eff2<-glm(as.factor(effort) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
+
+stargazer(lw, lw2, eff, eff2)
+
+# Attrition is not correlated with treatments    
+
+stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.tex"), type="latex",
+          covariate.labels = c("Profile", "Video", "Video and Profile", "Age", "Male", "High School", "University or technical college", 
+                               "Private healthcare", "Constant"), 
+          dep.var.labels = c("Finish Tutorial", "Selct Comp Q."), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:attrition",
+          title = "Columns 1 and 2 present logit models on the likelihood of completing the tutorial vs droping out at the website stage. Columns 3-4 are logit models on whether a 
+          person chose to respond to the comprehension questions or not", no.space=TRUE)
+
+
 
 ################################
-# summary statistics on page NNNNNNN
+# summary of sample statistics on page NNNNNNN
 ################################
 
-
-
-
-
-#gender
-
-#education
-prop.table(table(df.f$educ_eng))
-
-#Private (top 20% income) vs public healthcare
-prop.table(table(df.f$HSist))
-
+df.trd<-df[!is.na(df$Progress.y),] ### people that reached the third stage of the experiment
 
 #age
-summary(2022-as.numeric(df.f$Birth))
+summary(2022-as.numeric(df.trd$Birth))
 
+#gender
+prop.table(table(df.trd$Gender))
+
+
+#education
+prop.table(table(df.trd$educ_eng))
 
 #Financial literacy
-prop.table(table(df.f$financial_lit_b))
+prop.table(table(df.trd$financial_lit_b))
 
-tbl<-table(df$Pension_Type)
-tbl[1]/450
-tbl[2]/450
+
+#Private (top 20% income) vs public healthcare
+prop.table(table(df.trd$HSist))
+
+
+
+
+
+tbl<-table(df.trd$Pension_Type)
+tbl[1]/(tbl[1]+tbl[2])
+tbl[2]/(tbl[1]+tbl[2])
 
 
 # Earnings
-summary(df$total_reward)
-summary(df$total_reward[df$Pension_Type=="Private"])
-summary(df$total_reward[df$Pension_Type=="Public"])
-
-
-
-###############################
-########## Data Analysis
-###############################
+summary(df.trd$total_reward)
+summary(df.trd$total_reward[df.trd$Pension_Type=="Private"])
+summary(df.trd$total_reward[df.trd$Pension_Type=="Public"])
 
 
 ######################################################
@@ -119,7 +127,7 @@ multinom_model1 <- multinom(Treatments ~ Age + Gender + educ_eng + private_healt
 summary(multinom_model1)
 stargazer(multinom_model1, out=paste0(path_github,"online/Outputs/balance_assignment.tex"), type="latex",
           covariate.labels = c("Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+                               "Private healthcare", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
           label="tbl:balance_online",
@@ -130,14 +138,14 @@ stargazer(multinom_model1, out=paste0(path_github,"online/Outputs/balance_assign
 
 
 
-multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + pb_d + as.factor(financial_lit_b), data = df)
+multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + as.factor(financial_lit_b), data = df)
 
 
 stargazer(multinom_model1, multinom_model2)
 
 stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance.tex"), type="latex",
           covariate.labels = c("Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+                               "Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
           label="tbl:balance_online",
@@ -175,39 +183,32 @@ stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_privat
           title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Private Pensions information  - balance test", no.space=TRUE)
 
 
-
-
-
-
-
-##########################
-### Attrition models   
-##########################
-
-lw<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
-lw2<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
-
-eff<-glm(as.factor(effort) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
-eff2<-glm(as.factor(effort) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
-
-stargazer(lw, lw2, eff, eff2)
-
-# Attrition is not correlated with treatments    
-
-stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.tex"), type="latex",
-          covariate.labels = c("Profile", "Video", "Video and Profile", "Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Constant"), 
-          dep.var.labels = c("Finish Tutorial", "Selct Comp Q."), # keep.stat=c("n", "ll"),
-          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:Main_results_correct_response",
-          title = "Columns 1 and 2 present logit models on the likelihood of completing the tutorial vs droping out at the website stage. Columns 3-4 are logit models on whether a 
-          person chose to respond to the comprehension questions or not", no.space=TRUE)
-
-
-
 ##################################################3
 ###### Correct responses online
 ###################################################  
+#### Descriptives
+### Correct responses
+prop.table(table(df.en$obliga))
+prop.table(table(df.en$inicio))
+prop.table(table(df.en$elegir))
+prop.table(table(df.en$sirve.scmp))
+prop.table(table(df.en$scmp.twice))
+prop.table(table(df.en$asesor))
+prop.table(table(df.en$propiedad))
+
+prop.table(table(df.en$ncomp1))
+prop.table(table(df.en$ncomp2))
+prop.table(table(df.en$ncomp3))
+prop.table(table(df.en$ncomp4))
+prop.table(table(df.en$ncomp5))
+prop.table(table(df.en$ncomp6))
+prop.table(table(df.en$ncomp7))
+
+###
+
+
+
+
   
 ### Correct Response      
   lm_CR <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b) , 

@@ -1,5 +1,5 @@
 ######
-df <- readRDS(paste0(path_datos, "merged_data.rds"))
+df <- readRDS(paste0(path_datos, "encuestas_clean.rds"))
 
 online_data <- df %>%
   #filter(useridn >99) %>%
@@ -127,7 +127,7 @@ online_data$educ_eng<-ifelse(online_data$Educ=="Educación Superior Técnico o U
 rm(df1, df2, df)
 
 
-saveRDS(online_data, paste0(path_datos, "online_data.rds"))
+saveRDS(online_data, paste0(path_datos, "lab_data.rds"))
 
-save(online_data, file=paste0(path_datos, "online_data.Rdata"))
+save(online_data, file=paste0(path_datos, "lab_data.Rdata"))
 
