@@ -107,68 +107,49 @@ summary(df.trd$total_reward[df.trd$Pension_Type=="Public"])
 
 
 ######################################################
-####### Balance Tests full online sample Page NNNNNN
+####### Balance Tests full lab sample Page NNNNNN
 ########################################################
 
+multinom_model2 <- multinom(Treatments ~ Age + Gender + private_health  + as.factor(financial_lit_b), data = df)
 
-multinom_model1 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health, data = df)
-summary(multinom_model1)
-stargazer(multinom_model1, out=paste0(path_github,"online/Outputs/balance_assignment.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Constant"), 
+
+stargazer(multinom_model2)
+
+stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_lab.tex"), type="latex",
+          covariate.labels = c("Age", "Male","Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:balance_online",
-          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the online sample - balance test", no.space=TRUE)
-
-
-
-
-
-
-multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + as.factor(financial_lit_b), data = df)
-
-
-stargazer(multinom_model1, multinom_model2)
-
-stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
-          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:balance_online",
-          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the online sample - balance test", no.space=TRUE)
+          label="tbl:balance_lab",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the lab sample - balance test", no.space=TRUE)
 
 
 #Balance test for Public benefits subgroup in supplementary material
-multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + pb_d + as.factor(financial_lit_b), data = df[df$Pension_Type=="Public",])
+multinom_model2 <- multinom(Treatments ~ Age + Gender + private_health  + as.factor(financial_lit_b), data = df[df$Pension_Type=="Public",])
 stargazer(multinom_model2)
 
-stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_public.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "Education: High School", "University or technical college", 
-                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_public_lab.tex"), type="latex",
+          covariate.labels = c("Age", "Male", "Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:balance_public_online",
-          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Public Benefits information - balance test", no.space=TRUE)
+          label="tbl:balance_public_lab",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Public Benefits information in the Lab - balance test", no.space=TRUE)
 
 table(df.f$private_health[df.f$Pension_Type=="Public"])
 
 
 #Balance test for Private pensions subgroup in supplementary material
 
-multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + pb_d + as.factor(financial_lit_b), data = df[df$Pension_Type=="Private",])
+multinom_model2 <- multinom(Treatments ~ Age + Gender + private_health + as.factor(financial_lit_b), data = df[df$Pension_Type=="Private",])
 
 
 stargazer(multinom_model2)
 
-stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_private.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_private_lab.tex"), type="latex",
+          covariate.labels = c("Age", "Male", "Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:balance_private_online",
-          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Private Pensions information  - balance test", no.space=TRUE)
+          label="tbl:balance_private_lab",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Private Pensions information in the Lab  - balance test", no.space=TRUE)
 
 
 ##################################################3
@@ -273,49 +254,6 @@ prop.table(table(df.en$ncomp7))
             label="tbl:Main_results_CR_no_control_lab",
             title = "The table presents OLS models on the number of correct responses, for different sub-groups of the Lab sample. The models are estimated
             using heteroscedasticity robust standard errors.", no.space=TRUE)
-  
-  
-  
-  
-  
-  
-    
-  
-  ### testing financial literacy measure / no difference between the models, keep smaller one
-  
-  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit) , 
-              data = df) 
-  
-  df$financial_lit_b<-ifelse(df$financial_lit==3, 2, df$financial_lit)
-  View(df[c("financial_lit", "financial_lit_b")])
-  
-  lm_CR2 <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
-              data = df) 
-  
-  anova( lm_CR,lm_CR2 )
-  
-  
-  
-### Correct Responses with other controls
-  
-    lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
-              data = df) 
-  
-  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
-                 data = df[df$Pension_Type=="Public",]) 
-  
-  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
-                 data = df[df$Pension_Type=="Private",]) 
-  
-  lm_CR_F <- lm(correct_response ~ Treatments + Age  + Educ + pb_d + as.factor(financial_lit_b), 
-                data = df[df$Gender=="F",]) 
-  
-  lm_CR_M <- lm(correct_response ~ Treatments + Age + Educ + pb_d + as.factor(financial_lit_b), 
-                data = df[df$Gender=="M",]) 
-  lm_CR_ns <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d , 
-                 data = df.ns) 
-  stargazer(lm_CR, lm_CR_pp, lm_CR_pv, lm_CR_F, lm_CR_M, lm_CR_ns)
-  
 
   ###############################################
   ### H4 - Self-reported measures of the tutorial  
@@ -324,22 +262,57 @@ prop.table(table(df.en$ncomp7))
   #Estimate NPS by treatment
   library(marketr)
   library(xtable)
+  library(dplyr)
   
   nps_question<-as.numeric(df.f$Recomendar)
   nps_group<-df.f$Treatments
   nps_date<-as.Date("2023-07-06")
+
+  #Mean and variance
   d <- data.frame(nps_question, nps_date, nps_group)
+  d<-d[!is.na(d$nps_question),]
+  tbl1<-d %>%
+        group_by(nps_group) %>%
+        summarise(mean_nps = mean(nps_question, na.rm=T),
+                  sd_nps= sd(nps_question, na.rm=T))
+
+    
   tbl<-nps_calc(d, nps_group)
   
-  xt<-xtable(tbl)
-  print(xt, type="latex", file=paste0(path_github,"online/Outputs/nps_table.tex"), 
+  tbl2<-left_join(tbl1, tbl, by = "nps_group")  
+  
+  colnames(tbl2) <- c("Treatment", "Mean_Promoter", "s.d._Promoter", "Net_Promoter_Score", "Number_of_responses")
+  
+  
+  
+  xt<-xtable(tbl2)
+  print(xt, type="latex", file=paste0(path_github,"Lab/Outputs/nps_table_Lab.tex"), 
         floating=FALSE, include.rownames=FALSE)
   
+  rm(tbl, tbl1, tbl2)
   
-  #NPS by treatment regression
-  nps<-lm(as.numeric(Recomendar) ~ Treatments, df.f)
-  summary(nps)
   
+  #### Regressions on self-reported measures of positive experience during the website navigation
+
+  
+  df$easy<-recode(df$Facilidad, "2" = 2, "3" = 3, "4" = 4, "Muy fácil  5" = 5, "Muy fácil\n5"= 5, "Nada fácil  1" = 1, "Nada fácil\n1" = 1 )
+  
+  easy<- lm(easy ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  useful<- lm(as.numeric(InfoUtil_1) ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  nps<-lm(as.numeric(Recomendar) ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  
+  stargazer(easy, useful, nps)
+  
+  stargazer(easy, useful, nps, out=paste0(path_github,"Lab/Outputs/self_reported_lab.tex"), type="latex",
+            covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            dep.var.labels = c("Easy", "Useful", "Recomend"), # keep.stat=c("n", "ll"),
+            dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            label="tbl:self_reported_lab",
+            title = "The table presents OLS models on lab self-reported measures of evaluating the questions: 
+            ``How easy was it to find the information you were looking for?'' (1-5 scale), 
+            ``Is the information available on the website sufficient to make a decision?'' (0-10 scale) and
+            ``Considering your experience on this website, how likely are you to recommend it to a family member or friend?'' (0-10 scale)
+          ", no.space=TRUE)
   
   
   ####################################
