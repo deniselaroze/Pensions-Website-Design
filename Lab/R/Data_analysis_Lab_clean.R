@@ -60,7 +60,7 @@ stargazer(lw, lw2, eff, eff2)
 stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"Lab/Outputs/attrition_lab.tex"), type="latex",
           covariate.labels = c("Profile", "Video", "Video and Profile", "Age", "Male", "High School", "University or technical college", 
                                "Private healthcare", "Constant"), 
-          dep.var.labels = c("Finish Tutorial", "Selct Comp Q."), # keep.stat=c("n", "ll"),
+          dep.var.labels = c("Finish Tutorial", "Opt into Comprehension Test"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
           label="tbl:attrition_lab",
           title = "Columns 1 and 2 present logit models on the likelihood of completing the tutorial vs droping out at the website stage. Columns 3-4 are logit models on whether a 
@@ -315,6 +315,7 @@ prop.table(table(df.en$ncomp7))
           ", no.space=TRUE)
   
   
+  
   ####################################
   ### Financial literacy Heterogeneity
   ####################################
@@ -327,15 +328,13 @@ prop.table(table(df.en$ncomp7))
   
   
   #set up  - divide into 1 treatment group and 0 control
-  df.b$treat <- df.b$Treatments
-  risk.vars<-c("Baseline" ,     "Perfil")
-  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
-  df.b$gender <- ifelse(df.b$Gender == "F",1,0)
+  df.b$treat <- df.b$Video
+  df.b$treat.het<-ifelse(df.b$treat=="Video", 1, 0)
+  df.b$gender <- ifelse(df.b$Gender == "M",1,0)
   df.b$private <- ifelse(df.b$Pension_Type == "Private",1,0) 
-  df.b$health<-ifelse(df.b$HSist=="ISAPRE",  1, 0)
   
   # Define model variables incl. outcome as column 1
-  vars <- c("correct_response", "treat.het", "financial_lit_b", "gender", "private")
+  vars <- c("correct_response", "treat.het", "financial_lit_b", "private")
   
   
   df.b <- df.b[,vars]
@@ -411,7 +410,7 @@ prop.table(table(df.en$ncomp7))
   FL_het <- ggarrange(effectsPlot, modePlot,
                       ncol = 1, nrow = 2, heights = c(2,2))
   FL_het
-  ggsave(FL_het, filename = "Outputs/Correct_Response_het_financial_lit_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(FL_het, filename = "Lab/Outputs/Correct_Response_het_financial_lit_Lab.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
   
@@ -420,21 +419,19 @@ prop.table(table(df.en$ncomp7))
   ####################################
   library(BayesTree)
   set.seed(89536)
-  
   # Data set up including calculating ability rank
   df.b <- df.f
   
   
   #set up  - divide into 1 treatment group and 0 control
-  df.b$treat <- df.b$Treatments
-  risk.vars<-c("Baseline" ,     "Perfil")
-  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
-  df.b$gender <- ifelse(df.b$Gender == "F",1,0)
+  df.b$treat <- df.b$Video
+  df.b$treat.het<-ifelse(df.b$treat=="Video", 1, 0)
+  df.b$gender <- ifelse(df.b$Gender == "M",1,0)
   df.b$private <- ifelse(df.b$Pension_Type == "Private",1,0) 
-  df.b$health<-ifelse(df.b$HSist=="ISAPRE",  1, 0)
+  
   
   # Define model variables incl. outcome as column 1
-  vars <- c("correct_response", "treat.het",  "gender", "financial_lit_b","private")
+  vars <- c("correct_response", "treat.het",  "gender", "private")
   
   
   
@@ -474,11 +471,11 @@ prop.table(table(df.en$ncomp7))
   sum(CATE_df$CATE < 0)/nrow(CATE_df)
   sum(CATE_df$CATE < mean(CATE_df$CATE))/nrow(CATE_df)
   
-  # Female participant: prop. below mean
+  # Male participant: prop. below mean
   sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$gender == 1 )/sum(CATE_df$gender == 1)
   
   
-  # Male participant: prop. below mean
+  # Female participant: prop. below mean
   sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$gender == 0 )/sum(CATE_df$gender == 0)
   
   
@@ -510,7 +507,7 @@ prop.table(table(df.en$ncomp7))
                        ncol = 1, nrow = 2, heights = c(2,2))
   Gen_het
   
-  ggsave(Gen_het, filename = "Outputs/Correct_Response_het_gender_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(Gen_het, filename = "Lab/Outputs/Correct_Response_het_gender_Lab.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
   
@@ -518,24 +515,22 @@ prop.table(table(df.en$ncomp7))
   ### Pension type Heterogeneity 
   ####################################
   library(BayesTree)
-  set.seed(89536)
+  set.seed(53698)
   
   # Data set up including calculating ability rank
   df.b <- df.f
-  
+  table(df.f$private_health)
   
   #set up  - divide into 1 treatment group and 0 control
-  #set up  - divide into 1 treatment group and 0 control
-  df.b$treat <- df.b$Treatments
-  risk.vars<-c("Baseline" ,     "Perfil")
-  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
-  df.b$gender <- ifelse(df.b$Gender == "F",1,0)
+  df.b$treat <- df.b$Video
+  df.b$treat.het<-ifelse(df.b$treat=="Video", 1, 0)
+  df.b$gender <- ifelse(df.b$Gender == "M",1,0)
   df.b$private <- ifelse(df.b$Pension_Type == "Private",1,0) 
-  df.b$health<-ifelse(df.b$HSist=="ISAPRE",  1, 0)
+  df.b$Educ<- ifelse(df.b$educ_eng == "Primary or high-school degree",0, 1 ) # With or without a graduate degree
+  
   
   # Define model variables incl. outcome as column 1
   vars <- c("correct_response", "treat.het","private", "gender", "financial_lit_b")
-  
   
   
   df.b <- df.b[,vars]
@@ -607,43 +602,16 @@ prop.table(table(df.en$ncomp7))
   
   # Combine all plots into one chart
   Priv_het <- ggarrange(effectsPlot, modePlot,
-                       ncol = 1, nrow = 2, heights = c(2,2))
+                        ncol = 1, nrow = 2, heights = c(2,2))
   Priv_het
   
-  ggsave(Priv_het, filename = "Outputs/Correct_Response_het_pensiontype_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(Priv_het, filename = "Lab/Outputs/Correct_Response_het_pensiontype_lab.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
-  
-    
-    
-  
-  
-  
-  
-###########################################3
-#### Other dependent variables of interest  
-############################################
-  
-    
-### Facilidad
-  
-  df$facil<-parse_number(df$Facilidad)
+ 
+####################################################
+#### Other possible dependent variables of interest  
+####################################################
 
-  lm_facil <- lm(facil ~ Treatments, 
-                data = df[df$Pension_Type=="Public",]) 
-  stargazer(lm_facil)
-
-### Info util para tomar una decisión /////////// Potencial espacio de heterogeneidad entre públicos y privados
-  
-  
-  df$InfoUtil_1<-as.numeric(df$InfoUtil_1)
-  lm_util <- lm(InfoUtil_1 ~ Treatments, 
-                   data = df) 
-  lm_util.pp <- lm(InfoUtil_1 ~ Treatments, 
-                   data = df[df$Pension_Type=="Public",]) 
-  lm_util.pv <- lm(InfoUtil_1 ~ Treatments, 
-                   data = df[df$Pension_Type=="Private",]) 
-    stargazer(lm_util, lm_util.pp, lm_util.pv)
-  
   
 ### Advisor #### Nulo
   advisor<- glm(as.factor(Advisor) ~ Treatments, data = df, family = "binomial")
