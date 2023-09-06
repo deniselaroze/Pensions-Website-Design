@@ -40,16 +40,135 @@ df.f<-df[!is.na(df$correct_response),]
 df.en <- readRDS(paste0(path_datos, "encuestas_clean.rds"))
 
 
-############################
-###### Descriptive Statistics
-##################################
-#Attrition after being assigned to treatment
 
+##########################
+### Attrition   
+##########################
+
+
+#Descriptive statistics
 table(df$attrition) ### Referenced in the manuscript page NNNNNN
+prop.table(table(as.numeric(as.factor(df$attrition[df$Treatments=="Baseline"]))))
+prop.table(table(as.numeric(as.factor(df$attrition[df$Treatments=="Perfil"]))))
+prop.table(table(as.numeric(as.factor(df$attrition[df$Treatments=="Video"]))))
+prop.table(table(as.numeric(as.factor(df$attrition[df$Treatments=="VideoPerfil"]))))
 
-table(df$encuesta)
+
+table(df$encuesta) ### Of those that responded the questionnaire, what options they took B = effort, C = no effort 
 
 
+
+# model estimations
+lw<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
+lw2<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
+
+eff<-glm(as.factor(effort) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
+eff2<-glm(as.factor(effort) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
+
+stargazer(lw, lw2, eff, eff2)
+
+# Attrition is not correlated with treatments    
+
+stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.tex"), type="latex",
+          covariate.labels = c("Profile", "Video", "Video and Profile", "Age", "Male", "High School", "University or technical college", 
+                               "Private healthcare", "Constant"), 
+          dep.var.labels = c("Finish Tutorial", "Opt into Comprehension Test"), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:attrition",
+          title = "Columns 1 and 2 present logit models on the likelihood of completing the tutorial vs droping out at the website stage. Columns 3-4 are logit models on whether a 
+          person chose to respond to the comprehension questions or not", no.space=TRUE)
+
+
+
+################################
+# summary of sample statistics on page NNNNNNN
+################################
+
+df.trd<-df[!is.na(df$Progress.y),] ### people that reached the third stage of the experiment
+
+#age
+summary(2022-as.numeric(df.trd$Birth))
+
+#gender
+prop.table(table(df.trd$Gender))
+
+
+#education
+prop.table(table(df.trd$educ_eng))
+
+#Financial literacy
+prop.table(table(df.trd$financial_lit_b))
+
+
+#Private (top 20% income) vs public healthcare
+prop.table(table(df.trd$HSist))
+
+
+
+
+
+tbl<-table(df.trd$Pension_Type)
+tbl[1]/(tbl[1]+tbl[2])
+tbl[2]/(tbl[1]+tbl[2])
+
+
+# Earnings
+summary(df.trd$total_reward)
+summary(df.trd$total_reward[df.trd$Pension_Type=="Private"])
+summary(df.trd$total_reward[df.trd$Pension_Type=="Public"])
+
+
+######################################################
+####### Balance Tests full online sample Page NNNNNN
+########################################################
+
+
+multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + as.factor(financial_lit_b), data = df)
+
+stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance.tex"), type="latex",
+          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
+                               "Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:balance_online",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the online sample - balance test", no.space=TRUE)
+
+
+#Balance test for Public benefits subgroup in supplementary material
+multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health + as.factor(financial_lit_b), data = df[df$Pension_Type=="Public",])
+stargazer(multinom_model2)
+
+stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_public.tex"), type="latex",
+          covariate.labels = c("Age", "Male", "Education: High School", "University or technical college", 
+                               "Private healthcare","Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:balance_public_online",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Public Benefits information - balance test", no.space=TRUE)
+
+table(df.f$private_health[df.f$Pension_Type=="Public"])
+
+
+#Balance test for Private pensions subgroup in supplementary material
+
+multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + as.factor(financial_lit_b), data = df[df$Pension_Type=="Private",])
+
+
+stargazer(multinom_model2)
+
+stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_private.tex"), type="latex",
+          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
+                               "Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+          label="tbl:balance_private_online",
+          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Private Pensions information  - balance test", no.space=TRUE)
+
+
+##################################################
+###### Correct responses online
+###################################################  
+#### Descriptives
 ### Correct responses
 prop.table(table(df.en$obliga))
 prop.table(table(df.en$inicio))
@@ -69,145 +188,9 @@ prop.table(table(df.en$ncomp7))
 
 ###
 
-################################
-# summary statistics on page NNNNNNN
-################################
 
 
 
-
-
-#gender
-
-#education
-prop.table(table(df.f$educ_eng))
-
-#Private (top 20% income) vs public healthcare
-prop.table(table(df.f$HSist))
-
-
-#age
-summary(2022-as.numeric(df.f$Birth))
-
-
-#Financial literacy
-prop.table(table(df.f$financial_lit_b))
-
-tbl<-table(df$Pension_Type)
-tbl[1]/450
-tbl[2]/450
-
-
-# Earnings
-summary(df$total_reward)
-summary(df$total_reward[df$Pension_Type=="Private"])
-summary(df$total_reward[df$Pension_Type=="Public"])
-
-
-
-###############################
-########## Data Analysis
-###############################
-
-
-######################################################
-####### Balance Tests full online sample Page NNNNNN
-########################################################
-
-
-multinom_model1 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health, data = df)
-summary(multinom_model1)
-stargazer(multinom_model1, out=paste0(path_github,"online/Outputs/balance_assignment.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
-          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:balance_online",
-          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the online sample - balance test", no.space=TRUE)
-
-
-
-
-
-
-multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + pb_d + as.factor(financial_lit_b), data = df)
-
-
-stargazer(multinom_model1, multinom_model2)
-
-stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
-          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:balance_online",
-          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the online sample - balance test", no.space=TRUE)
-
-
-#Balance test for Public benefits subgroup in supplementary material
-multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + pb_d + as.factor(financial_lit_b), data = df[df$Pension_Type=="Public",])
-stargazer(multinom_model2)
-
-stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_public.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "Education: High School", "University or technical college", 
-                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
-          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:balance_public_online",
-          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Public Benefits information - balance test", no.space=TRUE)
-
-table(df.f$private_health[df.f$Pension_Type=="Public"])
-
-
-#Balance test for Private pensions subgroup in supplementary material
-
-multinom_model2 <- multinom(Treatments ~ Age + Gender + educ_eng + private_health  + pb_d + as.factor(financial_lit_b), data = df[df$Pension_Type=="Private",])
-
-
-stargazer(multinom_model2)
-
-stargazer(multinom_model2, out=paste0(path_github,"online/Outputs/balance_private.tex"), type="latex",
-          covariate.labels = c("Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Low present bias",  "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
-          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:balance_private_online",
-          title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Private Pensions information  - balance test", no.space=TRUE)
-
-
-
-
-
-
-
-##########################
-### Attrition models   
-##########################
-
-lw<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
-lw2<-glm(as.factor(attrition) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
-
-eff<-glm(as.factor(effort) ~ Profile + Video + Profile_Video , data = df, family = "binomial")
-eff2<-glm(as.factor(effort) ~ Profile + Video + Profile_Video + Age + Gender + educ_eng + private_health, data = df, family = "binomial")
-
-stargazer(lw, lw2, eff, eff2)
-
-# Attrition is not correlated with treatments    
-
-stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.tex"), type="latex",
-          covariate.labels = c("Profile", "Video", "Video and Profile", "Age", "Male", "High School", "University or technical college", 
-                               "Private healthcare", "Constant"), 
-          dep.var.labels = c("Finish Tutorial", "Selct Comp Q."), # keep.stat=c("n", "ll"),
-          dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
-          label="tbl:Main_results_correct_response",
-          title = "Columns 1 and 2 present logit models on the likelihood of completing the tutorial vs droping out at the website stage. Columns 3-4 are logit models on whether a 
-          person chose to respond to the comprehension questions or not", no.space=TRUE)
-
-
-
-##################################################3
-###### Correct responses online
-###################################################  
   
 ### Correct Response      
   lm_CR <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b) , 
@@ -266,71 +249,67 @@ stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.t
             label="tbl:Main_results_CR_no_control",
             title = "The table presents OLS models on the number of correct responses, for different sub-groups of the sample", no.space=TRUE)
   
-  
-  
-  
-  
-  
-    
-  
-  ### testing financial literacy measure / no difference between the models, keep smaller one
-  
-  lm_CR <- lm(correct_response ~ Treatments + as.factor(financial_lit) , 
-              data = df) 
-  
-  df$financial_lit_b<-ifelse(df$financial_lit==3, 2, df$financial_lit)
-  View(df[c("financial_lit", "financial_lit_b")])
-  
-  lm_CR2 <- lm(correct_response ~ Treatments + as.factor(financial_lit_b) , 
-              data = df) 
-  
-  anova( lm_CR,lm_CR2 )
-  
-  
-  
-### Correct Responses with other controls
-  
-    lm_CR <- lm(correct_response ~ Treatments+ Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
-              data = df) 
-  
-  lm_CR_pp <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
-                 data = df[df$Pension_Type=="Public",]) 
-  
-  lm_CR_pv <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d + as.factor(financial_lit_b), 
-                 data = df[df$Pension_Type=="Private",]) 
-  
-  lm_CR_F <- lm(correct_response ~ Treatments + Age  + Educ + pb_d + as.factor(financial_lit_b), 
-                data = df[df$Gender=="F",]) 
-  
-  lm_CR_M <- lm(correct_response ~ Treatments + Age + Educ + pb_d + as.factor(financial_lit_b), 
-                data = df[df$Gender=="M",]) 
-  lm_CR_ns <- lm(correct_response ~ Treatments + Age + Gender + Educ + pb_d , 
-                 data = df.ns) 
-  stargazer(lm_CR, lm_CR_pp, lm_CR_pv, lm_CR_F, lm_CR_M, lm_CR_ns)
-  
+
 
   ###############################################
   ### H4 - Self-reported measures of the tutorial  
   ###############################################
-  
   #Estimate NPS by treatment
   library(marketr)
   library(xtable)
+  library(dplyr)
+  
   
   nps_question<-as.numeric(df.f$Recomendar)
   nps_group<-df.f$Treatments
   nps_date<-as.Date("2023-07-06")
+  
+  #Mean and variance
   d <- data.frame(nps_question, nps_date, nps_group)
+  d<-d[!is.na(d$nps_question),]
+  tbl1<-d %>%
+    group_by(nps_group) %>%
+    summarise(mean_nps = mean(nps_question, na.rm=T),
+              sd_nps= sd(nps_question, na.rm=T))
+  
+  
   tbl<-nps_calc(d, nps_group)
   
-  xt<-xtable(tbl)
-  print(xt, type="latex", file=paste0(path_github,"online/Outputs/nps_table.tex"), 
+  tbl2<-left_join(tbl1, tbl, by = "nps_group")  
+  
+  colnames(tbl2) <- c("Treatment", "Mean_Promoter", "s.d._Promoter", "Net_Promoter_Score", "Number_of_responses")
+  
+  
+  xt<-xtable(tbl2)
+  print(xt, type="latex", file=paste0(path_github,"online/Outputs/nps_table_online.tex"), 
         floating=FALSE, include.rownames=FALSE)
   
+  rm(tbl, tbl1, tbl2)
+ 
   
-  #NPS by treatment regression
-  nps<-lm(as.numeric(Recomendar) ~ Treatments, df.f)
-  summary(nps)
+  
+  ###### #NPS by treatment regression
+  #### Regressions on self-reported measures of positive experience during the website navigation
+  
+  
+  df$easy<-recode(df$Facilidad, "2" = 2, "3" = 3, "4" = 4, "Muy fácil  5" = 5, "Muy fácil\n5"= 5, "Nada fácil  1" = 1, "Nada fácil\n1" = 1 )
+  
+  easy<- lm(easy ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  useful<- lm(as.numeric(InfoUtil_1) ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  nps<-lm(as.numeric(Recomendar) ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  
+  stargazer(easy, useful, nps)
+  
+  stargazer(easy, useful, nps, out=paste0(path_github,"online/Outputs/self_reported_online.tex"), type="latex",
+            covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            dep.var.labels = c("Easy", "Useful", "Recomend"), # keep.stat=c("n", "ll"),
+            dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            label="tbl:self_reported_online",
+            title = "The table presents OLS models on online self-reported measures of evaluating the questions: 
+            ``How easy was it to find the information you were looking for?'' (1-5 scale), 
+            ``Is the information available on the website sufficient to make a decision?'' (0-10 scale) and
+            ``Considering your experience on this website, how likely are you to recommend it to a family member or friend?'' (0-10 scale)
+          ", no.space=TRUE)
   
   
   
@@ -346,15 +325,14 @@ stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.t
   
   
   #set up  - divide into 1 treatment group and 0 control
-  df.b$treat <- df.b$Treatments
-  risk.vars<-c("Baseline" ,     "Perfil")
-  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
-  df.b$gender <- ifelse(df.b$Gender == "F",1,0)
+  df.b$treat <- df.b$Video
+  df.b$treat.het<-ifelse(df.b$treat=="Video", 1, 0)
+  df.b$gender <- ifelse(df.b$Gender == "M",1,0)
   df.b$private <- ifelse(df.b$Pension_Type == "Private",1,0) 
-  df.b$health<-ifelse(df.b$HSist=="ISAPRE",  1, 0)
+  
   
   # Define model variables incl. outcome as column 1
-  vars <- c("correct_response", "treat.het", "financial_lit_b", "gender", "private")
+  vars <- c("correct_response", "treat.het", "financial_lit_b", "private")
   
   
   df.b <- df.b[,vars]
@@ -430,7 +408,7 @@ stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.t
   FL_het <- ggarrange(effectsPlot, modePlot,
                       ncol = 1, nrow = 2, heights = c(2,2))
   FL_het
-  ggsave(FL_het, filename = "Outputs/Correct_Response_het_financial_lit_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(FL_het, filename = "online/Outputs/Correct_Response_het_financial_lit_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
   
@@ -439,21 +417,19 @@ stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.t
   ####################################
   library(BayesTree)
   set.seed(89536)
-  
-  # Data set up including calculating ability rank
+    # Data set up including calculating ability rank
   df.b <- df.f
   
   
   #set up  - divide into 1 treatment group and 0 control
-  df.b$treat <- df.b$Treatments
-  risk.vars<-c("Baseline" ,     "Perfil")
-  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
-  df.b$gender <- ifelse(df.b$Gender == "F",1,0)
+  df.b$treat <- df.b$Video
+  df.b$treat.het<-ifelse(df.b$treat=="Video", 1, 0)
+  df.b$gender <- ifelse(df.b$Gender == "M",1,0)
   df.b$private <- ifelse(df.b$Pension_Type == "Private",1,0) 
-  df.b$health<-ifelse(df.b$HSist=="ISAPRE",  1, 0)
+  
   
   # Define model variables incl. outcome as column 1
-  vars <- c("correct_response", "treat.het",  "gender", "financial_lit_b","private")
+  vars <- c("correct_response", "treat.het",  "gender", "private")
   
   
   
@@ -493,11 +469,11 @@ stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.t
   sum(CATE_df$CATE < 0)/nrow(CATE_df)
   sum(CATE_df$CATE < mean(CATE_df$CATE))/nrow(CATE_df)
   
-  # Female participant: prop. below mean
+  # Male participant: prop. below mean
   sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$gender == 1 )/sum(CATE_df$gender == 1)
   
   
-  # Male participant: prop. below mean
+  # Female participant: prop. below mean
   sum(CATE_df$CATE < mean(CATE_df$CATE) & CATE_df$gender == 0 )/sum(CATE_df$gender == 0)
   
   
@@ -529,33 +505,33 @@ stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.t
                        ncol = 1, nrow = 2, heights = c(2,2))
   Gen_het
   
-  ggsave(Gen_het, filename = "Outputs/Correct_Response_het_gender_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(Gen_het, filename = "online/Outputs/Correct_Response_het_gender_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
   
   ####################################
   ### Pension type Heterogeneity 
   ####################################
+  
   library(BayesTree)
-  set.seed(89536)
+  set.seed(53698)
   
   # Data set up including calculating ability rank
   df.b <- df.f
-  
+ table(df.f$private_health)
   
   #set up  - divide into 1 treatment group and 0 control
-  #set up  - divide into 1 treatment group and 0 control
-  df.b$treat <- df.b$Treatments
-  risk.vars<-c("Baseline" ,     "Perfil")
-  df.b$treat.het<-ifelse(df.b$treat %in% risk.vars, 0, 1)
-  df.b$gender <- ifelse(df.b$Gender == "F",1,0)
+  df.b$treat <- df.b$Video
+  df.b$treat.het<-ifelse(df.b$treat=="Video", 1, 0)
+  df.b$gender <- ifelse(df.b$Gender == "M",1,0)
   df.b$private <- ifelse(df.b$Pension_Type == "Private",1,0) 
-  df.b$health<-ifelse(df.b$HSist=="ISAPRE",  1, 0)
+  df.b$Educ<- ifelse(df.b$educ_eng == "Primary or high-school degree",0, ifelse(df.b$educ_eng == "University degree", 1,2)) 
+  
   
   # Define model variables incl. outcome as column 1
   vars <- c("correct_response", "treat.het","private", "gender", "financial_lit_b")
   
-  
+
   
   df.b <- df.b[,vars]
   df.b <- df.b[complete.cases(df.b),]
@@ -629,7 +605,7 @@ stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"online/Outputs/attrition.t
                        ncol = 1, nrow = 2, heights = c(2,2))
   Priv_het
   
-  ggsave(Priv_het, filename = "Outputs/Correct_Response_het_pensiontype_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(Priv_het, filename = "online/Outputs/Correct_Response_het_pensiontype_online.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
     

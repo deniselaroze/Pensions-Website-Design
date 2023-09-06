@@ -45,7 +45,7 @@ online_data$Profile_Video<-ifelse(online_data$Treatments=="VideoPerfil", "Profil
 
 ##### Attrition measures
 
-df$effort<-ifelse(df$encuesta=="B_Privada" | df$encuesta=="B_Publica", "Comp_questions", "No_effort")
+online_data$effort<-ifelse(online_data$encuesta=="B_Privada" | online_data$encuesta=="B_Publica", "Comp_questions", "No_effort")
 
 
 ##### Other control variables of interest
