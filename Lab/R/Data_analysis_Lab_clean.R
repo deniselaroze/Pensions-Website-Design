@@ -1,5 +1,5 @@
 ################################
-#### Ideas to test - not clean
+#### Data analysis
 #### author: Denise Laroze
 ################################
 library(stargazer)
@@ -58,7 +58,7 @@ stargazer(lw, lw2, eff, eff2)
 # Attrition is not correlated with treatments    
 
 stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"Lab/Outputs/attrition_lab.tex"), type="latex",
-          covariate.labels = c("Profile", "Video", "Video and Profile", "Age", "Male", "High School", "University or technical college", 
+          covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Video$\\_j$xProfile$\\_i$", "Age", "Male", "High School", "University or technical college", 
                                "Private healthcare", "Constant"), 
           dep.var.labels = c("Finish Tutorial", "Opt into Comprehension Test"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
@@ -115,9 +115,12 @@ multinom_model2 <- multinom(Treatments ~ Age + Gender + private_health  + as.fac
 
 stargazer(multinom_model2)
 
+n<-nrow(multinom_model2$fitted.values)
+
 stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_lab.tex"), type="latex",
           covariate.labels = c("Age", "Male","Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"),  keep.stat=c("n", "ll"),
+          add.lines=list(c("Observations", n,  "", "")),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
           label="tbl:balance_lab",
           title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the lab sample - balance test", no.space=TRUE)
@@ -126,10 +129,12 @@ stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_lab.tex")
 #Balance test for Public benefits subgroup in supplementary material
 multinom_model2 <- multinom(Treatments ~ Age + Gender + private_health  + as.factor(financial_lit_b), data = df[df$Pension_Type=="Public",])
 stargazer(multinom_model2)
+n<-nrow(multinom_model2$fitted.values)
 
 stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_public_lab.tex"), type="latex",
           covariate.labels = c("Age", "Male", "Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          add.lines=list(c("Observations", n,  "", "")),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
           label="tbl:balance_public_lab",
           title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Public Benefits information in the Lab - balance test", no.space=TRUE)
@@ -140,20 +145,21 @@ table(df.f$private_health[df.f$Pension_Type=="Public"])
 #Balance test for Private pensions subgroup in supplementary material
 
 multinom_model2 <- multinom(Treatments ~ Age + Gender + private_health + as.factor(financial_lit_b), data = df[df$Pension_Type=="Private",])
-
+n<-nrow(multinom_model2$fitted.values)
 
 stargazer(multinom_model2)
 
 stargazer(multinom_model2, out=paste0(path_github,"Lab/Outputs/balance_private_lab.tex"), type="latex",
           covariate.labels = c("Age", "Male", "Private healthcare", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
           dep.var.labels = c("T.Profile", "T.Video", "T.Video and Profile"), # keep.stat=c("n", "ll"),
+          add.lines=list(c("Observations", n,  "", "")),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
           label="tbl:balance_private_lab",
           title = "Multinomial logit models on Treatment assignment by socio-demoraphic characteristics for the sub-group that observed the Private Pensions information in the Lab  - balance test", no.space=TRUE)
 
 
-##################################################3
-###### Correct responses online
+##################################################
+###### Correct responses Lab
 ###################################################  
 #### Descriptives
 ### Correct responses
@@ -176,9 +182,6 @@ prop.table(table(df.en$ncomp7))
 ###
 
 
-
-
-  
 ### Correct Response 
 
   lm_CR <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b) , 
@@ -210,18 +213,23 @@ prop.table(table(df.en$ncomp7))
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2)
   
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_lab.tex"), type="latex",
-            covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Video$\\_j$xProfile$\\_i$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
             dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
+            column.labels = c("Full Lab", "Private", "Public", "Female", "Male"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            add.lines=list(c("Observations", nobs(lm_CR),nobs(lm_CR_pv), nobs(lm_CR_pp), nobs(lm_CR_F), nobs(lm_CR_M)),
+                           c("$R\\^2$", round(summary(lm_CR)$r.squared, 3), round(summary(lm_CR_pv)$r.squared, 3), round(summary(lm_CR_pp)$r.squared, 3), 
+                             round(summary(lm_CR_F)$r.squared, 3) , round(summary(lm_CR_M)$r.squared, 3)),
+                           c("$Adjusted R\\^2$", round(summary(lm_CR)$adj.r.squared, 3), round(summary(lm_CR_pv)$adj.r.squared, 3), 
+                             round(summary(lm_CR_pp)$adj.r.squared, 3), round(summary(lm_CR_F)$adj.r.squared, 3) , round(summary(lm_CR_M)$adj.r.squared,3))),
             label="tbl:Main_results_correct_response_lab",
             title = "The table presents OLS models on the number of correct responses, for different sub-groups of the sample. The models are estimated
             using heteroscedasticity robust standard errors.", no.space=TRUE)
   
   
 # Correct response no controls  Appendix table
-  lm_CR <- lm(correct_response ~ Profile + Video + Profile_Video , 
+  lm_CR <- lm(correct_response ~ Profile + Video + Profile_Video, 
               data = df) 
-  
   lm_CR2<-coeftest(lm_CR, vcov = vcovHC(lm_CR, type = 'HC0'))
   
   
@@ -239,18 +247,23 @@ prop.table(table(df.en$ncomp7))
                 data = df[df$Gender=="F",]) 
   lm_CR_F2<-coeftest(lm_CR_F, vcov = vcovHC(lm_CR_F, type = 'HC0'))
   
-  
   lm_CR_M <- lm(correct_response ~ Profile + Video + Profile_Video, 
                 data = df[df$Gender=="M",]) 
   lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
   
-  
+
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2)
   
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_no_controls_lab.tex"), type="latex",
-            covariate.labels = c("Profile", "Video", "Video and Profile", "Constant"), 
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Video$\\_j$xProfile$\\_i$", "Constant"), 
             dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
+            column.labels = c("Full Lab", "Private", "Public", "Female", "Male"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            add.lines=list(c("Observations", nobs(lm_CR),nobs(lm_CR_pv), nobs(lm_CR_pp), nobs(lm_CR_F), nobs(lm_CR_M)),
+                           c("$R\\^2$", round(summary(lm_CR)$r.squared, 3), round(summary(lm_CR_pv)$r.squared, 3), round(summary(lm_CR_pp)$r.squared, 3), 
+                             round(summary(lm_CR_F)$r.squared, 3) , round(summary(lm_CR_M)$r.squared, 3)),
+                           c("$Adjusted R\\^2$", round(summary(lm_CR)$adj.r.squared, 3), round(summary(lm_CR_pv)$adj.r.squared, 3), 
+                             round(summary(lm_CR_pp)$adj.r.squared, 3), round(summary(lm_CR_F)$adj.r.squared, 3) , round(summary(lm_CR_M)$adj.r.squared,3))),
             label="tbl:Main_results_CR_no_control_lab",
             title = "The table presents OLS models on the number of correct responses, for different sub-groups of the Lab sample. The models are estimated
             using heteroscedasticity robust standard errors.", no.space=TRUE)
@@ -298,20 +311,30 @@ prop.table(table(df.en$ncomp7))
   df$easy<-recode(df$Facilidad, "2" = 2, "3" = 3, "4" = 4, "Muy fácil  5" = 5, "Muy fácil\n5"= 5, "Nada fácil  1" = 1, "Nada fácil\n1" = 1 )
   
   easy<- lm(easy ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  easy2<-coeftest(easy, vcov = vcovHC(easy, type = 'HC0'))
+  
+  
   useful<- lm(as.numeric(InfoUtil_1) ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  useful2<-coeftest(useful, vcov = vcovHC(useful, type = 'HC0'))
+  
   nps<-lm(as.numeric(Recomendar) ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), df)
+  nps2<-coeftest(nps, vcov = vcovHC(nps, type = 'HC0'))
   
   stargazer(easy, useful, nps)
   
-  stargazer(easy, useful, nps, out=paste0(path_github,"Lab/Outputs/self_reported_lab.tex"), type="latex",
-            covariate.labels = c("Profile", "Video", "Video and Profile", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
-            dep.var.labels = c("Easy", "Useful", "Recomend"), # keep.stat=c("n", "ll"),
+  stargazer(easy2, useful2, nps2, out=paste0(path_github,"Lab/Outputs/self_reported_lab.tex"), type="latex",
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Video$\\_j$xProfile$\\_i$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            column.labels = c("Easy", "Useful", "Recomend"), # keep.stat=c("n", "ll"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            add.lines=list(c("Observations", nobs(easy),nobs(useful), nobs(nps)),
+                           c("$R\\^2$", round(summary(easy)$r.squared, 3), round(summary(useful)$r.squared, 3), round(summary(nps)$r.squared, 3)),
+                           c("$Adjusted R\\^2$", round(summary(easy)$adj.r.squared, 3), round(summary(useful)$adj.r.squared, 3), round(summary(nps)$adj.r.squared, 3))),
             label="tbl:self_reported_lab",
             title = "The table presents OLS models on lab self-reported measures of evaluating the questions: 
             ``How easy was it to find the information you were looking for?'' (1-5 scale), 
             ``Is the information available on the website sufficient to make a decision?'' (0-10 scale) and
-            ``Considering your experience on this website, how likely are you to recommend it to a family member or friend?'' (0-10 scale)
+            ``Considering your experience on this website, how likely are you to recommend it to a family member or friend?'' (0-10 scale).
+            Model estimations include heteroscedasticity robust standard errors.
           ", no.space=TRUE)
   
   
