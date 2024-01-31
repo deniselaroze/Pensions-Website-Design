@@ -58,7 +58,7 @@ stargazer(lw, lw2, eff, eff2)
 # Attrition is not correlated with treatments    
 
 stargazer(lw, lw2, eff, eff2, out=paste0(path_github,"Lab/Outputs/attrition_lab.tex"), type="latex",
-          covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Video$\\_j$xProfile$\\_i$", "Age", "Male", "High School", "University or technical college", 
+          covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Age", "Male", "High School", "University or technical college", 
                                "Private healthcare", "Constant"), 
           dep.var.labels = c("Finish Tutorial", "Opt into Comprehension Test"), # keep.stat=c("n", "ll"),
           dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
@@ -213,7 +213,7 @@ prop.table(table(df.en$ncomp7))
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2)
   
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_lab.tex"), type="latex",
-            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Video$\\_j$xProfile$\\_i$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
             dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
             column.labels = c("Full Lab", "Private", "Public", "Female", "Male"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
@@ -255,7 +255,7 @@ prop.table(table(df.en$ncomp7))
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2)
   
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_no_controls_lab.tex"), type="latex",
-            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Video$\\_j$xProfile$\\_i$", "Constant"), 
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Constant"), 
             dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
             column.labels = c("Full Lab", "Private", "Public", "Female", "Male"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
@@ -269,7 +269,7 @@ prop.table(table(df.en$ncomp7))
             using heteroscedasticity robust standard errors.", no.space=TRUE)
 
   ###############################################
-  ### H4 - Self-reported measures of the tutorial  
+  ### Self-reported measures of the tutorial  
   ###############################################
   
   #Estimate NPS by treatment
@@ -323,7 +323,7 @@ prop.table(table(df.en$ncomp7))
   stargazer(easy, useful, nps)
   
   stargazer(easy2, useful2, nps2, out=paste0(path_github,"Lab/Outputs/self_reported_lab.tex"), type="latex",
-            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Video$\\_j$xProfile$\\_i$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
             column.labels = c("Easy", "Useful", "Recomend"), # keep.stat=c("n", "ll"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
             add.lines=list(c("Observations", nobs(easy),nobs(useful), nobs(nps)),
@@ -409,6 +409,10 @@ prop.table(table(df.en$ncomp7))
   
   # CATE Heterogeneity plot
   hist <- CATE_df
+  hist$FL<-NA
+  hist$FL<-ifelse(hist$financial_lit_b==0, "Low Fin. Lit.", ifelse(hist$financial_lit_b==1, "Mid Fin. Lit.", "High Fin. Lit.") )
+  hist$FL<- factor(hist$FL, levels=c('Low Fin. Lit.', 'Mid Fin. Lit.', 'High Fin. Lit.'))
+  
   
   effectsPlot <- ggplot(hist, aes(x=id, y = CATE)) +
     geom_line() +
@@ -420,7 +424,7 @@ prop.table(table(df.en$ncomp7))
   #ggsave(effectsPlot, filename= "test.pdf")
   # Mode histogram 
   
-  modePlot <- ggplot(hist, aes(x=id, fill=factor(financial_lit_b))) +
+  modePlot <- ggplot(hist, aes(x=id, fill=factor(FL))) +
     geom_histogram(binwidth = 60,position="stack") +
     theme(legend.position="bottom") +
     labs(y = "Count", x = "Individual")+
@@ -433,7 +437,7 @@ prop.table(table(df.en$ncomp7))
   FL_het <- ggarrange(effectsPlot, modePlot,
                       ncol = 1, nrow = 2, heights = c(2,2))
   FL_het
-  ggsave(FL_het, filename = "Lab/Outputs/Correct_Response_het_financial_lit_Lab.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(FL_het, filename = "Lab/Outputs/Figure_A4b.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
   
@@ -504,7 +508,14 @@ prop.table(table(df.en$ncomp7))
   
   
   # CATE Heterogeneity plot
+  # CATE Heterogeneity plot
   hist <- CATE_df
+  
+  hist$g<-NA
+  hist$g<-ifelse(hist$gender==0, "Women", "Men")
+  hist$g<- factor(hist$g, levels=c('Women', 'Men'))
+  
+  
   
   effectsPlot <- ggplot(hist, aes(x=id, y = CATE)) +
     geom_line() +
@@ -516,7 +527,7 @@ prop.table(table(df.en$ncomp7))
   #ggsave(effectsPlot, filename= "test.pdf")
   # Mode histogram 
   
-  modePlot <- ggplot(hist, aes(x=id, fill=factor(gender))) +
+  modePlot <- ggplot(hist, aes(x=id, fill=factor(g))) +
     geom_histogram(binwidth = 60,position="stack") +
     theme(legend.position="bottom") +
     labs(y = "Count", x = "Individual")+
@@ -530,7 +541,7 @@ prop.table(table(df.en$ncomp7))
                        ncol = 1, nrow = 2, heights = c(2,2))
   Gen_het
   
-  ggsave(Gen_het, filename = "Lab/Outputs/Correct_Response_het_gender_Lab.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(Gen_het, filename = "Lab/Outputs/Figure_A3b.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
   
   
@@ -604,6 +615,10 @@ prop.table(table(df.en$ncomp7))
   # CATE Heterogeneity plot
   hist <- CATE_df
   
+  hist$p<-NA
+  hist$p<-ifelse(hist$private==1, "Private Pensions", "Public Benefits")
+  hist$p<- factor(hist$p, levels=c('Public Benefits', 'Private Pensions'))
+  
   effectsPlot <- ggplot(hist, aes(x=id, y = CATE)) +
     geom_line() +
     geom_hline(yintercept= 0, linetype="dashed", color="red") +
@@ -614,7 +629,7 @@ prop.table(table(df.en$ncomp7))
   #ggsave(effectsPlot, filename= "test.pdf")
   # Mode histogram 
   
-  modePlot <- ggplot(hist, aes(x=id, fill=factor(private))) +
+  modePlot <- ggplot(hist, aes(x=id, fill=factor(p))) +
     geom_histogram(binwidth = 60,position="stack") +
     theme(legend.position="bottom") +
     labs(y = "Count", x = "Individual")+
@@ -628,7 +643,7 @@ prop.table(table(df.en$ncomp7))
                         ncol = 1, nrow = 2, heights = c(2,2))
   Priv_het
   
-  ggsave(Priv_het, filename = "Lab/Outputs/Correct_Response_het_pensiontype_lab.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
+  ggsave(Priv_het, filename = "Lab/Outputs/Figure_A2b.pdf", path=path_github, device = "pdf", height = 8, width = 6, dpi = 300)
   
  
 ####################################################

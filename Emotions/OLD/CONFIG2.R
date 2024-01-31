@@ -48,8 +48,8 @@ re <- function(x) {
   regex_path <- c(re1,re2)
   return(regex_path[x])
 }
-path_webA <- "/Users/mlopez/Documents/CESS/Pensiones/emov-main/data/Datos_Pensiones/Pension+Web+A+-Lab_January+25,+2024_21.51.xlsx"
-path_webB <- "/Users/mlopez/Documents/CESS/Pensiones/emov-main/data/Datos_Pensiones/Pension Web B Privada (with Effort)_January 25, 2024_22.24.csv"
+path_webA <- "/Users/mauro/Desktop/Cess/Pensiones/2023/emov-main/data/Datos_Pensiones/Pension+Web+A+-Lab_January+23,+2023_09.16.xlsx"
+path_webB <- "/Users/mauro/Desktop/Cess/Pensiones/2023/emov-main/data/Pension Web B Privada (with Effort)_January 23, 2023_13.21.csv"
 path_pension <- fs::dir_ls(path = './data/', regexp = re(1), ignore.case = TRUE, recurse = TRUE, type = "file")
 path_video <- fs::dir_ls(path = './data/', regexp = re(2), ignore.case = TRUE, recurse = TRUE, type = "file")
 

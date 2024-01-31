@@ -1,11 +1,14 @@
 #!/usr/bin/env Rscript
 rm(list=ls());
-path <- '/Users/mlopez/Documents/CESS/Pensiones/emov-main/';
+#path <- '/Users/mauro/Desktop/Cess/Pensiones/2023/emov-main/';
+
+path <- 'C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/Emotions';
+
 setwd(path);
 reset <- function() .rs.restartR()
 clear <- function() cat("\014\n")
 source("CONFIG2.R");
-#source("LOAD2.R");
+#source("Data_Management_Videos.R");
 
 #Calcular regresiones
 # no las dejé acá hay que correrlas manual en LOAD

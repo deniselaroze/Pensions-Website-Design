@@ -25,7 +25,11 @@ path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Video
 path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
 
 
-df<-read.csv(paste0(path_datos,"dataset_con_columnas.csv"))
+df<-read.csv(paste0(path_datos,"dataset_con_columnas_2024.csv"))
+
+
+View(df)
+
 
 ###############################
 ##### Data Management #########
@@ -35,19 +39,11 @@ df$Profile_Video<-ifelse(df$sitio=="VideoPerfil", "Profile_Video", "Other")
 
 df$t_perfil <- factor(df$t_perfil, levels = c("producto", "perfil"))
 
-
-
 #####################
-### Balance test
+### Balance 
 ####################
 
-
-multinom_model1 <- multinom(Treatment ~ Gender , data = df)
-stargazer(multinom_model1)
-
-names(df)
-
-
+table(df$t_perfil, df$video)
 table(df$treatment)
 table(df$video)
 
@@ -75,8 +71,8 @@ lm5<- lm(Diff2_Arousal ~ sitio , data = df)
 
 stargazer(lm1, lm2, lm3, lm4, lm5)
 
-stargazer(lm1, lm3, out=paste0(path_github,"Emotions/Outputs/arousal.tex"), type="latex",
-          covariate.labels = c("Profile", "Video", "Video and Profile","Constant"), 
+stargazer(lm1, lm3, out=paste0(path_github,"Emotions/Outputs/Table_7.tex"), type="latex",
+          covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$","Constant"), 
           dep.var.labels = c("Valence","Arousal"),  keep.stat=c("n", "rsq", "f"),
           dep.var.caption = "", star.cutoffs = c(0.1, 0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
           label="tbl:arousal",
