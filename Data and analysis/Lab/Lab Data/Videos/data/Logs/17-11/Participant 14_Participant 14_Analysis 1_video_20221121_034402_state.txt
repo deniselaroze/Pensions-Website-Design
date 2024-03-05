@@ -1,0 +1,100 @@
+Video analysis state log
+
+Face Model	General
+Calibration	Continuous
+Start time	11/21/2022 01:22:26.749
+Filename	C:\Charles-Pension\Session-11112022\17-11\PC7-17-11-2022-15-37-01.mp4
+Frame rate	7.159631872
+
+Age	Gender
+32.000000000	Female
+
+
+Video Time	Dominant Expression
+00:00:00.000	Unknown
+00:00:01.257	Neutral
+00:00:43.158	Surprised
+00:00:46.371	Neutral
+00:02:44.254	Sad
+00:02:45.092	Neutral
+00:02:48.444	Sad
+00:02:50.818	Neutral
+00:02:57.383	Sad
+00:02:58.081	Neutral
+00:03:26.435	Sad
+00:03:27.412	Neutral
+00:04:18.672	Sad
+00:04:21.465	Neutral
+00:04:53.590	Sad
+00:04:55.545	Neutral
+00:04:56.244	Sad
+00:04:57.221	Neutral
+00:04:59.875	Sad
+00:05:00.853	Neutral
+00:05:05.741	Sad
+00:05:13.842	Neutral
+00:05:20.128	Sad
+00:05:20.826	Neutral
+00:05:23.200	Sad
+00:05:24.458	Neutral
+00:05:27.670	Sad
+00:05:28.508	Neutral
+00:05:31.581	Sad
+00:05:33.676	Neutral
+00:05:39.123	Sad
+00:05:42.894	Neutral
+00:05:44.291	Sad
+00:05:45.548	Neutral
+00:06:15.438	Sad
+00:06:16.136	Neutral
+00:06:17.393	Sad
+00:06:22.142	Neutral
+00:06:28.427	Sad
+00:06:33.036	Neutral
+00:07:01.250	Sad
+00:07:06.558	Neutral
+00:08:50.474	Sad
+00:08:52.708	Neutral
+00:08:53.826	Sad
+00:09:02.905	Neutral
+00:09:08.352	Sad
+00:09:09.190	Neutral
+00:16:47.733	Unknown
+00:16:48.850	Neutral
+00:16:57.091	Unknown
+00:16:58.767	Neutral
+00:20:46.013	Sad
+00:20:47.550	Neutral
+00:38:22.213	Surprised
+00:38:23.051	Neutral
+00:38:53.220	Surprised
+00:38:54.198	Neutral
+00:41:46.134	Sad
+00:41:46.832	Neutral
+00:42:08.481	Sad
+00:42:09.459	Neutral
+00:42:25.242	Sad
+00:42:25.940	Neutral
+00:42:35.298	Unknown
+00:42:38.232	Neutral
+00:42:40.047	Unknown
+00:42:41.444	Neutral
+00:42:56.110	Unknown
+00:43:00.020	Neutral
+00:43:00.998	Unknown
+00:49:25.515	Neutral
+00:49:26.632	Unknown
+00:49:27.331	Neutral
+00:49:28.867	Unknown
+00:49:32.638	Neutral
+00:49:33.337	Unknown
+00:54:06.675	Neutral
+00:54:10.865	Unknown
+00:54:19.385	Neutral
+00:54:47.040	Unknown
+00:54:54.722	Neutral
+00:54:55.560	Unknown
+00:54:56.258	Neutral
+00:54:57.655	Unknown
+00:56:03.580	Neutral
+00:56:06.234	END

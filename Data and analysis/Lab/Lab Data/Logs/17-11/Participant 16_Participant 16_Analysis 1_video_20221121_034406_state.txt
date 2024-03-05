@@ -1,0 +1,75 @@
+Video analysis state log
+
+Face Model	General
+Calibration	Continuous
+Start time	11/21/2022 01:43:35.118
+Filename	C:\Charles-Pension\Session-11112022\17-11\PC8-17-11-2022-16-52-29.mp4
+Frame rate	7.543171576
+
+Age	Gender
+25.000000000	Female
+
+
+Video Time	Dominant Expression
+00:00:00.000	Unknown
+00:00:01.193	Neutral
+00:03:16.203	Sad
+00:03:20.181	Neutral
+00:03:21.374	Sad
+00:03:26.411	Neutral
+00:06:39.036	Sad
+00:06:40.494	Neutral
+00:09:16.927	Sad
+00:09:17.590	Neutral
+00:11:49.913	Sad
+00:11:50.576	Neutral
+00:13:30.136	Sad
+00:13:30.799	Neutral
+00:16:49.920	Sad
+00:16:50.715	Neutral
+00:16:54.957	Sad
+00:16:55.753	Neutral
+00:17:24.785	Sad
+00:17:25.979	Neutral
+00:18:14.367	Unknown
+00:18:15.560	Sad
+00:18:16.753	Neutral
+00:19:35.765	Sad
+00:19:36.560	Neutral
+00:20:23.092	Sad
+00:20:24.418	Neutral
+00:20:26.804	Sad
+00:20:28.130	Neutral
+00:20:47.220	Sad
+00:20:47.883	Neutral
+00:20:53.318	Sad
+00:20:54.246	Neutral
+00:21:03.792	Sad
+00:21:06.310	Neutral
+00:21:47.937	Sad
+00:21:49.528	Neutral
+00:21:50.589	Sad
+00:22:04.641	Neutral
+00:22:06.630	Sad
+00:22:16.440	Neutral
+00:22:39.772	Sad
+00:22:41.098	Neutral
+00:22:44.015	Sad
+00:22:45.605	Neutral
+00:22:48.787	Sad
+00:22:49.848	Neutral
+00:22:53.295	Sad
+00:22:58.332	Neutral
+00:22:59.393	Sad
+00:23:19.411	Neutral
+00:23:20.206	Sad
+00:23:21.532	Neutral
+00:23:29.751	Sad
+00:23:30.679	Neutral
+00:23:31.607	Sad
+00:23:32.800	Neutral
+00:23:33.463	Unknown
+00:23:35.187	Neutral
+00:23:37.838	Sad
+00:23:39.031	Neutral
+00:23:55.868	END

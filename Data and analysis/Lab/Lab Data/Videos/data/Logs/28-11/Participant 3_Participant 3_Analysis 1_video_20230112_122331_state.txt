@@ -1,0 +1,101 @@
+Video analysis state log
+
+Face Model	General
+Calibration	Continuous
+Start time	1/12/2023 11:22:08.713
+Filename	C:\Charles-Pension\Session-11212022\28-11\PC2-28-11-2022-16-11-37.mp4
+Frame rate	7.123323876
+
+Age	Gender
+21.000000000	Female
+
+
+Video Time	Dominant Expression
+00:00:00.000	Unknown
+00:00:01.263	Neutral
+00:07:27.403	Sad
+00:07:28.386	Neutral
+00:10:38.887	Sad
+00:10:39.589	Neutral
+00:11:20.300	Sad
+00:11:22.827	Neutral
+00:11:49.921	Sad
+00:11:51.184	Neutral
+00:17:20.244	Sad
+00:17:22.350	Neutral
+00:17:40.881	Sad
+00:17:42.425	Neutral
+00:19:09.182	Sad
+00:19:18.728	Neutral
+00:19:54.105	Sad
+00:19:58.457	Neutral
+00:20:25.270	Sad
+00:20:31.166	Unknown
+00:20:32.430	Neutral
+00:23:00.816	Sad
+00:23:05.027	Neutral
+00:25:14.180	Sad
+00:25:20.638	Neutral
+00:25:28.359	Sad
+00:25:33.834	Neutral
+00:25:44.784	Sad
+00:25:53.347	Neutral
+00:25:54.611	Sad
+00:25:55.734	Neutral
+00:25:58.401	Sad
+00:25:59.243	Neutral
+00:26:01.068	Sad
+00:26:02.332	Neutral
+00:26:04.438	Sad
+00:26:13.843	Neutral
+00:26:48.939	Sad
+00:26:52.028	Neutral
+00:26:59.187	Sad
+00:27:00.170	Neutral
+00:31:21.986	Sad
+00:31:24.794	Neutral
+00:32:17.999	Sad
+00:32:20.947	Neutral
+00:32:27.265	Sad
+00:32:27.967	Neutral
+00:32:43.970	Unknown
+00:32:46.216	Neutral
+00:32:51.972	Happy
+00:32:56.605	Neutral
+00:33:14.714	Sad
+00:33:17.241	Neutral
+00:33:41.247	Sad
+00:33:49.951	Neutral
+00:34:28.276	Happy
+00:34:30.802	Neutral
+00:35:45.206	Sad
+00:35:45.908	Neutral
+00:36:20.863	Sad
+00:36:23.390	Neutral
+00:36:26.900	Sad
+00:36:29.567	Neutral
+00:36:34.060	Sad
+00:36:38.552	Neutral
+00:36:40.517	Sad
+00:36:41.500	Neutral
+00:36:42.202	Sad
+00:36:44.167	Neutral
+00:36:48.379	Sad
+00:36:59.890	Neutral
+00:37:02.698	Sad
+00:37:04.242	Neutral
+00:37:49.165	Sad
+00:37:50.148	Neutral
+00:37:57.728	Sad
+00:37:59.413	Neutral
+00:38:01.098	Happy
+00:38:02.221	Neutral
+00:38:42.932	Sad
+00:38:43.634	Neutral
+00:39:27.434	Unknown
+00:39:31.224	Neutral
+00:39:54.247	Unknown
+00:39:56.493	Neutral
+00:39:57.757	Unknown
+00:40:17.551	Neutral
+00:40:17.691	END

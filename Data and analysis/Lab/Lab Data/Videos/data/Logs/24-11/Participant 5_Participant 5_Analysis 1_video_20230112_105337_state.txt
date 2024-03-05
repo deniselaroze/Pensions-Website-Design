@@ -1,0 +1,68 @@
+Video analysis state log
+
+Face Model	General
+Calibration	Continuous
+Start time	1/12/2023 02:23:45.169
+Filename	C:\Charles-Pension\Session-11212022\24-11\PC11-24-11-2022-15-50-26.mp4
+Frame rate	7.485981119
+
+Age	Gender
+28.000000000	Male
+
+
+Video Time	Dominant Expression
+00:00:00.000	Unknown
+00:00:01.202	Neutral
+00:06:29.260	Happy
+00:06:32.333	Neutral
+00:06:39.012	Surprised
+00:06:40.749	Neutral
+00:08:17.596	Surprised
+00:08:18.531	Neutral
+00:12:10.031	Sad
+00:12:10.699	Neutral
+00:12:48.636	Angry
+00:12:49.571	Neutral
+00:15:25.463	Sad
+00:15:27.600	Neutral
+00:15:30.940	Sad
+00:15:31.741	Neutral
+00:15:33.478	Sad
+00:15:34.279	Neutral
+00:15:35.481	Sad
+00:15:36.417	Neutral
+00:20:41.119	Sad
+00:20:44.192	Neutral
+00:21:01.424	Surprised
+00:21:02.493	Neutral
+00:21:13.714	Angry
+00:21:16.786	Neutral
+00:21:44.438	Surprised
+00:21:45.239	Neutral
+00:22:56.172	Angry
+00:22:56.840	Neutral
+00:23:37.182	Surprised
+00:23:38.918	Neutral
+00:23:39.586	Surprised
+00:23:43.059	Neutral
+00:24:00.025	Surprised
+00:24:01.761	Neutral
+00:24:41.168	Angry
+00:24:42.103	Unknown
+00:24:43.840	Neutral
+00:24:54.794	Angry
+00:24:56.664	Neutral
+00:26:20.287	Surprised
+00:26:21.088	Neutral
+00:28:57.113	Angry
+00:29:04.059	Happy
+00:29:04.861	Neutral
+00:30:34.495	Unknown
+00:30:35.297	Neutral
+00:31:17.108	Happy
+00:31:18.043	Neutral
+00:33:34.164	Surprised
+00:33:34.966	Neutral
+00:34:30.670	Surprised
+00:34:32.407	Neutral
+00:43:29.677	END

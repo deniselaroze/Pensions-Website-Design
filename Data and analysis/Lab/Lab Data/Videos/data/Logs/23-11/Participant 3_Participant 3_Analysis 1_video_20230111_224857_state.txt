@@ -1,0 +1,42 @@
+Video analysis state log
+
+Face Model	General
+Calibration	Continuous
+Start time	1/11/2023 22:18:31.677
+Filename	C:\Charles-Pension\Session-11212022\23-11\PC4-23-11-2022-16-45-42.mp4
+Frame rate	6.979112352
+
+Age	Gender
+21.000000000	Male
+
+
+Video Time	Dominant Expression
+00:00:00.000	Unknown
+00:00:01.289	Neutral
+00:10:24.721	Sad
+00:10:26.297	Neutral
+00:28:06.890	Sad
+00:28:07.607	Neutral
+00:29:40.885	Sad
+00:29:42.891	Neutral
+00:29:46.187	Sad
+00:29:47.190	Neutral
+00:29:57.936	Sad
+00:29:59.655	Neutral
+00:31:29.065	Sad
+00:31:30.641	Neutral
+00:31:31.644	Sad
+00:31:33.363	Neutral
+00:31:40.241	Sad
+00:31:41.101	Neutral
+00:31:48.552	Sad
+00:31:51.131	Neutral
+00:32:04.456	Unknown
+00:32:06.462	Neutral
+00:32:19.501	Sad
+00:32:22.510	Neutral
+00:32:30.677	Sad
+00:32:33.686	Neutral
+00:32:43.430	Unknown
+00:32:47.442	Neutral
+00:32:47.872	END
