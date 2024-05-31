@@ -101,9 +101,287 @@ summary(df.trd$total_reward[df.trd$Pension_Type=="Private"])
 summary(df.trd$total_reward[df.trd$Pension_Type=="Public"])
 
 
+
 ######################################################
-####### Balance Tests full lab sample Page NNNNNN
+####### Balance Tests
 ########################################################
+
+### Balance summary statistics full sample
+
+# Ensure financial_lit_b is a factor
+df$financial_lit_b <- as.factor(df$financial_lit_b)
+
+names<-c( "Variable",  "Treatment", "N")
+# Summarize the data
+s1 <- df %>%
+  group_by( Gender, Treatments) %>%
+  summarise(
+    Gender_count = length(unique(uemail)),
+  )
+names(s1)<-names
+print(s1)
+
+s2 <- df %>%
+  group_by( financial_lit_b, Treatments) %>%
+  summarise(
+    Fin_lit = length(unique(uemail)),
+  )
+names(s2)<-names
+s2<-s2[-c(13:16),]
+print(s2)
+
+s3 <- df %>%
+  group_by( educ_eng, Treatments) %>%
+  summarise(
+    Educ = length(unique(uemail)),
+  )
+names(s3)<-names
+
+s4 <- df %>%
+  group_by( private_health, Treatments) %>%
+  summarise(
+    health = length(unique(uemail)),
+  )
+names(s4)<-names
+
+tbl<-rbind(s1, s2, s3, s4)
+
+tbl_wide <- tbl %>%
+  pivot_wider(names_from = Treatment, values_from = N)
+
+tbl_wide$Total<-rowSums(tbl_wide[2:5])
+
+s5 <- df %>%
+  group_by(Treatments) %>%
+  summarise(
+    Age_mean = round(mean(Age, na.rm = TRUE),2),
+    Age_sd = round(sd(Age, na.rm = TRUE),2),
+  )%>%
+  pivot_longer(cols = c(Age_mean, Age_sd), names_to = "Variable", values_to = "Value") %>%
+  pivot_wider(names_from = Treatments, values_from = Value)
+
+print(s4)
+
+
+tbl<-rbind(tbl_wide, s5)
+
+tbl$PC_Baseline<-round(tbl$Baseline/tbl$Total, 4)*100
+tbl$PC_T.1<-round(tbl$Perfil/tbl$Total, 4)*100
+tbl$PC_T.2<-round(tbl$Video/tbl$Total, 4)*100
+tbl$PC_T.3<-round(tbl$VideoPerfil/tbl$Total, 4)*100
+
+# Change the row names
+df.s <- as.data.frame(tbl)
+
+# Set the row names
+values <- c(
+  "Female", "Male", "Low Fin. Lit.", "Mid Fin. Lit.", "High Fin. Lit.",
+  "Post-graduate degree", "Primary or high-school degree", "University degree", 
+  "Public Health or other", "Private healthcare", "Age (mean)", "Age (sd)"
+)
+
+df.s[[1]]<-values
+
+# Set the column names
+colnames(df.s) <- c("Variable","Baseline", "Profile", "Video", "Profile and Video", "Total", 
+                    "% Baseline", "% Profile", "% Video", "% Profile and Video")
+
+xt<-xtable(df.s)
+print(xt, type="latex", file=paste0(path_github,"/Outputs/balance_numbers_lab.tex"), floating=FALSE, include.rownames=FALSE)
+
+rm(tbl_wide, s1, s2, s3, s4, s5, tbl2, df.s)
+
+
+### Balance summary statistics private
+
+df.pv<-df[df$Pension_Type=="Private",]
+
+# Ensure financial_lit_b is a factor
+df.pv$financial_lit_b <- as.factor(df.pv$financial_lit_b)
+
+names<-c( "Variable",  "Treatment", "N")
+# Summarize the data
+s1 <- df.pv %>%
+  group_by( Gender, Treatments) %>%
+  summarise(
+    Gender_count = length(unique(uemail)),
+  )
+names(s1)<-names
+print(s1)
+
+s2 <- df.pv %>%
+  group_by( financial_lit_b, Treatments) %>%
+  summarise(
+    Fin_lit = length(unique(uemail)),
+  )
+names(s2)<-names
+s2<-s2[-c(13:16),]
+print(s2)
+
+s3 <- df.pv %>%
+  group_by( educ_eng, Treatments) %>%
+  summarise(
+    Educ = length(unique(uemail)),
+  )
+names(s3)<-names
+
+s4 <- df.pv %>%
+  group_by( private_health, Treatments) %>%
+  summarise(
+    health = length(unique(uemail)),
+  )
+names(s4)<-names
+
+tbl<-rbind(s1, s2, s3, s4)
+
+tbl_wide <- tbl %>%
+  pivot_wider(names_from = Treatment, values_from = N)
+
+tbl_wide$Total<-rowSums(tbl_wide[2:5])
+
+s5 <- df.pv %>%
+  group_by(Treatments) %>%
+  summarise(
+    Age_mean = round(mean(Age, na.rm = TRUE),2),
+    Age_sd = round(sd(Age, na.rm = TRUE),2),
+  )%>%
+  pivot_longer(cols = c(Age_mean, Age_sd), names_to = "Variable", values_to = "Value") %>%
+  pivot_wider(names_from = Treatments, values_from = Value)
+
+print(s4)
+
+
+tbl<-rbind(tbl_wide, s5)
+
+tbl$PC_Baseline<-round(tbl$Baseline/tbl$Total, 4)*100
+tbl$PC_T.1<-round(tbl$Perfil/tbl$Total, 4)*100
+tbl$PC_T.2<-round(tbl$Video/tbl$Total, 4)*100
+tbl$PC_T.3<-round(tbl$VideoPerfil/tbl$Total, 4)*100
+
+# Change the row names
+df.s <- as.data.frame(tbl)
+
+# Set the row names
+values <- c(
+  "Female", "Male", "Low Fin. Lit.", "Mid Fin. Lit.", "High Fin. Lit.",
+  "Post-graduate degree", "Primary or high-school degree", "University degree", 
+  "Public Health or other", "Private healthcare", "Age (mean)", "Age (sd)"
+)
+
+df.s[[1]]<-values
+
+# Set the column names
+colnames(df.s) <- c("Variable","Baseline", "Profile", "Video", "Profile and Video", "Total", 
+                    "% Baseline", "% Profile", "% Video", "% Profile and Video")
+
+
+
+xt<-xtable(df.s)
+print(xt, type="latex", file=paste0(path_github,"/Outputs/balance_numbers_lab_private.tex"), floating=FALSE, include.rownames=FALSE)
+
+
+rm(tbl_wide, s1, s2, s3, s4, s5, tbl2, df.s, df.pv)
+
+
+
+### Balance summary statistics Public
+
+df.pp<-df[df$Pension_Type=="Public",]
+
+
+
+# Ensure financial_lit_b is a factor
+df.pp$financial_lit_b <- as.factor(df.pp$financial_lit_b)
+
+names<-c( "Variable",  "Treatment", "N")
+# Summarize the data
+s1 <- df.pp %>%
+  group_by( Gender, Treatments) %>%
+  summarise(
+    Gender_count = length(unique(uemail)),
+  )
+names(s1)<-names
+print(s1)
+
+s2 <- df.pp %>%
+  group_by( financial_lit_b, Treatments) %>%
+  summarise(
+    Fin_lit = length(unique(uemail)),
+  )
+names(s2)<-names
+s2<-s2[-c(13:16),]
+print(s2)
+
+s3 <- df.pp %>%
+  group_by( educ_eng, Treatments) %>%
+  summarise(
+    Educ = length(unique(uemail)),
+  )
+names(s3)<-names
+
+s4 <- df.pp %>%
+  group_by( private_health, Treatments) %>%
+  summarise(
+    health = length(unique(uemail)),
+  )
+names(s4)<-names
+
+tbl<-rbind(s1, s2, s3, s4)
+
+tbl_wide <- tbl %>%
+  pivot_wider(names_from = Treatment, values_from = N)
+
+tbl_wide$Total<-rowSums(tbl_wide[2:5])
+
+s5 <- df.pp %>%
+  group_by(Treatments) %>%
+  summarise(
+    Age_mean = round(mean(Age, na.rm = TRUE),2),
+    Age_sd = round(sd(Age, na.rm = TRUE),2),
+  )%>%
+  pivot_longer(cols = c(Age_mean, Age_sd), names_to = "Variable", values_to = "Value") %>%
+  pivot_wider(names_from = Treatments, values_from = Value)
+
+print(s4)
+
+
+tbl<-rbind(tbl_wide, s5)
+
+tbl$PC_Baseline<-round(tbl$Baseline/tbl$Total, 4)*100
+tbl$PC_T.1<-round(tbl$Perfil/tbl$Total, 4)*100
+tbl$PC_T.2<-round(tbl$Video/tbl$Total, 4)*100
+tbl$PC_T.3<-round(tbl$VideoPerfil/tbl$Total, 4)*100
+
+# Change the row names
+df.s <- as.data.frame(tbl)
+
+# Set the row names
+values <- c(
+  "Female", "Male", "Low Fin. Lit.", "Mid Fin. Lit.", "High Fin. Lit.",
+  "Post-graduate degree", "Primary or high-school degree", "University degree", 
+  "Public Health or other", "Private healthcare", "Age (mean)", "Age (sd)"
+)
+
+df.s[[1]]<-values
+
+# Set the column names
+colnames(df.s) <- c("Variable","Baseline", "Profile", "Video", "Profile and Video", "Total", 
+                    "% Baseline", "% Profile", "% Video", "% Profile and Video")
+
+
+
+xt<-xtable(df.s)
+print(xt, type="latex", file=paste0(path_github,"/Outputs/balance_numbers_lab_public.tex"), floating=FALSE, include.rownames=FALSE)
+
+
+rm(tbl_wide, s1, s2, s3, s4, s5, df.s, df.pp)
+
+
+
+
+##### with multinomial logit
+
+
 
 multinom_model2 <- multinom(Treatments ~ Age + Gender + private_health  + as.factor(financial_lit_b), data = df)
 
@@ -266,6 +544,28 @@ prop.table(table(df.en$ncomp7))
   ###############################################
   ### Self-reported measures of the tutorial  
   ###############################################
+  
+  
+  df$nps_question<-as.numeric(df$Recomendar)
+  
+  lm_nps<- lm(nps_question ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), data = df) 
+  
+  lm_nps2<-coeftest(lm_nps, vcov = vcovHC(lm_nps, type = 'HC0'))
+  
+  
+  stargazer(lm_nps2, out=paste0(path_github,"/Outputs/nps_models_lab.tex"), type="latex",
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            dep.var.labels = c("NPS Lab"), # keep.stat=c("n", "ll"),7
+            add.lines=list(c("Observations", nobs(lm_nps)),
+                           c("R\\^2", round(summary(lm_nps)$r.squared, 3)),
+                           c("Adjusted R\\^2", round(summary(lm_nps)$adj.r.squared, 3))),
+            dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            label="tbl:nps_reg",
+            title = "The table presents OLS models on a 0-10 recomendations score, with 10 as the highest value, estimated with 
+            heteroscedasticity robust standard errors.", no.space=TRUE)
+  
+  
+  
   
   #Estimate NPS by treatment
   library(marketr)
