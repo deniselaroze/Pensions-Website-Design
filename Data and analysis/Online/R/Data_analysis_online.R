@@ -10,7 +10,7 @@ library(naniar)
 library(nnet)
 library(lmtest)
 library(sandwich)
-
+library(lubridate)
 
 library(dplyr)
 library(tidyr)
@@ -19,9 +19,8 @@ library(xtable)
 
 
 rm(list=ls())
-path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/Data and analysis/Online/"
-path_datos<-"C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/Data and analysis/Online/Online Data/"
-
+#path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Online/"
+#path_datos<-"C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Online/Online Data/"
 
 df <- readRDS(paste0(path_datos, "online_data.rds"))
 df.f<-df[!is.na(df$correct_response),]
@@ -101,10 +100,25 @@ summary(df.trd$total_reward)
 summary(df.trd$total_reward[df.trd$Pension_Type=="Private"])
 summary(df.trd$total_reward[df.trd$Pension_Type=="Public"])
 
+#Time
 
+df.trd$StartDate <- dmy_hm(df.trd$StartDate.x)
+df.trd$EndDate <- ymd_hms(df.trd$EndDate.y)
 
+# Calculate the time difference in seconds and minutes
+df.trd$DiffInSeconds <- as.duration(interval(df.trd$StartDate, df.trd$EndDate)) / dseconds(1)
+df.trd$DiffInMinutes <- df.trd$DiffInSeconds / 60
 
+mean(df.trd$DiffInSeconds)
+mean(df.trd$DiffInMinutes)
 
+filtered_df <- subset(df.trd, DiffInMinutes < 120)
+
+# Calculate the mean of DiffInMinutes for the filtered observations
+mean_diff_in_minutes <- mean(filtered_df$DiffInMinutes, na.rm = TRUE)
+mean_diff_in_minutes
+
+rm(filtered_df)
 
 ######################################################
 ####### Balance Tests
