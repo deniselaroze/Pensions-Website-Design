@@ -13,8 +13,8 @@ library(sandwich)
 
 
 #rm(list=ls())
-#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/Data and analysis/Lab/"
-#path_datos<-"C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/Data and analysis/Lab/Lab Data/Surveys and websites/"
+#path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Lab/"
+#path_datos<-"C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Lab/Lab Data/Surveys and websites/"
 
 
 df <- readRDS(paste0(path_datos, "lab_data.rds"))
@@ -113,7 +113,7 @@ df.trd$DiffInMinutes <- df.trd$DiffInSeconds / 60
 mean(df.trd$DiffInSeconds)
 mean(df.trd$DiffInMinutes)
 
-filtered_df <- subset(df.trd, DiffInMinutes < 120)
+filtered_df <- subset(df.trd, DiffInMinutes < 120) ### Lab session time was controlled to 1 hour, excess time due to errors in merging. 
 
 # Calculate the mean of DiffInMinutes for the filtered observations
 mean_diff_in_minutes <- mean(filtered_df$DiffInMinutes, na.rm = TRUE)
@@ -471,7 +471,37 @@ prop.table(table(df.en$ncomp5))
 prop.table(table(df.en$ncomp6))
 prop.table(table(df.en$ncomp7))
 
-###
+### Descriptive graph 
+
+df.p <- df %>%
+  mutate(Treatments = recode(Treatments,
+                             'Baseline' = 'Baseline',
+                             'Perfil' = 'Profile',
+                             'Video' = 'Video',
+                             'VideoPerfil' = 'Profile and Video'))
+
+
+summary_df.p <- df.p %>%
+  group_by(Treatments) %>%
+  summarise(
+    mean_response = mean(correct_response, na.rm=T),
+    sd_response = sd(correct_response, na.rm=T),
+    n = n(),
+    se = sd_response / sqrt(n),
+    ci_lower = mean_response - 1.96 * se,
+    ci_upper = mean_response + 1.96 * se
+  )
+
+plot<-ggplot(summary_df.p, aes(x = Treatments, y = mean_response)) +
+  geom_bar(stat = "identity", fill="#696969") +
+  scale_y_continuous(breaks = 0:7, limits = c(0, 7))+
+  #scale_fill_manual(values = c("#D3D3D3", "#A9A9A9")) +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2) +
+  labs(y = "Number of Correct Responses - Lab", x = "Experimental Treatments", title = "") +
+  theme_minimal()
+
+ggsave(paste0(path_github,"Outputs/graph_correct_response_lab.pdf"), plot = plot, width = 8, height = 6)
+rm(df.p)
 
 
 ### Correct Response 

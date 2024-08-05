@@ -18,7 +18,7 @@ library(xtable)
 
 
 
-rm(list=ls())
+#rm(list=ls())
 #path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Online/"
 #path_datos<-"C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Online/Online Data/"
 
@@ -467,10 +467,37 @@ prop.table(table(df.en$ncomp5))
 prop.table(table(df.en$ncomp6))
 prop.table(table(df.en$ncomp7))
 
-###
+### Descriptive graph 
+df.p <- df %>%
+  mutate(Treatments = recode(Treatments,
+                             'Baseline' = 'Baseline',
+                             'Perfil' = 'Profile',
+                             'Video' = 'Video',
+                             'VideoPerfil' = 'Profile and Video'))
 
 
+summary_df.p <- df.p %>%
+  group_by(Treatments) %>%
+  summarise(
+    mean_response = mean(correct_response, na.rm=T),
+    sd_response = sd(correct_response, na.rm=T),
+    n = n(),
+    se = sd_response / sqrt(n),
+    ci_lower = mean_response - 1.96 * se,
+    ci_upper = mean_response + 1.96 * se
+  )
 
+plot<-ggplot(summary_df.p, aes(x = Treatments, y = mean_response)) +
+  geom_bar(stat = "identity", fill="#A9A9A9") +
+  scale_y_continuous(breaks = 0:7, limits = c(0, 7))+
+  #scale_fill_manual(values = c("#D3D3D3", "#A9A9A9")) +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2) +
+  labs(y = "Number of Correct Responses - Online", x = "Experimental Treatments", title = "") +
+  theme_minimal()
+
+ggsave(paste0(path_github,"Outputs/graph_correct_response_online.pdf"), plot = plot, width = 8, height = 6)
+
+rm(df.p)
 
   
 ### Correct Response      
