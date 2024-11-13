@@ -19,8 +19,8 @@ library(xtable)
 
 
 #rm(list=ls())
-#path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Online/"
-#path_datos<-"C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Online/Online Data/"
+path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Online/"
+path_datos<-"C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Online/Online Data/"
 
 df <- readRDS(paste0(path_datos, "online_data.rds"))
 df.f<-df[!is.na(df$correct_response),]
@@ -487,13 +487,17 @@ summary_df.p <- df.p %>%
     ci_upper = mean_response + 1.96 * se
   )
 
-plot<-ggplot(summary_df.p, aes(x = Treatments, y = mean_response)) +
-  geom_bar(stat = "identity", fill="#A9A9A9") +
-  scale_y_continuous(breaks = 0:7, limits = c(0, 7))+
-  #scale_fill_manual(values = c("#D3D3D3", "#A9A9A9")) +
+plot <- ggplot(summary_df.p, aes(x = Treatments, y = mean_response)) +
+  geom_bar(stat = "identity", fill = "#A9A9A9") +
+  scale_y_continuous(breaks = 0:7, limits = c(0, 7)) +
   geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2) +
   labs(y = "Number of Correct Responses - Online", x = "Experimental Treatments", title = "") +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    axis.text = element_text(size = 16),     # Tick labels font size
+    axis.title = element_text(size = 18),    # Axis titles font size
+  #  plot.title = element_text(size = 20)     # Plot title font size
+  )
 
 ggsave(paste0(path_github,"Outputs/graph_correct_response_online.pdf"), plot = plot, width = 8, height = 6)
 

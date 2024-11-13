@@ -12,9 +12,9 @@ library(lmtest)
 library(sandwich)
 
 
-#rm(list=ls())
-#path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Lab/"
-#path_datos<-"C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Lab/Lab Data/Surveys and websites/"
+rm(list=ls())
+path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Lab/"
+path_datos<-"C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Lab/Lab Data/Surveys and websites/"
 
 
 df <- readRDS(paste0(path_datos, "lab_data.rds"))
@@ -498,7 +498,12 @@ plot<-ggplot(summary_df.p, aes(x = Treatments, y = mean_response)) +
   #scale_fill_manual(values = c("#D3D3D3", "#A9A9A9")) +
   geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2) +
   labs(y = "Number of Correct Responses - Lab", x = "Experimental Treatments", title = "") +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    axis.text = element_text(size = 16),     # Tick labels font size
+    axis.title = element_text(size = 18),    # Axis titles font size
+    #  plot.title = element_text(size = 20)     # Plot title font size
+  )
 
 ggsave(paste0(path_github,"Outputs/graph_correct_response_lab.pdf"), plot = plot, width = 8, height = 6)
 rm(df.p)
