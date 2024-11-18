@@ -12,17 +12,11 @@ require(nnet)
 
 
 rm(list=ls())
+#path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Lab/"
+#path_datos<-"C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/Data and analysis/Lab/Lab Data/Surveys and websites/"
 
-
-#path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Estudio Online/"
-#path_datos <- "C:/Users/Profesor/Dropbox/Sitios web/Datos Estudio Online/"
-path_datos <- "C:/Users/Denise Laroze/Dropbox/Sitios web/Datos Laboratorio/Videos/"
-
-
-# If you don´t use Rprojects functionality setwd
-#path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions-Website-Design/"
-#path_github <- "C:/Users/Profesor/Documents/GitHub/Pensions-Website-Design/"
-path_github <- "C:/Users/Denise Laroze/Documents/GitHub/Pensions Website Design/"
+path_datos <- "C:/Users/DCCS2/Dropbox/Sitios web/Datos Laboratorio/Videos/"
+path_github <- "C:/Users/DCCS2/Documents/GitHub/Pensions-Website-Design/"
 
 
 df<-read.csv(paste0(path_datos,"dataset_con_columnas_2024.csv"))

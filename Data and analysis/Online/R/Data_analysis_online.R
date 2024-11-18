@@ -1,6 +1,5 @@
 ################################
-#### Ideas to test - not clean
-#### author: Denise Laroze
+#### Denise Laroze
 ################################
 library(stargazer)
 library(MASS)
@@ -129,86 +128,123 @@ rm(filtered_df)
 # Ensure financial_lit_b is a factor
 df$financial_lit_b <- as.factor(df$financial_lit_b)
 
-names<-c( "Variable",  "Treatment", "N")
-# Summarize the data
+# Define consistent column names
+names <- c("Variable", "Treatment", "N")
+
+# Summarize the data for Gender and Treatments
 s1 <- df %>%
-  group_by( Gender, Treatments) %>%
-  summarise(
-    Gender_count = length(unique(uemail)),
-  )
-names(s1)<-names
-print(s1)
+  group_by(Gender, Treatments) %>%
+  summarise(N = length(unique(uemail)), .groups = "drop")
+names(s1) <- names
 
+# Perform Chi-squared test for Gender
+contingency_table <- xtabs(N ~ Variable + Treatment, data = s1)
+chi.s1 <- chisq.test(contingency_table)
+
+# Summarize the data for Financial Literacy and Treatments
 s2 <- df %>%
-  group_by( financial_lit_b, Treatments) %>%
-  summarise(
-    Fin_lit = length(unique(uemail)),
-  )
-names(s2)<-names
-s2<-s2[-c(13:16),]
-print(s2)
+  group_by(financial_lit_b, Treatments) %>%
+  summarise(N = length(unique(uemail)), .groups = "drop")
+names(s2) <- names
+s2 <- s2[-c(13:16), ]  # Remove extraneous rows
 
+# Perform Chi-squared test for Financial Literacy
+contingency_table <- xtabs(N ~ Variable + Treatment, data = s2)
+chi.s2 <- chisq.test(contingency_table)
+
+# Summarize the data for Education and Treatments
 s3 <- df %>%
-  group_by( educ_eng, Treatments) %>%
-  summarise(
-    Educ = length(unique(uemail)),
-  )
-names(s3)<-names
+  group_by(educ_eng, Treatments) %>%
+  summarise(N = length(unique(uemail)), .groups = "drop")
+names(s3) <- names
 
+# Perform Chi-squared test for Education
+contingency_table <- xtabs(N ~ Variable + Treatment, data = s3)
+chi.s3 <- chisq.test(contingency_table)
+
+# Summarize the data for Health and Treatments
 s4 <- df %>%
-  group_by( private_health, Treatments) %>%
-  summarise(
-    health = length(unique(uemail)),
-  )
-names(s4)<-names
+  group_by(private_health, Treatments) %>%
+  summarise(N = length(unique(uemail)), .groups = "drop")
+names(s4) <- names
 
-tbl<-rbind(s1, s2, s3, s4)
+# Perform Chi-squared test for Health
+contingency_table <- xtabs(N ~ Variable + Treatment, data = s4)
+chi.s4 <- chisq.test(contingency_table)
 
+# Combine summaries into a single table
+tbl <- bind_rows(s1, s2, s3, s4)
+
+# Pivot table to wide format for summary
 tbl_wide <- tbl %>%
-  pivot_wider(names_from = Treatment, values_from = N)
+  pivot_wider(names_from = Treatment, values_from = N) %>%
+  mutate(Total = rowSums(across(where(is.numeric)), na.rm = TRUE))
 
-tbl_wide$Total<-rowSums(tbl_wide[2:5])
+# Add percentages for each Treatment group
+tbl_wide <- tbl_wide %>%
+  mutate(
+    `% Baseline` = round(Baseline / Total, 4) * 100,
+    `% Profile` = round(Perfil / Total, 4) * 100,
+    `% Video` = round(Video / Total, 4) * 100,
+    `% Profile and Video` = round(VideoPerfil / Total, 4) * 100
+  )
 
+# Summarize data for Age (mean and SD)
 s5 <- df %>%
   group_by(Treatments) %>%
   summarise(
-    Age_mean = round(mean(Age, na.rm = TRUE),2),
-    Age_sd = round(sd(Age, na.rm = TRUE),2),
-  )%>%
+    Age_mean = round(mean(Age, na.rm = TRUE), 2),
+    Age_sd = round(sd(Age, na.rm = TRUE), 2),
+    .groups = "drop"
+  ) %>%
   pivot_longer(cols = c(Age_mean, Age_sd), names_to = "Variable", values_to = "Value") %>%
   pivot_wider(names_from = Treatments, values_from = Value)
 
-print(s4)
+# Perform ANOVA for Age across Treatments
+anova_result <- aov(Age ~ Treatments, data = df)
+anova_summary <- summary(anova_result)
+print(anova_summary)
+p_value_anova <- anova_summary[[1]]$`Pr(>F)`[1]
 
+# Add ANOVA p-value to Age summary
+s5$p_value <- ifelse(s5$Variable == "Age_mean", round(p_value_anova, 4), NA)
 
-tbl<-rbind(tbl_wide, s5)
+# Combine Age summary with previous table
+tbl_final <- bind_rows(tbl_wide, s5)
 
-tbl$PC_Baseline<-round(tbl$Baseline/tbl$Total, 4)*100
-tbl$PC_T.1<-round(tbl$Perfil/tbl$Total, 4)*100
-tbl$PC_T.2<-round(tbl$Video/tbl$Total, 4)*100
-tbl$PC_T.3<-round(tbl$VideoPerfil/tbl$Total, 4)*100
-
-# Change the row names
-df.s <- as.data.frame(tbl)
-
-# Set the row names
-values <- c(
+# Add variable names to the table
+tbl_final$Variable <- c(
   "Female", "Male", "Low Fin. Lit.", "Mid Fin. Lit.", "High Fin. Lit.",
   "Post-graduate degree", "Primary or high-school degree", "University degree", 
   "Public Health or other", "Private healthcare", "Age (mean)", "Age (sd)"
 )
 
-df.s[[1]]<-values
+# Compute p-values for all variables
+p_values <- c(
+  chi.s1$p.value, chi.s2$p.value, chi.s3$p.value, chi.s4$p.value, NA  # NA for Age SD
+)
+p_values_repeated <- c(
+  rep(p_values[1], 2),  # s1 has two rows (Female, Male)
+  rep(p_values[2], 3),  # s2 has three rows (Financial Literacy)
+  rep(p_values[3], 3),  # s3 has three rows (Education)
+  rep(p_values[4], 2),  # s4 has two rows (Health)
+  rep(p_values[5], 2)   # s5 has two rows (Age mean and Age SD)
+)
+tbl_final$`P-value` <- round(p_values_repeated, 4)
 
-# Set the column names
-colnames(df.s) <- c("Variable","Baseline", "Profile", "Video", "Profile and Video", "Total", 
-                    "% Baseline", "% Profile", "% Video", "% Profile and Video")
+# Rename columns for final table
+colnames(tbl_final) <- c(
+  "Variable", "Baseline", "Profile", "Video", "Profile and Video", 
+  "Total", "% Baseline", "% Profile", "% Video", "% Profile and Video", "P-value"
+)
 
-xt<-xtable(df.s)
-print(xt, type="latex", file=paste0(path_github,"/Outputs/balance_numbers_online.tex"), floating=FALSE, include.rownames=FALSE)
+# Export table to LaTeX
+xt <- xtable(tbl_final)
+print(xt, type = "latex", file = paste0(path_github, "/Outputs/balance_numbers_online.tex"), 
+      floating = FALSE, include.rownames = FALSE)
 
-rm(tbl_wide, s1, s2, s3, s4, s5, tbl2, df.s)
-
+# Clean up the environment
+rm(tbl, tbl_wide, s1, s2, s3, s4, s5, tbl_final)
 
 ### Balance summary statistics private
 

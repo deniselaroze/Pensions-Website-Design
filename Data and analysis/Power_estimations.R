@@ -1,7 +1,11 @@
-
+###########################################
+#### Simulation based power calculations 
+###########################################
 
 
 # Updated power calculation function using OLS model
+set.seed(23658)
+
 power <- function(rep, esize, N) {
   pv <- rep(NA, rep)  # Initialize p-values storage
   for (i in 1:rep) {
@@ -47,6 +51,8 @@ plot(N.power, N / 2, main = "Power calculations", ylab = "Number of obs in each 
 
 # Power calculation function using OLS model
 # Define the updated power function with OLS model
+set.seed(23569)
+
 power <- function(rep, esize, N) {
   pv <- rep(NA, rep)
   for (i in 1:rep) {
@@ -77,12 +83,13 @@ for (i in 1:M) {
 }
 
 # Plot the results
-par(mfrow = c(3, 2))  # Set up a 3x2 plot layout
+par(mfrow = c(2, 2))  # Set up a 3x2 plot layout
 colors <- c("red", "blue", "green", "purple", "springgreen4", "grey30")  # Define colors for each plot
 
 for (j in 1:K) {
   plot(ne.power[, j], N / 2, col = colors[j], main = paste("Effect =", effects[j]), 
        xlim = c(0, 1), ylab = "Number of obs per group", xlab = "Power")
+  abline(v = 0.8, col = "red", lty = 2)  # Add a red vertical dashed line at x = 0.8
 }
 
 
