@@ -697,6 +697,7 @@ lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
             heteroscedasticity robust standard errors.", no.space=TRUE)
             
   
+<<<<<<< HEAD
   ### Correct Response High versus low income individuals     
   
   lm_CR_pp_l <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
@@ -750,6 +751,77 @@ lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
             title = "The table presents OLS models on the number of correct responses for low and high income population in the Public and Private pensions 
                    information websites. Estimated using heteroscedasticity robust standard errors.", 
             no.space = TRUE)
+=======
+
+  #####################################################################
+  ############## Correct response - Differences of income and learning
+  #####################################################################
+  
+  table(df$private_health, df$Pension_Type)
+  
+  
+  
+  lm_pp_l <- lm(correct_response ~ Profile + Video + Profile_Video, 
+                data = df.pp[df.pp$private_health=="Public Health or other",]) 
+  
+  lm_pp_l2<-coeftest(lm_pp_l, vcov = vcovHC(lm_pp_l, type = 'HC0'))
+  
+  
+  lm_pp_h <- lm(correct_response ~ Profile + Video + Profile_Video , 
+                data = df.pp[df.pp$private_health=="Private healthcare",]) 
+  lm_pp_h2<-coeftest(lm_pp_h, vcov = vcovHC(lm_pp_h, type = 'HC0'))
+  
+  
+  lm_pv_l <- lm(correct_response ~ Profile + Video + Profile_Video, 
+                data = df.pv[df.pv$private_health=="Public Health or other",]) 
+  lm_pv_l2<-coeftest(lm_pv_l, vcov = vcovHC(lm_pv_l, type = 'HC0'))
+  
+  
+  lm_pv_h <- lm(correct_response ~ Profile + Video + Profile_Video , 
+                data = df.pv[df.pv$private_health=="Private healthcare",]) 
+  lm_pv_h2<-coeftest(lm_pv_h, vcov = vcovHC(lm_pv_h, type = 'HC0'))
+  
+  
+  
+  stargazer(lm_pp_l2, lm_pp_h2, lm_pv_l2, lm_pv_h2  )
+  
+  
+  stargazer(lm_pp_l2, lm_pp_h2, lm_pv_l2, lm_pv_h2, out=paste0(path_github,"Outputs/Income_PensionType_het.tex"), type="latex",
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Constant"), 
+            dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
+            column.labels = c("Public low income", "Public high income", "Private low income", "Private high income"),
+            add.lines=list(c("Observations", nobs(lm_pp_l),nobs(lm_pp_h), nobs(lm_pv_l), nobs(lm_pv_h)),
+                           c("R\\^2", round(summary(lm_pp_l)$r.squared, 3), round(summary(lm_pp_h)$r.squared, 3), round(summary(lm_pv_l)$r.squared, 3), 
+                             round(summary(lm_pv_h)$r.squared, 3) ),
+                           c("Adjusted R\\^2", round(summary(lm_pp_l)$adj.r.squared, 3), round(summary(lm_pp_h)$adj.r.squared, 3), 
+                             round(summary(lm_pv_l)$adj.r.squared, 3), round(summary(lm_pv_h)$adj.r.squared, 3))),
+            dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
+            label="tbl:Het_income_Pensiontype",
+            title = "The table presents OLS models on the number of correct responses for high and low income earners, in the private and public information websites. Estimated using 
+            heteroscedasticity robust standard errors.", no.space=TRUE)
+  
+  
+  
+  stargazer(lm_pp_l2, lm_pp_h2, lm_pv_l2, lm_pv_h2, 
+            type = "html", 
+            column.labels = c("Public low income", "Public high income", "Private low income", "Private high income"),
+            out = paste0(path_github, "Outputs/Income_PensionType_het.html"),
+            add.lines=list(c("Observations", nobs(lm_pp_l),nobs(lm_pp_h), nobs(lm_pv_l), nobs(lm_pv_h)),
+                           c("R\\^2", round(summary(lm_pp_l)$r.squared, 3), round(summary(lm_pp_h)$r.squared, 3), round(summary(lm_pv_l)$r.squared, 3), 
+                             round(summary(lm_pv_h)$r.squared, 3) ),
+                           c("Adjusted R\\^2", round(summary(lm_pp_l)$adj.r.squared, 3), round(summary(lm_pp_h)$adj.r.squared, 3), 
+                             round(summary(lm_pv_l)$adj.r.squared, 3), round(summary(lm_pv_h)$adj.r.squared, 3))),
+            covariate.labels = c("Profile", "Video", "Profile x Video", "Constant")
+  )
+  
+  
+  
+  
+  
+  
+  
+  
+>>>>>>> 86369f99bca18db27fba4334afd7a279f63d6072
   
   
 
