@@ -142,7 +142,12 @@ names(s1) <- names
 
 # Perform Chi-squared test for Gender
 contingency_table <- xtabs(N ~ Variable + Treatment, data = s1)
-chi.s1 <- chisq.test(contingency_table)
+
+# Perform chi-square test for males
+chi_male <- chisq.test(contingency_table["M", , drop = FALSE])
+chi_female <- chisq.test(contingency_table["F", , drop = FALSE])
+
+
 
 # Summarize the data for Financial Literacy and Treatments
 s2 <- df %>%
@@ -153,7 +158,10 @@ s2 <- s2[-c(13:16), ]  # Remove extraneous rows
 
 # Perform Chi-squared test for Financial Literacy
 contingency_table <- xtabs(N ~ Variable + Treatment, data = s2)
-chi.s2 <- chisq.test(contingency_table)
+
+chi.FL0 <- chisq.test(contingency_table["0", , drop = FALSE])
+chi.FL1 <- chisq.test(contingency_table["1", , drop = FALSE])
+chi.FL2 <- chisq.test(contingency_table["2", , drop = FALSE])
 
 # Summarize the data for Education and Treatments
 s3 <- df %>%
@@ -163,7 +171,9 @@ names(s3) <- names
 
 # Perform Chi-squared test for Education
 contingency_table <- xtabs(N ~ Variable + Treatment, data = s3)
-chi.s3 <- chisq.test(contingency_table)
+chi.pg <- chisq.test(contingency_table["Post-graduate degree", , drop = FALSE])
+chi.hs <- chisq.test(contingency_table["Primary or high-school degree", , drop = FALSE])
+chi.ug <- chisq.test(contingency_table["University degree", , drop = FALSE])
 
 # Summarize the data for Health and Treatments
 s4 <- df %>%
@@ -173,19 +183,8 @@ names(s4) <- names
 
 # Perform Chi-squared test for Health
 contingency_table <- xtabs(N ~ Variable + Treatment, data = s4)
-chi.s4 <- chisq.test(contingency_table)
-
-# Function to ensure consistent Variable type (character)
-make_variable_character <- function(df) {
-  df$Variable <- as.character(df$Variable)
-  return(df)
-}
-
-s1 <- make_variable_character(s1)
-s2 <- make_variable_character(s2)
-s3 <- make_variable_character(s3)
-s4 <- make_variable_character(s4)
-
+chi.pubh <- chisq.test(contingency_table["Public Health or other", , drop = FALSE])
+chi.privh <- chisq.test(contingency_table["Private healthcare", , drop = FALSE])
 # Combine summaries into a single table
 tbl <- bind_rows(s1, s2, s3, s4)
 
@@ -235,16 +234,20 @@ tbl_final$Variable <- c(
 
 # Compute p-values for all variables
 p_values <- c(
-  chi.s1$p.value, chi.s2$p.value, chi.s3$p.value, chi.s4$p.value, NA  # NA for Age SD
+  chi_male$p.value, chi_female$p.value, chi.FL0$p.value, chi.FL1$p.value, chi.FL2$p.value, 
+  chi.pg$p.value, chi.hs$p.value, chi.ug$p.value, chi.pubh$p.value,  chi.privh$p.value, 
+  s5$p_value
+  # NA for Age SD
 )
-p_values_repeated <- c(
-  rep(p_values[1], 2),  # s1 has two rows (Female, Male)
-  rep(p_values[2], 3),  # s2 has three rows (Financial Literacy)
-  rep(p_values[3], 3),  # s3 has three rows (Education)
-  rep(p_values[4], 2),  # s4 has two rows (Health)
-  rep(p_values[5], 2)   # s5 has two rows (Age mean and Age SD)
-)
-tbl_final$`P-value` <- round(p_values_repeated, 4)
+
+# p_values_repeated <- c(
+#   rep(p_values[1], 2),  # s1 has two rows (Female, Male)
+#   rep(p_values[2], 3),  # s2 has three rows (Financial Literacy)
+#   rep(p_values[3], 3),  # s3 has three rows (Education)
+#   rep(p_values[4], 2),  # s4 has two rows (Health)
+#   rep(p_values[5], 2)   # s5 has two rows (Age mean and Age SD)
+# )
+tbl_final$`P-value` <- round(p_values, 4)
 
 # Rename columns for final table
 colnames(tbl_final) <- c(
@@ -592,7 +595,7 @@ rm(df.p)
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_lab.tex"), type="latex",
             covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
             dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
-            column.labels = c("Full Lab", "Private", "Public", "Female", "Male"),
+            column.labels = c("Full Lab", "Public",  "Private", "Female", "Male"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
             add.lines=list(c("Observations", nobs(lm_CR),nobs(lm_CR_pv), nobs(lm_CR_pp), nobs(lm_CR_F), nobs(lm_CR_M)),
                            c("$R\\^2$", round(summary(lm_CR)$r.squared, 3), round(summary(lm_CR_pv)$r.squared, 3), round(summary(lm_CR_pp)$r.squared, 3), 
@@ -634,7 +637,7 @@ rm(df.p)
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, out=paste0(path_github,"Lab/Outputs/main_results_correct_response_no_controls_lab.tex"), type="latex",
             covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Constant"), 
             dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
-            column.labels = c("Full Lab", "Private", "Public", "Female", "Male"),
+            column.labels = c("Full Lab",  "Public",  "Private", "Female", "Male"),
             dep.var.caption = "", star.cutoffs = c(0.05, 0.01, 0.001), notes.align = "l", table.placement = "H",
             add.lines=list(c("Observations", nobs(lm_CR),nobs(lm_CR_pv), nobs(lm_CR_pp), nobs(lm_CR_F), nobs(lm_CR_M)),
                            c("$R\\^2$", round(summary(lm_CR)$r.squared, 3), round(summary(lm_CR_pv)$r.squared, 3), round(summary(lm_CR_pp)$r.squared, 3), 

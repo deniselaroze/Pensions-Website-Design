@@ -139,7 +139,12 @@ names(s1) <- names
 
 # Perform Chi-squared test for Gender
 contingency_table <- xtabs(N ~ Variable + Treatment, data = s1)
-chi.s1 <- chisq.test(contingency_table)
+
+# Perform chi-square test for males
+chi_male <- chisq.test(contingency_table["M", , drop = FALSE])
+chi_female <- chisq.test(contingency_table["F", , drop = FALSE])
+
+
 
 # Summarize the data for Financial Literacy and Treatments
 s2 <- df %>%
@@ -150,7 +155,10 @@ s2 <- s2[-c(13:16), ]  # Remove extraneous rows
 
 # Perform Chi-squared test for Financial Literacy
 contingency_table <- xtabs(N ~ Variable + Treatment, data = s2)
-chi.s2 <- chisq.test(contingency_table)
+
+chi.FL0 <- chisq.test(contingency_table["0", , drop = FALSE])
+chi.FL1 <- chisq.test(contingency_table["1", , drop = FALSE])
+chi.FL2 <- chisq.test(contingency_table["2", , drop = FALSE])
 
 # Summarize the data for Education and Treatments
 s3 <- df %>%
@@ -160,7 +168,9 @@ names(s3) <- names
 
 # Perform Chi-squared test for Education
 contingency_table <- xtabs(N ~ Variable + Treatment, data = s3)
-chi.s3 <- chisq.test(contingency_table)
+chi.pg <- chisq.test(contingency_table["Post-graduate degree", , drop = FALSE])
+chi.hs <- chisq.test(contingency_table["Primary or high-school degree", , drop = FALSE])
+chi.ug <- chisq.test(contingency_table["University degree", , drop = FALSE])
 
 # Summarize the data for Health and Treatments
 s4 <- df %>%
@@ -170,8 +180,8 @@ names(s4) <- names
 
 # Perform Chi-squared test for Health
 contingency_table <- xtabs(N ~ Variable + Treatment, data = s4)
-chi.s4 <- chisq.test(contingency_table)
-
+chi.pubh <- chisq.test(contingency_table["Public Health or other", , drop = FALSE])
+chi.privh <- chisq.test(contingency_table["Private healthcare", , drop = FALSE])
 # Combine summaries into a single table
 tbl <- bind_rows(s1, s2, s3, s4)
 
@@ -221,16 +231,20 @@ tbl_final$Variable <- c(
 
 # Compute p-values for all variables
 p_values <- c(
-  chi.s1$p.value, chi.s2$p.value, chi.s3$p.value, chi.s4$p.value, NA  # NA for Age SD
+  chi_male$p.value, chi_female$p.value, chi.FL0$p.value, chi.FL1$p.value, chi.FL2$p.value, 
+  chi.pg$p.value, chi.hs$p.value, chi.ug$p.value, chi.pubh$p.value,  chi.privh$p.value, 
+  s5$p_value
+  # NA for Age SD
 )
-p_values_repeated <- c(
-  rep(p_values[1], 2),  # s1 has two rows (Female, Male)
-  rep(p_values[2], 3),  # s2 has three rows (Financial Literacy)
-  rep(p_values[3], 3),  # s3 has three rows (Education)
-  rep(p_values[4], 2),  # s4 has two rows (Health)
-  rep(p_values[5], 2)   # s5 has two rows (Age mean and Age SD)
-)
-tbl_final$`P-value` <- round(p_values_repeated, 4)
+
+# p_values_repeated <- c(
+#   rep(p_values[1], 2),  # s1 has two rows (Female, Male)
+#   rep(p_values[2], 3),  # s2 has three rows (Financial Literacy)
+#   rep(p_values[3], 3),  # s3 has three rows (Education)
+#   rep(p_values[4], 2),  # s4 has two rows (Health)
+#   rep(p_values[5], 2)   # s5 has two rows (Age mean and Age SD)
+# )
+tbl_final$`P-value` <- round(p_values, 4)
 
 # Rename columns for final table
 colnames(tbl_final) <- c(
@@ -334,7 +348,7 @@ xt<-xtable(df.s)
 print(xt, type="latex", file=paste0(path_github,"/Outputs/balance_numbers_online_private.tex"), floating=FALSE, include.rownames=FALSE)
 
 
-rm(tbl_wide, s1, s2, s3, s4, s5, tbl2, df.s, df.pv)
+rm(tbl_wide, s1, s2, s3, s4, s5, df.s, df.pv)
 
 
 
@@ -574,7 +588,7 @@ lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, lm_CR_ns2, out=paste0(path_github,"online/Outputs/main_results_correct_response.tex"), type="latex",
             covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
             dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),7
-            column.labels = c("Full Online", "Private", "Public", "Female", "Male", "Doesn't know"),
+            column.labels = c("Full Online", "Public", "Private", "Female", "Male", "Doesn't know"),
                 add.lines=list(c("Observations", nobs(lm_CR),nobs(lm_CR_pv), nobs(lm_CR_pp), nobs(lm_CR_F), nobs(lm_CR_M), nobs(lm_CR_ns)),
                                                       c("R\\^2", round(summary(lm_CR)$r.squared, 3), round(summary(lm_CR_pv)$r.squared, 3), round(summary(lm_CR_pp)$r.squared, 3), 
                              round(summary(lm_CR_F)$r.squared, 3) , round(summary(lm_CR_M)$r.squared, 3) , round( summary(lm_CR_ns)$r.squared, 3)),
@@ -585,6 +599,56 @@ lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
             label="tbl:Main_results_correct_response",
             title = "The table presents OLS models on the number of correct responses, for different sub-groups of the sample and estimated with 
             heteroscedasticity robust standard errors.", no.space=TRUE)
+
+  
+  
+  ### Proportion of correct responses     
+  lm_CR <- lm(correct_response/7 ~ Profile + Video + Profile_Video + as.factor(financial_lit_b) , 
+              data = df) 
+  lm_CR2<-coeftest(lm_CR, vcov = vcovHC(lm_CR, type = 'HC0'))
+  
+  
+  lm_CR_pv <- lm(correct_response/7 ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                 data = df[df$Pension_Type=="Public",]) 
+  lm_CR_pv2<-coeftest(lm_CR_pv, vcov = vcovHC(lm_CR_pv, type = 'HC0'))
+  
+  
+  lm_CR_pp <- lm(correct_response/7 ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                 data = df[df$Pension_Type=="Private",]) 
+  lm_CR_pp2<-coeftest(lm_CR_pp, vcov = vcovHC(lm_CR_pp, type = 'HC0'))
+  
+  
+  lm_CR_F <- lm(correct_response/7 ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                data = df[df$Gender=="F",]) 
+  lm_CR_F2<-coeftest(lm_CR_F, vcov = vcovHC(lm_CR_F, type = 'HC0'))
+  
+  
+  lm_CR_M <- lm(correct_response/7 ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                data = df[df$Gender=="M",]) 
+  lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
+  
+  lm_CR_ns <- lm(correct_response/7 ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                 data = df[df$PlanJubi=="No sabe",]) 
+  lm_CR_ns2<-coeftest(lm_CR_ns, vcov = vcovHC(lm_CR_ns, type = 'HC0'))
+  
+  stargazer(lm_CR, lm_CR_pv, lm_CR_pp, lm_CR_F, lm_CR_M, lm_CR_ns)
+  
+  
+  stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, lm_CR_ns2, out=paste0(path_github,"Outputs/prop_correct_response.tex"), type="latex",
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Mid Fin. Lit.", "High Fin. Lit.", "Constant"), 
+            dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),7
+            column.labels = c("Full Online",  "Public",  "Private", "Female", "Male", "Doesn't know"),
+            add.lines=list(c("Observations", nobs(lm_CR),nobs(lm_CR_pv), nobs(lm_CR_pp), nobs(lm_CR_F), nobs(lm_CR_M), nobs(lm_CR_ns)),
+                           c("R\\^2", round(summary(lm_CR)$r.squared, 3), round(summary(lm_CR_pv)$r.squared, 3), round(summary(lm_CR_pp)$r.squared, 3), 
+                             round(summary(lm_CR_F)$r.squared, 3) , round(summary(lm_CR_M)$r.squared, 3) , round( summary(lm_CR_ns)$r.squared, 3)),
+                           c("Adjusted R\\^2", round(summary(lm_CR)$adj.r.squared, 3), round(summary(lm_CR_pv)$adj.r.squared, 3), 
+                             round(summary(lm_CR_pp)$adj.r.squared, 3), round(summary(lm_CR_F)$adj.r.squared, 3) , round(summary(lm_CR_M)$adj.r.squared,3), 
+                             round( summary(lm_CR_ns)$adj.r.squared, 3))),
+            label="tbl:comparison_lusardi",
+            title = " Linear regressions the proportion of correct responses by treatment, estimated with 
+            heteroscedasticity robust standard errors.", no.space=TRUE
+  )
+  
   
   
 # Correct response no controls  Appendix table
@@ -620,7 +684,7 @@ lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
   stargazer(lm_CR2, lm_CR_pv2, lm_CR_pp2, lm_CR_F2, lm_CR_M2, lm_CR_ns2, out=paste0(path_github,"online/Outputs/main_results_correct_response_no_controls.tex"), type="latex",
             covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Constant"), 
             dep.var.labels = c("Number of correct responses"), # keep.stat=c("n", "ll"),
-            column.labels = c("Full Online", "Private", "Public", "Female", "Male", "Doesn't know"),
+            column.labels = c("Full Online",  "Public",  "Private", "Female", "Male", "Doesn't know"),
             add.lines=list(c("Observations", nobs(lm_CR),nobs(lm_CR_pv), nobs(lm_CR_pp), nobs(lm_CR_F), nobs(lm_CR_M), nobs(lm_CR_ns)),
                            c("R\\^2", round(summary(lm_CR)$r.squared, 3), round(summary(lm_CR_pv)$r.squared, 3), round(summary(lm_CR_pp)$r.squared, 3), 
                              round(summary(lm_CR_F)$r.squared, 3) , round(summary(lm_CR_M)$r.squared, 3) , round( summary(lm_CR_ns)$r.squared, 3)),
@@ -633,7 +697,61 @@ lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
             heteroscedasticity robust standard errors.", no.space=TRUE)
             
   
-
+  ### Correct Response High versus low income individuals     
+  
+  lm_CR_pp_l <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                   data = df.pp[df.pp$private_health=="Public Health or other",]) 
+  lm_CR_pp2_l<-coeftest(lm_CR_pp_l, vcov = vcovHC(lm_CR_pp_l, type = 'HC0'))
+  
+  lm_CR_pp_h <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                   data = df.pp[df.pp$private_health=="Private healthcare",]) 
+  lm_CR_pp2_h<-coeftest(lm_CR_pp_h, vcov = vcovHC(lm_CR_pp_h, type = 'HC0'))
+  
+  
+  lm_CR_pv_l <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                   data = df.pv[df.pv$private_health=="Public Health or other",]) 
+  lm_CR_pv2_l<-coeftest(lm_CR_pv_l, vcov = vcovHC(lm_CR_pv_l, type = 'HC0'))
+  
+  lm_CR_pv_h <- lm(correct_response ~ Profile + Video + Profile_Video + as.factor(financial_lit_b), 
+                   data = df.pv[df.pv$private_health=="Private healthcare",]) 
+  lm_CR_pv2_h<-coeftest(lm_CR_pv_h, vcov = vcovHC(lm_CR_pv_h, type = 'HC0'))
+  
+  stargazer(lm_CR_pp2_l, lm_CR_pp2_h, lm_CR_pv2_l, lm_CR_pv2_h)
+  
+  
+  stargazer(lm_CR_pp2_l, lm_CR_pp2_h, lm_CR_pv2_l, lm_CR_pv2_h, 
+            out = paste0(path_github, "Outputs/correct_response_h_l_income.tex"), 
+            type = "latex",
+            covariate.labels = c("Profile$\\_i$", "Video$\\_j$", "Profile$\\_i$xVideo$\\_j$", "Constant"), 
+            dep.var.labels = c("Number of correct responses"), 
+            column.labels = c("Public Low Income", "Public High Income", "Private Low Income", "Private High Income"),
+            add.lines = list(
+              c("Observations", 
+                nobs(lm_CR_pp_l), 
+                nobs(lm_CR_pp_h), 
+                nobs(lm_CR_pv_l), 
+                nobs(lm_CR_pv_h)),
+              c("R\\^2", 
+                round(summary(lm_CR_pp_l)$r.squared, 3), 
+                round(summary(lm_CR_pp_h)$r.squared, 3), 
+                round(summary(lm_CR_pv_l)$r.squared, 3), 
+                round(summary(lm_CR_pv_h)$r.squared, 3)),
+              c("Adjusted R\\^2", 
+                round(summary(lm_CR_pp_l)$adj.r.squared, 3), 
+                round(summary(lm_CR_pp_h)$adj.r.squared, 3), 
+                round(summary(lm_CR_pv_l)$adj.r.squared, 3), 
+                round(summary(lm_CR_pv_h)$adj.r.squared, 3))
+            ),
+            dep.var.caption = "", 
+            star.cutoffs = c(0.05, 0.01, 0.001), 
+            notes.align = "l", 
+            table.placement = "H",
+            label = "tbl:h_l_income",
+            title = "The table presents OLS models on the number of correct responses for low and high income population in the Public and Private pensions 
+                   information websites. Estimated using heteroscedasticity robust standard errors.", 
+            no.space = TRUE)
+  
+  
 
   ###############################################
   ### Self-reported measures of the tutorial  
@@ -1054,7 +1172,7 @@ lm_CR_M2<-coeftest(lm_CR_M, vcov = vcovHC(lm_CR_M, type = 'HC0'))
 ############################################
   
     
-### Facilidad
+### Easyness
   
   df$facil<-parse_number(df$Facilidad)
 
